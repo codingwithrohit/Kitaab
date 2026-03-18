@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
-import com.kitaab.app.ui.theme.Teal700
 import com.kitaab.app.ui.theme.WarmMuted
 import kotlinx.coroutines.launch
 
@@ -59,9 +58,10 @@ fun OnboardingScreen(onFinished: () -> Unit) {
         // Skip button
         TextButton(
             onClick = onFinished,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 48.dp, end = 16.dp),
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 48.dp, end = 16.dp),
         ) {
             Text(
                 text = "Skip",
@@ -76,9 +76,10 @@ fun OnboardingScreen(onFinished: () -> Unit) {
         ) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
             ) { index ->
                 OnboardingPage(page = pages[index])
             }
@@ -107,11 +108,12 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(14.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
-                    .navigationBarsPadding()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 24.dp)
+                        .navigationBarsPadding()
+                        .height(52.dp),
             ) {
                 Text(
                     text = if (pagerState.currentPage == pages.lastIndex) "Get started" else "Next",
@@ -129,17 +131,19 @@ fun OnboardingScreen(onFinished: () -> Unit) {
 @Composable
 private fun OnboardingPage(page: OnboardingPage) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
         Box(
-            modifier = Modifier
-                .size(220.dp)
-                .clip(RoundedCornerShape(24.dp))
-                .background(Teal50),
+            modifier =
+                Modifier
+                    .size(220.dp)
+                    .clip(RoundedCornerShape(24.dp))
+                    .background(Teal50),
             contentAlignment = Alignment.Center,
         ) {
             page.illustration()
@@ -176,32 +180,34 @@ private fun PageDot(isSelected: Boolean) {
         label = "dot_width",
     )
     Box(
-        modifier = Modifier
-            .height(7.dp)
-            .width(width)
-            .clip(CircleShape)
-            .background(if (isSelected) Teal500 else WarmMuted.copy(alpha = 0.4f)),
+        modifier =
+            Modifier
+                .height(7.dp)
+                .width(width)
+                .clip(CircleShape)
+                .background(if (isSelected) Teal500 else WarmMuted.copy(alpha = 0.4f)),
     )
 }
 
 @Composable
-private fun rememberOnboardingPages() = listOf(
-    OnboardingPage(
-        illustration = { FindBooksIllustration() },
-        title = "Find books you need",
-        subtitle = "Browse thousands of second-hand books from students near you",
-    ),
-    OnboardingPage(
-        illustration = { SellDonateIllustration() },
-        title = "Sell or donate yours",
-        subtitle = "Your old books can fund your next purchase or help a student in need",
-    ),
-    OnboardingPage(
-        illustration = { CommunityIllustration() },
-        title = "Connect with readers",
-        subtitle = "Build a community where knowledge passes from one student to another",
-    ),
-)
+private fun rememberOnboardingPages() =
+    listOf(
+        OnboardingPage(
+            illustration = { FindBooksIllustration() },
+            title = "Find books you need",
+            subtitle = "Browse thousands of second-hand books from students near you",
+        ),
+        OnboardingPage(
+            illustration = { SellDonateIllustration() },
+            title = "Sell or donate yours",
+            subtitle = "Your old books can fund your next purchase or help a student in need",
+        ),
+        OnboardingPage(
+            illustration = { CommunityIllustration() },
+            title = "Connect with readers",
+            subtitle = "Build a community where knowledge passes from one student to another",
+        ),
+    )
 
 // ── Illustrations ────────────────────────────────────────────────────────────
 // Simple Canvas illustrations — no external library, no copyright issues
@@ -220,22 +226,24 @@ private fun FindBooksIllustration() {
             cornerRadius = androidx.compose.ui.geometry.CornerRadius(6f),
         )
         // Books
-        val bookColors = listOf(
-            Color(0xFF1D9E75),
-            Color(0xFF534AB7),
-            Color(0xFFD85A30),
-            Color(0xFFBA7517),
-        )
+        val bookColors =
+            listOf(
+                Color(0xFF1D9E75),
+                Color(0xFF534AB7),
+                Color(0xFFD85A30),
+                Color(0xFFBA7517),
+            )
         val bookWidths = listOf(0.14f, 0.12f, 0.16f, 0.13f)
         val bookHeights = listOf(0.48f, 0.38f, 0.52f, 0.42f)
         var xOffset = 0.1f
         bookColors.forEachIndexed { i, color ->
             drawRoundRect(
                 color = color,
-                topLeft = androidx.compose.ui.geometry.Offset(
-                    w * xOffset,
-                    h * (0.7f - bookHeights[i]),
-                ),
+                topLeft =
+                    androidx.compose.ui.geometry.Offset(
+                        w * xOffset,
+                        h * (0.7f - bookHeights[i]),
+                    ),
                 size = androidx.compose.ui.geometry.Size(w * bookWidths[i], h * bookHeights[i]),
                 cornerRadius = androidx.compose.ui.geometry.CornerRadius(4f),
             )
@@ -360,19 +368,19 @@ private fun CommunityIllustration() {
         listOf(
             Pair(
                 androidx.compose.ui.geometry.Offset(w * 0.2f, h * 0.2f),
-                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f)
+                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f),
             ),
             Pair(
                 androidx.compose.ui.geometry.Offset(w * 0.8f, h * 0.2f),
-                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f)
+                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f),
             ),
             Pair(
                 androidx.compose.ui.geometry.Offset(w * 0.2f, h * 0.72f),
-                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f)
+                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f),
             ),
             Pair(
                 androidx.compose.ui.geometry.Offset(w * 0.8f, h * 0.72f),
-                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f)
+                androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.4f),
             ),
         ).forEach { (start, end) ->
             drawLine(
