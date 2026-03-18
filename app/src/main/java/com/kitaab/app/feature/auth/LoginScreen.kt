@@ -160,7 +160,7 @@ fun LoginScreen(
                     )
                 }
             },
-            visualTransformation = if (passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
