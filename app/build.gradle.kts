@@ -1,8 +1,20 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) load(file.inputStream())
+}
+
+fun localProp(key: String): String = localProperties.getProperty(key, "")
 
 android {
     namespace = "com.kitaab.app"
@@ -14,6 +26,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "SUPABASE_URL",      "\"${localProp("supabase.url")}\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProp("supabase.anonKey")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -36,10 +51,50 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+
+    // Lifecycle ViewModel
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.compose.material.icons)
+
+    // Navigation
+        implementation(libs.navigation.compose)
+
+    // Hilt
+        implementation(libs.hilt.android)
+        ksp(libs.hilt.compiler)
+        implementation(libs.hilt.navigation.compose)
+
+    // Supabase
+        implementation(platform(libs.supabase.bom))
+        implementation(libs.supabase.postgrest)
+        implementation(libs.supabase.auth)
+        implementation(libs.supabase.storage)
+        implementation(libs.supabase.realtime)
+
+    // Ktor (Supabase HTTP engine)
+        implementation(libs.ktor.client.android)
+        implementation(libs.ktor.client.core)
+
+    // Images
+        implementation(libs.coil.compose)
+
+    // Animations
+        implementation(libs.lottie.compose)
+
+    // ML Kit
+        implementation(libs.mlkit.barcode.scanning)
+        implementation(libs.mlkit.text.recognition)
+
+    // DataStore
+        implementation(libs.datastore.preferences)
+
+    // Coroutines
+        implementation(libs.coroutines.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -56,4 +111,13 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+ktlint {
+    android.set(true)
+    ignoreFailures.set(false)
+    filter {
+        exclude("**/build/**")
+        exclude("**/generated/**")
+    }
 }

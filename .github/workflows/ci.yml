@@ -24,16 +24,10 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      - name: Create secrets file
+      - name: Inject secrets into local.properties
         run: |
-          mkdir -p app/src/main/res/values
-          cat > app/src/main/res/values/secrets.xml << EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <string name="supabase_url">https://placeholder.supabase.co</string>
-            <string name="supabase_anon_key">placeholder_key</string>
-          </resources>
-          EOF
+            echo "supabase.url=${{ secrets.SUPABASE_URL }}" >> local.properties
+            echo "supabase.anonKey=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
 
       - name: Create google-services.json placeholder
         run: |
@@ -65,16 +59,10 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      - name: Create secrets file
+      - name: Inject secrets into local.properties
         run: |
-          mkdir -p app/src/main/res/values
-          cat > app/src/main/res/values/secrets.xml << EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <string name="supabase_url">https://placeholder.supabase.co</string>
-            <string name="supabase_anon_key">placeholder_key</string>
-          </resources>
-          EOF
+            echo "supabase.url=${{ secrets.SUPABASE_URL }}" >> local.properties
+            echo "supabase.anonKey=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
 
       - name: Create google-services.json placeholder
         run: |
@@ -113,16 +101,10 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      - name: Create secrets file
+      - name: Inject secrets into local.properties
         run: |
-          mkdir -p app/src/main/res/values
-          cat > app/src/main/res/values/secrets.xml << EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <string name="supabase_url">https://placeholder.supabase.co</string>
-            <string name="supabase_anon_key">placeholder_key</string>
-          </resources>
-          EOF
+          echo "supabase.url=${{ secrets.SUPABASE_URL }}" >> local.properties
+          echo "supabase.anonKey=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
 
       - name: Create google-services.json placeholder
         run: |
