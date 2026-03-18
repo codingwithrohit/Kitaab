@@ -1,0 +1,40 @@
+# Built outputs
+*.apk
+*.aab
+*.dex
+*.class
+bin/
+build/
+out/
+
+# Gradle
+.gradle/
+local.properties
+gradle-wrapper.jar
+
+# Android Studio
+*.iml
+.idea/
+*.orig
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Secrets — never commit these
+google-services.json
+keystore/
+*.jks
+*.keystore
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# Windows
+Thumbs.db
+
+# Test output
+test-results/
+lint-results/
