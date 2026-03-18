@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.kitaab.app.navigation.MainScreen
 import com.kitaab.app.ui.theme.KitaabTheme
 
 class MainActivity : ComponentActivity() {
@@ -23,11 +24,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             KitaabTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    Text(
-                        text  = "Kitaab",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.headlineMedium,
-                    )
+                    MainScreen()
                 }
             }
         }
