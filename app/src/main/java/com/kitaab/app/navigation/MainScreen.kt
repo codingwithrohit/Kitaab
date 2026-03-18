@@ -2,7 +2,6 @@ package com.kitaab.app.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -51,9 +50,14 @@ fun MainScreen(onSplashReady: () -> Unit) {
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(
-                if (isSplashScreen) PaddingValues(0.dp)
-                else innerPadding),
+            modifier =
+                Modifier.padding(
+                    if (isSplashScreen) {
+                        PaddingValues(0.dp)
+                    } else {
+                        innerPadding
+                    },
+                ),
         )
     }
 }
@@ -77,34 +81,35 @@ private fun KitaabBottomBar(navController: NavHostController) {
 
             NavigationBarItem(
                 selected = currentRoute == item.route,
-                onClick  = {
+                onClick = {
                     navController.navigate(item.route) {
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
                         launchSingleTop = true
-                        restoreState    = true
+                        restoreState = true
                     }
                 },
                 icon = {
                     Icon(
-                        imageVector        = item.icon,
+                        imageVector = item.icon,
                         contentDescription = item.label,
                     )
                 },
                 label = {
                     Text(
-                        text  = item.label,
+                        text = item.label,
                         style = MaterialTheme.typography.labelSmall,
                     )
                 },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor   = MaterialTheme.colorScheme.primary,
-                    selectedTextColor   = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor      = MaterialTheme.colorScheme.primaryContainer,
-                ),
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
             )
         }
     }
@@ -115,20 +120,20 @@ private fun PostFabSlot(navController: NavHostController) {
     // Empty NavigationBarItem as a spacer, FAB sits on top via Box
     Box(
         contentAlignment = Alignment.Center,
-        modifier         = Modifier.size(64.dp),
+        modifier = Modifier.size(64.dp),
     ) {
         FloatingActionButton(
-            onClick            = { navController.navigate(Route.Post.route) },
-            shape              = CircleShape,
-            containerColor     = MaterialTheme.colorScheme.primary,
-            contentColor       = MaterialTheme.colorScheme.onPrimary,
-            elevation          = FloatingActionButtonDefaults.elevation(0.dp),
-            modifier           = Modifier.size(48.dp),
+            onClick = { navController.navigate(Route.Post.route) },
+            shape = CircleShape,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            elevation = FloatingActionButtonDefaults.elevation(0.dp),
+            modifier = Modifier.size(48.dp),
         ) {
             Icon(
-                imageVector        = Icons.Filled.Add,
+                imageVector = Icons.Filled.Add,
                 contentDescription = "Post a book",
-                modifier           = Modifier.size(22.dp),
+                modifier = Modifier.size(22.dp),
             )
         }
     }

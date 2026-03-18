@@ -2,26 +2,35 @@ package com.kitaab.app.navigation
 
 sealed class Route(val route: String) {
     // Entry flow
-    data object Splash         : Route("splash")
-    data object Onboarding     : Route("onboarding")
-    data object Login          : Route("login")
-    data object ProfileSetup   : Route("profile_setup")
+    data object Splash : Route("splash")
+
+    data object Onboarding : Route("onboarding")
+
+    data object Login : Route("login")
+
+    data object ProfileSetup : Route("profile_setup")
 
     // Main tabs
-    data object Home           : Route("home")
-    data object Explore        : Route("explore")
-    data object Post           : Route("post")
-    data object Inbox          : Route("inbox")
-    data object Profile        : Route("profile")
+    data object Home : Route("home")
+
+    data object Explore : Route("explore")
+
+    data object Post : Route("post")
+
+    data object Inbox : Route("inbox")
+
+    data object Profile : Route("profile")
 
     // Detail screens
-    data object ListingDetail  : Route("listing_detail/{listingId}") {
+    data object ListingDetail : Route("listing_detail/{listingId}") {
         fun createRoute(listingId: String) = "listing_detail/$listingId"
     }
-    data object SellerProfile  : Route("seller_profile/{userId}") {
+
+    data object SellerProfile : Route("seller_profile/{userId}") {
         fun createRoute(userId: String) = "seller_profile/$userId"
     }
-    data object Chat           : Route("chat/{conversationId}") {
+
+    data object Chat : Route("chat/{conversationId}") {
         fun createRoute(conversationId: String) = "chat/$conversationId"
     }
 }

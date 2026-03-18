@@ -9,10 +9,11 @@ plugins {
     alias(libs.plugins.ktlint)
 }
 
-val localProperties = Properties().apply {
-    val file = rootProject.file("local.properties")
-    if (file.exists()) load(file.inputStream())
-}
+val localProperties =
+    Properties().apply {
+        val file = rootProject.file("local.properties")
+        if (file.exists()) load(file.inputStream())
+    }
 
 fun localProp(key: String): String = localProperties.getProperty(key, "")
 
@@ -27,7 +28,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "SUPABASE_URL",      "\"${localProp("supabase.url")}\"")
+        buildConfigField("String", "SUPABASE_URL", "\"${localProp("supabase.url")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProp("supabase.anonKey")}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -38,7 +39,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -64,39 +65,39 @@ dependencies {
     implementation(libs.androidx.compose.material.icons)
 
     // Navigation
-        implementation(libs.navigation.compose)
+    implementation(libs.navigation.compose)
 
     // Hilt
-        implementation(libs.hilt.android)
-        ksp(libs.hilt.compiler)
-        implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
 
     // Supabase
-        implementation(platform(libs.supabase.bom))
-        implementation(libs.supabase.postgrest)
-        implementation(libs.supabase.auth)
-        implementation(libs.supabase.storage)
-        implementation(libs.supabase.realtime)
+    implementation(platform(libs.supabase.bom))
+    implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.auth)
+    implementation(libs.supabase.storage)
+    implementation(libs.supabase.realtime)
 
     // Ktor (Supabase HTTP engine)
-        implementation(libs.ktor.client.android)
-        implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.android)
+    implementation(libs.ktor.client.core)
 
     // Images
-        implementation(libs.coil.compose)
+    implementation(libs.coil.compose)
 
     // Animations
-        implementation(libs.lottie.compose)
+    implementation(libs.lottie.compose)
 
     // ML Kit
-        implementation(libs.mlkit.barcode.scanning)
-        implementation(libs.mlkit.text.recognition)
+    implementation(libs.mlkit.barcode.scanning)
+    implementation(libs.mlkit.text.recognition)
 
     // DataStore
-        implementation(libs.datastore.preferences)
+    implementation(libs.datastore.preferences)
 
     // Coroutines
-        implementation(libs.coroutines.android)
+    implementation(libs.coroutines.android)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -118,6 +119,9 @@ dependencies {
 ktlint {
     android.set(true)
     ignoreFailures.set(false)
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+    }
     filter {
         exclude("**/build/**")
         exclude("**/generated/**")
