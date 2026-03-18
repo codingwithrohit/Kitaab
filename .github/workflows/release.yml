@@ -19,16 +19,10 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      - name: Create secrets file from GitHub secret
+      - name: Inject secrets into local.properties
         run: |
-          mkdir -p app/src/main/res/values
-          cat > app/src/main/res/values/secrets.xml << EOF
-          <?xml version="1.0" encoding="utf-8"?>
-          <resources>
-            <string name="supabase_url">${{ secrets.SUPABASE_URL }}</string>
-            <string name="supabase_anon_key">${{ secrets.SUPABASE_ANON_KEY }}</string>
-          </resources>
-          EOF
+          echo "supabase.url=${{ secrets.SUPABASE_URL }}" >> local.properties
+          echo "supabase.anonKey=${{ secrets.SUPABASE_ANON_KEY }}" >> local.properties
 
       - name: Create google-services.json from GitHub secret
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
