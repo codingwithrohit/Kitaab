@@ -15,22 +15,22 @@ enum class BottomNavItem(
 ) {
     Home(
         route = Route.Home.route,
-        icon  = Icons.Outlined.Home,
+        icon = Icons.Outlined.Home,
         label = "Home",
     ),
     Explore(
         route = Route.Explore.route,
-        icon  = Icons.Outlined.Explore,
+        icon = Icons.Outlined.Explore,
         label = "Explore",
     ),
     Inbox(
         route = Route.Inbox.route,
-        icon  = Icons.Outlined.Inbox,
+        icon = Icons.Outlined.Inbox,
         label = "Inbox",
     ),
     Profile(
         route = Route.Profile.route,
-        icon  = Icons.Outlined.AccountCircle,
+        icon = Icons.Outlined.AccountCircle,
         label = "Profile",
     ),
 }
