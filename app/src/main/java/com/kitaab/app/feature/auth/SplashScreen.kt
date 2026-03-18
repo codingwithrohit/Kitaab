@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,9 +41,10 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Teal700),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Teal700),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -53,29 +52,32 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
             verticalArrangement = Arrangement.Center,
         ) {
             BookStackIcon(
-                modifier = Modifier
-                    .scale(scale.value)
-                    .alpha(alpha.value)
+                modifier =
+                    Modifier
+                        .scale(scale.value)
+                        .alpha(alpha.value),
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "Kitaab",
-                style = TextStyle(
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Teal50,
-                    letterSpacing = (-0.5).sp,
-                ),
+                style =
+                    TextStyle(
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Teal50,
+                        letterSpacing = (-0.5).sp,
+                    ),
                 modifier = Modifier.alpha(alpha.value),
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "buy · sell · donate books",
-                style = TextStyle(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Teal500,
-                ),
+                style =
+                    TextStyle(
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Teal500,
+                    ),
                 modifier = Modifier.alpha(alpha.value),
             )
         }
@@ -86,7 +88,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 private fun BookStackIcon(modifier: Modifier = Modifier) {
     // Three stacked book rects — simple, recognisable, no library needed
     androidx.compose.foundation.Canvas(
-        modifier = modifier.size(80.dp)
+        modifier = modifier.size(80.dp),
     ) {
         val w = size.width
         val h = size.height

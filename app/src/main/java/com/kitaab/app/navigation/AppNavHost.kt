@@ -29,7 +29,7 @@ fun AppNavHost(
                     navController.navigate(Route.Onboarding.route) {
                         popUpTo(Route.Splash.route) { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable(Route.Onboarding.route) {
@@ -38,14 +38,14 @@ fun AppNavHost(
                     navController.navigate(Route.Login.route) {
                         popUpTo(Route.Onboarding.route) { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable(Route.Login.route) { PlaceholderScreen("Login") }
-        composable(Route.Home.route)    { PlaceholderScreen("Home") }
+        composable(Route.Home.route) { PlaceholderScreen("Home") }
         composable(Route.Explore.route) { PlaceholderScreen("Explore") }
-        composable(Route.Post.route)    { PlaceholderScreen("Post") }
-        composable(Route.Inbox.route)   { PlaceholderScreen("Inbox") }
+        composable(Route.Post.route) { PlaceholderScreen("Post") }
+        composable(Route.Inbox.route) { PlaceholderScreen("Inbox") }
         composable(Route.Profile.route) { PlaceholderScreen("Profile") }
     }
 }
@@ -54,10 +54,10 @@ fun AppNavHost(
 private fun PlaceholderScreen(name: String) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier         = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
     ) {
         Text(
-            text  = name,
+            text = name,
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
