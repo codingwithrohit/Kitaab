@@ -19,6 +19,7 @@ gradle-wrapper.jar
 captures/
 .externalNativeBuild/
 .cxx/
+.kotlin/
 
 # Secrets — never commit these
 google-services.json
