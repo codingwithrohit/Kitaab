@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SplashScreen
 
@@ -41,7 +42,18 @@ fun AppNavHost(
                 }
             )
         }
-        composable(Route.Login.route) { PlaceholderScreen("Login") }
+        composable(Route.Login.route) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onNavigateToSignUp = {
+                    // signup route — next feature branch
+                }
+            )
+        }
         composable(Route.Home.route)    { PlaceholderScreen("Home") }
         composable(Route.Explore.route) { PlaceholderScreen("Explore") }
         composable(Route.Post.route)    { PlaceholderScreen("Post") }
