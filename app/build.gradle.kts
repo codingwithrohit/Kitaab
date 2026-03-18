@@ -56,6 +56,8 @@ android {
 }
 
 dependencies {
+    // Splash Screen
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // Lifecycle ViewModel
     implementation(libs.androidx.lifecycle.viewmodel.compose)

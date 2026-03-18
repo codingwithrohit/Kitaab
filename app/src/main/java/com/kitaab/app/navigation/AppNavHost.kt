@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.kitaab.app.feature.auth.SplashScreen
 
 @Composable
 fun AppNavHost(
@@ -17,10 +18,19 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
 ) {
     NavHost(
-        navController    = navController,
-        startDestination = Route.Home.route,
-        modifier         = modifier,
+        navController = navController,
+        startDestination = Route.Splash.route,
+        modifier = modifier,
     ) {
+        composable(Route.Splash.route) {
+            SplashScreen(
+                onSplashFinished = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
         composable(Route.Home.route)    { PlaceholderScreen("Home") }
         composable(Route.Explore.route) { PlaceholderScreen("Explore") }
         composable(Route.Post.route)    { PlaceholderScreen("Post") }

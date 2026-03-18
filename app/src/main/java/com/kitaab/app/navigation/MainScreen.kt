@@ -1,6 +1,9 @@
 package com.kitaab.app.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -16,6 +19,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,17 +30,30 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onSplashReady: () -> Unit) {
     val navController = rememberNavController()
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val isSplashScreen = currentRoute == Route.Splash.route
+
+    if (isSplashScreen) {
+        LaunchedEffect(Unit) {
+            onSplashReady()
+        }
+    }
 
     Scaffold(
         bottomBar = {
-            KitaabBottomBar(navController = navController)
+            if (!isSplashScreen) {
+                KitaabBottomBar(navController = navController)
+            }
         },
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier      = Modifier.padding(innerPadding),
+            modifier = Modifier.padding(
+                if (isSplashScreen) PaddingValues(0.dp)
+                else innerPadding),
         )
     }
 }
@@ -47,8 +64,9 @@ private fun KitaabBottomBar(navController: NavHostController) {
     val currentRoute = backStackEntry?.destination?.route
 
     NavigationBar(
+        modifier = Modifier.navigationBarsPadding(),
         containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp, // flat — no shadow tint
+        tonalElevation = 0.dp,
     ) {
         BottomNavItem.entries.forEachIndexed { index, item ->
 
@@ -61,8 +79,6 @@ private fun KitaabBottomBar(navController: NavHostController) {
                 selected = currentRoute == item.route,
                 onClick  = {
                     navController.navigate(item.route) {
-                        // Pop back to start so back button does not
-                        // build up a huge backstack of tab screens
                         popUpTo(navController.graph.findStartDestination().id) {
                             saveState = true
                         }
