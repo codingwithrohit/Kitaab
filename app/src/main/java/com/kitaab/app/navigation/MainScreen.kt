@@ -33,9 +33,11 @@ fun MainScreen(onSplashReady: () -> Unit) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val isSplashScreen = currentRoute == Route.Splash.route
-            || currentRoute == Route.Onboarding.route
-            || currentRoute == Route.Login.route
+    val isSplashScreen =
+        currentRoute == Route.Splash.route ||
+            currentRoute == Route.Onboarding.route ||
+            currentRoute == Route.Login.route ||
+            currentRoute == Route.SignUp.route
 
     if (isSplashScreen) {
         LaunchedEffect(Unit) {

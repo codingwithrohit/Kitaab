@@ -8,6 +8,8 @@ sealed class Route(val route: String) {
 
     data object Login : Route("login")
 
+    data object SignUp : Route("signup")
+
     data object ProfileSetup : Route("profile_setup")
 
     // Main tabs

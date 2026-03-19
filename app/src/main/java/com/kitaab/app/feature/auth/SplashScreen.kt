@@ -23,13 +23,19 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.kitaab.app.data.remote.supabase
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal700
+import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(onSplashFinished: () -> Unit) {
+fun SplashScreen(
+    onSplashFinished: () -> Unit,
+    onNavigateToHome: () -> Unit,
+    onNavigateToOnboarding: () -> Unit,
+) {
     val scale = remember { Animatable(0.8f) }
     val alpha = remember { Animatable(0f) }
 
@@ -37,6 +43,12 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
         scale.animateTo(1f, animationSpec = tween(600))
         alpha.animateTo(1f, animationSpec = tween(400))
         delay(800)
+        val session = supabase.auth.currentSessionOrNull()
+        if (session != null) {
+            onNavigateToHome()
+        } else {
+            onNavigateToOnboarding()
+        }
         onSplashFinished()
     }
 
