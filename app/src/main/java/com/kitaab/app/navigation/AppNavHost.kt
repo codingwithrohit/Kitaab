@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
+import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
 
 @Composable
@@ -30,7 +31,17 @@ fun AppNavHost(
                     navController.navigate(Route.Onboarding.route) {
                         popUpTo(Route.Splash.route) { inclusive = true }
                     }
-                }
+                },
+                onNavigateToHome = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToOnboarding = {
+                    navController.navigate(Route.Onboarding.route) {
+                        popUpTo(Route.Splash.route) { inclusive = true }
+                    }
+                },
             )
         }
         composable(Route.Onboarding.route) {
@@ -39,7 +50,7 @@ fun AppNavHost(
                     navController.navigate(Route.Login.route) {
                         popUpTo(Route.Onboarding.route) { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable(Route.Login.route) {
@@ -50,14 +61,26 @@ fun AppNavHost(
                     }
                 },
                 onNavigateToSignUp = {
-                    // signup route — next feature branch
-                }
+                    navController.navigate(Route.SignUp.route)
+                },
             )
         }
-        composable(Route.Home.route)    { PlaceholderScreen("Home") }
+        composable(Route.SignUp.route) {
+            SignUpScreen(
+                onSignUpSuccess = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.popBackStack()
+                },
+            )
+        }
+        composable(Route.Home.route) { PlaceholderScreen("Home") }
         composable(Route.Explore.route) { PlaceholderScreen("Explore") }
-        composable(Route.Post.route)    { PlaceholderScreen("Post") }
-        composable(Route.Inbox.route)   { PlaceholderScreen("Inbox") }
+        composable(Route.Post.route) { PlaceholderScreen("Post") }
+        composable(Route.Inbox.route) { PlaceholderScreen("Inbox") }
         composable(Route.Profile.route) { PlaceholderScreen("Profile") }
     }
 }
@@ -66,10 +89,10 @@ fun AppNavHost(
 private fun PlaceholderScreen(name: String) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier         = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
     ) {
         Text(
-            text  = name,
+            text = name,
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
         )
