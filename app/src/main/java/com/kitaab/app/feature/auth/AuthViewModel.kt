@@ -42,12 +42,21 @@ data class SignUpUiState(
     val isSuccess: Boolean = false,
 )
 
+data class DeleteAccountUiState(
+    val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
+    val error: String? = null,
+)
+
 class AuthViewModel : ViewModel() {
     private val _loginState = MutableStateFlow(LoginUiState())
     val loginState = _loginState.asStateFlow()
 
     private val _signUpState = MutableStateFlow(SignUpUiState())
     val signUpState = _signUpState.asStateFlow()
+
+    private val _deleteAccountState = MutableStateFlow(DeleteAccountUiState())
+    val deleteAccountState = _deleteAccountState.asStateFlow()
 
     // ── Login ────────────────────────────────────────────────────────────────
 
@@ -191,5 +200,25 @@ class AuthViewModel : ViewModel() {
         }
 
         return valid
+    }
+
+    // Delete Account
+    fun deleteAccount() {
+        viewModelScope.launch {
+            _deleteAccountState.update { it.copy(isLoading = true, error = null) }
+            try {
+                supabase.postgrest.rpc("delete_user")
+                supabase.auth.signOut()
+                _deleteAccountState.update { it.copy(isLoading = false, isSuccess = true) }
+            } catch (e: Exception) {
+                _deleteAccountState.update {
+                    it.copy(isLoading = false, error = e.message ?: "Failed to delete account")
+                }
+            }
+        }
+    }
+
+    fun clearDeleteAccountError() {
+        _deleteAccountState.update { it.copy(error = null) }
     }
 }
