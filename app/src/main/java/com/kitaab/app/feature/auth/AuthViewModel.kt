@@ -2,23 +2,18 @@ package com.kitaab.app.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kitaab.app.data.remote.supabase
-import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.Google
-import io.github.jan.supabase.auth.providers.builtin.Email
-import io.github.jan.supabase.postgrest.postgrest
+import com.kitaab.app.domain.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
+import javax.inject.Inject
 
-@Serializable
-data class UserRow(
-    val id: String,
-    val name: String,
-    val email: String,
-)
+// ── UiState definitions ──────────────────────────────────────────────────────
 
 data class LoginUiState(
     val email: String = "",
@@ -27,7 +22,6 @@ data class LoginUiState(
     val passwordError: String? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isSuccess: Boolean = false,
 )
 
 data class SignUpUiState(
@@ -39,16 +33,30 @@ data class SignUpUiState(
     val confirmPasswordError: String? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isSuccess: Boolean = false,
 )
 
 data class DeleteAccountUiState(
     val isLoading: Boolean = false,
-    val isSuccess: Boolean = false,
     val error: String? = null,
 )
 
-class AuthViewModel : ViewModel() {
+// ── One-shot navigation events ───────────────────────────────────────────────
+// Using Channel instead of isSuccess: Boolean in UiState prevents the event
+// from firing again on recomposition, rotation, or back-stack restore.
+
+sealed interface AuthEvent {
+    data object LoginSuccess : AuthEvent
+    data object SignUpSuccess : AuthEvent
+    data object DeleteAccountSuccess : AuthEvent
+}
+
+// ── ViewModel ────────────────────────────────────────────────────────────────
+
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+) : ViewModel() {
+
     private val _loginState = MutableStateFlow(LoginUiState())
     val loginState = _loginState.asStateFlow()
 
@@ -57,6 +65,15 @@ class AuthViewModel : ViewModel() {
 
     private val _deleteAccountState = MutableStateFlow(DeleteAccountUiState())
     val deleteAccountState = _deleteAccountState.asStateFlow()
+
+    // Buffered so events are not dropped if the screen is not yet collecting
+    private val _events = Channel<AuthEvent>(Channel.BUFFERED)
+    val events = _events.receiveAsFlow()
+
+    // In-flight guards — prevents double-tap from firing two network calls
+    private var loginJob: Job? = null
+    private var signUpJob: Job? = null
+    private var deleteJob: Job? = null
 
     // ── Login ────────────────────────────────────────────────────────────────
 
@@ -69,35 +86,31 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signInWithEmail() {
+        if (loginJob?.isActive == true) return
         if (!validateLoginInputs()) return
-        viewModelScope.launch {
+
+        loginJob = viewModelScope.launch {
             _loginState.update { it.copy(isLoading = true, error = null) }
-            try {
-                supabase.auth.signInWith(Email) {
-                    email = _loginState.value.email.trim()
-                    password = _loginState.value.password
-                }
-                _loginState.update { it.copy(isLoading = false, isSuccess = true) }
-            } catch (e: Exception) {
-                _loginState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Sign in failed")
-                }
-            }
+
+            authRepository.signIn(
+                email = _loginState.value.email.trim(),
+                password = _loginState.value.password,
+            ).fold(
+                onSuccess = {
+                    _loginState.update { it.copy(isLoading = false) }
+                    _events.send(AuthEvent.LoginSuccess)
+                },
+                onFailure = { cause ->
+                    _loginState.update { it.copy(isLoading = false, error = cause.message) }
+                },
+            )
         }
     }
 
+    // Google Sign-In — wired in Phase 2 with Credential Manager + OAuth redirect.
+    // Intentionally left as a no-op stub so the UI can keep the button hidden.
     fun signInWithGoogle() {
-        viewModelScope.launch {
-            _loginState.update { it.copy(isLoading = true, error = null) }
-            try {
-                supabase.auth.signInWith(Google)
-                _loginState.update { it.copy(isLoading = false, isSuccess = true) }
-            } catch (e: Exception) {
-                _loginState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Google sign in failed")
-                }
-            }
-        }
+        // TODO Phase 2: implement with CredentialManager + Supabase OAuth redirect
     }
 
     fun clearLoginError() {
@@ -143,28 +156,24 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signUpWithEmail() {
+        if (signUpJob?.isActive == true) return
         if (!validateSignUpInputs()) return
-        viewModelScope.launch {
+
+        signUpJob = viewModelScope.launch {
             _signUpState.update { it.copy(isLoading = true, error = null) }
-            try {
-                supabase.auth.signUpWith(Email) {
-                    email = _signUpState.value.email.trim()
-                    password = _signUpState.value.password
-                }
-                val userId = supabase.auth.currentUserOrNull()?.id ?: return@launch
-                supabase.postgrest["users"].insert(
-                    UserRow(
-                        id = userId,
-                        email = _signUpState.value.email.trim(),
-                        name = "",
-                    ),
-                )
-                _signUpState.update { it.copy(isLoading = false, isSuccess = true) }
-            } catch (e: Exception) {
-                _signUpState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Sign up failed")
-                }
-            }
+
+            authRepository.signUp(
+                email = _signUpState.value.email.trim(),
+                password = _signUpState.value.password,
+            ).fold(
+                onSuccess = {
+                    _signUpState.update { it.copy(isLoading = false) }
+                    _events.send(AuthEvent.SignUpSuccess)
+                },
+                onFailure = { cause ->
+                    _signUpState.update { it.copy(isLoading = false, error = cause.message) }
+                },
+            )
         }
     }
 
@@ -202,19 +211,25 @@ class AuthViewModel : ViewModel() {
         return valid
     }
 
-    // Delete Account
+    // ── Delete account ───────────────────────────────────────────────────────
+
     fun deleteAccount() {
-        viewModelScope.launch {
+        if (deleteJob?.isActive == true) return
+
+        deleteJob = viewModelScope.launch {
             _deleteAccountState.update { it.copy(isLoading = true, error = null) }
-            try {
-                supabase.postgrest.rpc("delete_user")
-                supabase.auth.signOut()
-                _deleteAccountState.update { it.copy(isLoading = false, isSuccess = true) }
-            } catch (e: Exception) {
-                _deleteAccountState.update {
-                    it.copy(isLoading = false, error = e.message ?: "Failed to delete account")
-                }
-            }
+
+            authRepository.deleteAccount().fold(
+                onSuccess = {
+                    _deleteAccountState.update { it.copy(isLoading = false) }
+                    _events.send(AuthEvent.DeleteAccountSuccess)
+                },
+                onFailure = { cause ->
+                    _deleteAccountState.update {
+                        it.copy(isLoading = false, error = cause.message)
+                    }
+                },
+            )
         }
     }
 

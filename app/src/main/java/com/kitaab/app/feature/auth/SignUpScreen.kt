@@ -51,7 +51,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.WarmMuted
 
@@ -59,7 +59,7 @@ import com.kitaab.app.ui.theme.WarmMuted
 fun SignUpScreen(
     onSignUpSuccess: () -> Unit,
     onNavigateToLogin: () -> Unit,
-    viewModel: AuthViewModel = viewModel(),
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.signUpState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -67,8 +67,14 @@ fun SignUpScreen(
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     var confirmPasswordVisible by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) onSignUpSuccess()
+    // One-shot event collector — fires exactly once per success, survives recomposition
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.SignUpSuccess -> onSignUpSuccess()
+                else -> Unit
+            }
+        }
     }
 
     LaunchedEffect(state.error) {
@@ -93,7 +99,6 @@ fun SignUpScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             AppLogoMark()
-
             Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "Create account",
@@ -113,19 +118,21 @@ fun SignUpScreen(
                 onValueChange = { viewModel.onSignUpEmailChanged(it) },
                 label = { Text("Email address") },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Email, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Outlined.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
                 },
                 isError = state.emailError != null,
                 supportingText = state.emailError?.let { { Text(it) } },
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next,
-                    ),
-                keyboardActions =
-                    KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                    ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -137,7 +144,11 @@ fun SignUpScreen(
                 onValueChange = { viewModel.onSignUpPasswordChanged(it) },
                 label = { Text("Password") },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Outlined.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
                 },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -151,15 +162,13 @@ fun SignUpScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 isError = state.passwordError != null,
                 supportingText = state.passwordError?.let { { Text(it) } },
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Next,
-                    ),
-                keyboardActions =
-                    KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                    ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -171,7 +180,11 @@ fun SignUpScreen(
                 onValueChange = { viewModel.onConfirmPasswordChanged(it) },
                 label = { Text("Confirm password") },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Outlined.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
                 },
                 trailingIcon = {
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
@@ -185,15 +198,13 @@ fun SignUpScreen(
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 isError = state.confirmPasswordError != null,
                 supportingText = state.confirmPasswordError?.let { { Text(it) } },
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                    ),
-                keyboardActions =
-                    KeyboardActions(
-                        onDone = { focusManager.clearFocus() },
-                    ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() },
+                ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -205,10 +216,9 @@ fun SignUpScreen(
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(

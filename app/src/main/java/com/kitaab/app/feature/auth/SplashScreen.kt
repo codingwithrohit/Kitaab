@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,40 +25,48 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.kitaab.app.data.remote.supabase
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal700
-import io.github.jan.supabase.auth.auth
-import kotlinx.coroutines.delay
 
+// SplashScreen does not receive a ViewModel directly —
+// it delegates the session check to SplashViewModel so the
+// coroutine survives configuration changes.
 @Composable
 fun SplashScreen(
-    onSplashFinished: () -> Unit,
     onNavigateToHome: () -> Unit,
     onNavigateToOnboarding: () -> Unit,
+    viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val scale = remember { Animatable(0.8f) }
     val alpha = remember { Animatable(0f) }
 
+    // Run animation in parallel with session check
     LaunchedEffect(Unit) {
         scale.animateTo(1f, animationSpec = tween(600))
         alpha.animateTo(1f, animationSpec = tween(400))
-        delay(800)
-        val session = supabase.auth.currentSessionOrNull()
-        if (session != null) {
-            onNavigateToHome()
-        } else {
-            onNavigateToOnboarding()
-        }
-        onSplashFinished()
     }
 
+    // Collect one-shot navigation event from SplashViewModel
+    LaunchedEffect(Unit) {
+        viewModel.destination.collect { destination ->
+            when (destination) {
+                SplashDestination.Home -> onNavigateToHome()
+                SplashDestination.Onboarding -> onNavigateToOnboarding()
+            }
+        }
+    }
+
+    // Background must fill the entire screen including behind system bars.
+    // Do NOT use statusBarsPadding() or navigationBarsPadding() here —
+    // that would leave the system bar regions transparent/white.
+    // The Scaffold in MainScreen adds its own padding on non-splash screens.
     Box(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(Teal700),
+        modifier = Modifier
+            .fillMaxSize()
+            // This draws Teal700 behind the status bar AND the navigation bar
+            .background(Teal700),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -64,32 +74,29 @@ fun SplashScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             BookStackIcon(
-                modifier =
-                    Modifier
-                        .scale(scale.value)
-                        .alpha(alpha.value),
+                modifier = Modifier
+                    .scale(scale.value)
+                    .alpha(alpha.value),
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "Kitaab",
-                style =
-                    TextStyle(
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Teal50,
-                        letterSpacing = (-0.5).sp,
-                    ),
+                style = TextStyle(
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Teal50,
+                    letterSpacing = (-0.5).sp,
+                ),
                 modifier = Modifier.alpha(alpha.value),
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "buy · sell · donate books",
-                style =
-                    TextStyle(
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Normal,
-                        color = Teal500,
-                    ),
+                style = TextStyle(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Teal500,
+                ),
                 modifier = Modifier.alpha(alpha.value),
             )
         }
@@ -98,7 +105,6 @@ fun SplashScreen(
 
 @Composable
 private fun BookStackIcon(modifier: Modifier = Modifier) {
-    // Three stacked book rects — simple, recognisable, no library needed
     androidx.compose.foundation.Canvas(
         modifier = modifier.size(80.dp),
     ) {
