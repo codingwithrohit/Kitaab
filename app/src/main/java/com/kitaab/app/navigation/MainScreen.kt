@@ -33,35 +33,33 @@ fun MainScreen(onSplashReady: () -> Unit) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val isSplashScreen =
-        currentRoute == Route.Splash.route ||
+
+    val isAuthScreen = currentRoute == Route.Splash.route ||
             currentRoute == Route.Onboarding.route ||
             currentRoute == Route.Login.route ||
             currentRoute == Route.SignUp.route
 
-    if (isSplashScreen) {
-        LaunchedEffect(Unit) {
-            onSplashReady()
-        }
+    // Dismiss the system splash screen as soon as MainScreen first composes.
+    // Our custom SplashScreen composable takes over immediately after.
+    // This must not be gated on navigation state — just fire once on entry.
+    LaunchedEffect(Unit) {
+        onSplashReady()
     }
 
     Scaffold(
         bottomBar = {
-            if (!isSplashScreen) {
+            if (!isAuthScreen) {
                 KitaabBottomBar(navController = navController)
             }
         },
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier =
-                Modifier.padding(
-                    if (isSplashScreen) {
-                        PaddingValues(0.dp)
-                    } else {
-                        innerPadding
-                    },
-                ),
+            // Auth screens (including splash) must fill the entire window —
+            // no bottom bar padding applied. Main screens get the scaffold padding.
+            modifier = Modifier.padding(
+                if (isAuthScreen) PaddingValues(0.dp) else innerPadding,
+            ),
         )
     }
 }
@@ -106,14 +104,13 @@ private fun KitaabBottomBar(navController: NavHostController) {
                         style = MaterialTheme.typography.labelSmall,
                     )
                 },
-                colors =
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    ),
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
             )
         }
     }
@@ -121,7 +118,6 @@ private fun KitaabBottomBar(navController: NavHostController) {
 
 @Composable
 private fun PostFabSlot(navController: NavHostController) {
-    // Empty NavigationBarItem as a spacer, FAB sits on top via Box
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.size(64.dp),

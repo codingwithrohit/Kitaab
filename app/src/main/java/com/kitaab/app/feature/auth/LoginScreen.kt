@@ -54,7 +54,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal700
@@ -65,15 +65,21 @@ import com.kitaab.app.ui.theme.WarmMuted
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     onNavigateToSignUp: () -> Unit,
-    viewModel: AuthViewModel = viewModel(),
+    viewModel: AuthViewModel = hiltViewModel(),
 ) {
     val state by viewModel.loginState.collectAsState()
     val focusManager = LocalFocusManager.current
     val snackbarHostState = remember { SnackbarHostState() }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(state.isSuccess) {
-        if (state.isSuccess) onLoginSuccess()
+    // One-shot event collector — fires exactly once per success, survives recomposition
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is AuthEvent.LoginSuccess -> onLoginSuccess()
+                else -> Unit
+            }
+        }
     }
 
     LaunchedEffect(state.error) {
@@ -112,19 +118,13 @@ fun LoginScreen(
                 color = WarmMuted,
             )
             Spacer(modifier = Modifier.height(36.dp))
-            GoogleSignInButton(
-                onClick = { viewModel.signInWithGoogle() },
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = WarmBorder)
-                Text(text = "  or  ", fontSize = 12.sp, color = WarmMuted)
-                HorizontalDivider(modifier = Modifier.weight(1f), color = WarmBorder)
-            }
-            Spacer(modifier = Modifier.height(24.dp))
+
+            // Google sign-in is hidden until Phase 2 — OAuth redirect not yet configured
+            // GoogleSignInButton(onClick = { viewModel.signInWithGoogle() })
+            // Spacer(modifier = Modifier.height(24.dp))
+            // Row(…) { HorizontalDivider … "or" … HorizontalDivider }
+            // Spacer(modifier = Modifier.height(24.dp))
+
             OutlinedTextField(
                 value = state.email,
                 onValueChange = { viewModel.onLoginEmailChanged(it) },
@@ -132,17 +132,19 @@ fun LoginScreen(
                 isError = state.emailError != null,
                 supportingText = state.emailError?.let { { Text(it) } },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Email, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Outlined.Email,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
                 },
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Email,
-                        imeAction = ImeAction.Next,
-                    ),
-                keyboardActions =
-                    KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                    ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Email,
+                    imeAction = ImeAction.Next,
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -156,7 +158,11 @@ fun LoginScreen(
                 isError = state.passwordError != null,
                 supportingText = state.passwordError?.let { { Text(it) } },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Lock, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(
+                        Icons.Outlined.Lock,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
                 },
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -168,15 +174,13 @@ fun LoginScreen(
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions =
-                    KeyboardOptions(
-                        keyboardType = KeyboardType.Password,
-                        imeAction = ImeAction.Done,
-                    ),
-                keyboardActions =
-                    KeyboardActions(
-                        onDone = { focusManager.clearFocus() },
-                    ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { focusManager.clearFocus() },
+                ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -188,10 +192,9 @@ fun LoginScreen(
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
@@ -257,64 +260,6 @@ fun AppLogoMark() {
             fontSize = 20.sp,
             fontWeight = FontWeight.Medium,
             color = Teal700,
-        )
-    }
-}
-
-@Composable
-private fun GoogleSignInButton(onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        colors =
-            ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        shape = RoundedCornerShape(12.dp),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(52.dp)
-                .border(1.dp, WarmBorder, RoundedCornerShape(12.dp)),
-    ) {
-        // G logo using Canvas — avoids needing an image asset
-        androidx.compose.foundation.Canvas(modifier = Modifier.size(18.dp)) {
-            val w = size.width
-            val h = size.height
-            drawArc(
-                color = Color(0xFF4285F4),
-                startAngle = -30f,
-                sweepAngle = 120f,
-                useCenter = false,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
-            )
-            drawArc(
-                color = Color(0xFF34A853),
-                startAngle = 90f,
-                sweepAngle = 110f,
-                useCenter = false,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
-            )
-            drawArc(
-                color = Color(0xFFFBBC05),
-                startAngle = 200f,
-                sweepAngle = 80f,
-                useCenter = false,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
-            )
-            drawArc(
-                color = Color(0xFFEA4335),
-                startAngle = 280f,
-                sweepAngle = 50f,
-                useCenter = false,
-                style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
-            )
-        }
-        Spacer(modifier = Modifier.size(10.dp))
-        Text(
-            text = "Continue with Google",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
