@@ -3,7 +3,9 @@ package com.kitaab.app.data.repository
 import com.kitaab.app.domain.repository.AuthRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
@@ -21,7 +23,6 @@ class AuthRepositoryImpl @Inject constructor(
                 this.email = email
                 this.password = password
             }
-            // signInWith returns Unit — runCatching correctly infers Result<Unit>
         }.mapError()
 
     override suspend fun signUp(email: String, password: String): Result<Unit> =
@@ -31,9 +32,6 @@ class AuthRepositoryImpl @Inject constructor(
                 this.password = password
             }
 
-            // Session is available immediately when email confirmation is OFF.
-            // Use currentSessionOrNull()?.user — NOT currentUserOrNull() which can
-            // return null before the session propagates internally.
             val user = supabase.auth.currentSessionOrNull()?.user
                 ?: error(
                     "Session not available after signup. " +
@@ -49,7 +47,43 @@ class AuthRepositoryImpl @Inject constructor(
                 )
             )
 
-            // Explicit Unit ensures runCatching<Unit> regardless of insert()'s return type
+            Unit
+        }.mapError()
+
+    override suspend fun signInWithGoogle(idToken: String): Result<Unit> =
+        runCatching {
+            // Exchange the Google ID token with Supabase.
+            // Supabase creates or retrieves the user, then returns a session.
+            supabase.auth.signInWith(IDToken) {
+                this.idToken = idToken
+                this.provider = Google
+            }
+
+            // Insert a users row only if this is a brand-new account.
+            // Supabase does not insert into public.users automatically.
+            val user = supabase.auth.currentSessionOrNull()?.user
+                ?: error("Session not available after Google sign-in.")
+
+            // Check if the user row already exists to avoid duplicate insert errors.
+            val existing = runCatching {
+                supabase.postgrest["users"]
+                    .select { filter { eq("id", user.id) } }
+            }.getOrNull()
+
+            val rowExists = existing != null &&
+                    existing.data.trimIndent().length > 2  // "[]" means empty
+
+            if (!rowExists) {
+                supabase.postgrest["users"].insert(
+                    mapOf(
+                        "id" to user.id,
+                        "email" to (user.email ?: ""),
+                        "name" to (user.userMetadata?.get("full_name")?.toString()
+                            ?.trim('"') ?: ""),
+                    )
+                )
+            }
+
             Unit
         }.mapError()
 
@@ -65,8 +99,6 @@ class AuthRepositoryImpl @Inject constructor(
             Unit
         }.mapError()
 
-    // Maps Supabase-specific exceptions to clean user-facing messages.
-    // Never let raw Ktor or Supabase stack traces reach the UI.
     private fun <T> Result<T>.mapError(): Result<T> =
         recoverCatching { cause ->
             val message = when (cause) {

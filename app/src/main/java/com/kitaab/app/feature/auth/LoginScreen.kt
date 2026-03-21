@@ -46,6 +46,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -69,10 +70,10 @@ fun LoginScreen(
 ) {
     val state by viewModel.loginState.collectAsState()
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
 
-    // One-shot event collector — fires exactly once per success, survives recomposition
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
@@ -94,13 +95,12 @@ fun LoginScreen(
         containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 24.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .statusBarsPadding()
+                .navigationBarsPadding()
+                .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.Center,
         ) {
             AppLogoMark()
@@ -119,11 +119,21 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(36.dp))
 
-            // Google sign-in is hidden until Phase 2 — OAuth redirect not yet configured
-            // GoogleSignInButton(onClick = { viewModel.signInWithGoogle() })
-            // Spacer(modifier = Modifier.height(24.dp))
-            // Row(…) { HorizontalDivider … "or" … HorizontalDivider }
-            // Spacer(modifier = Modifier.height(24.dp))
+            // Google Sign-In button — now fully wired
+            GoogleSignInButton(
+                onClick = { viewModel.signInWithGoogle(context) },
+                isLoading = state.isLoading,
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                HorizontalDivider(modifier = Modifier.weight(1f), color = WarmBorder)
+                Text(text = "  or  ", fontSize = 12.sp, color = WarmMuted)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = WarmBorder)
+            }
+            Spacer(modifier = Modifier.height(24.dp))
 
             OutlinedTextField(
                 value = state.email,
@@ -261,6 +271,73 @@ fun AppLogoMark() {
             fontWeight = FontWeight.Medium,
             color = Teal700,
         )
+    }
+}
+
+@Composable
+private fun GoogleSignInButton(
+    onClick: () -> Unit,
+    isLoading: Boolean,
+) {
+    Button(
+        onClick = onClick,
+        enabled = !isLoading,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        shape = RoundedCornerShape(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(52.dp)
+            .border(1.dp, WarmBorder, RoundedCornerShape(12.dp)),
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                color = Teal500,
+                strokeWidth = 2.dp,
+                modifier = Modifier.size(20.dp),
+            )
+        } else {
+            // G logo drawn with Canvas — no image asset needed
+            androidx.compose.foundation.Canvas(modifier = Modifier.size(18.dp)) {
+                val w = size.width
+                drawArc(
+                    color = Color(0xFF4285F4),
+                    startAngle = -30f,
+                    sweepAngle = 120f,
+                    useCenter = false,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
+                )
+                drawArc(
+                    color = Color(0xFF34A853),
+                    startAngle = 90f,
+                    sweepAngle = 110f,
+                    useCenter = false,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
+                )
+                drawArc(
+                    color = Color(0xFFFBBC05),
+                    startAngle = 200f,
+                    sweepAngle = 80f,
+                    useCenter = false,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
+                )
+                drawArc(
+                    color = Color(0xFFEA4335),
+                    startAngle = 280f,
+                    sweepAngle = 50f,
+                    useCenter = false,
+                    style = androidx.compose.ui.graphics.drawscope.Stroke(width = w * 0.18f),
+                )
+            }
+            Spacer(modifier = Modifier.size(10.dp))
+            Text(
+                text = "Continue with Google",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
     }
 }
 
