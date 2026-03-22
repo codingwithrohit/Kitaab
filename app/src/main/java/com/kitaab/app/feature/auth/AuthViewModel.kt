@@ -28,6 +28,7 @@ data class LoginUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val isLoading: Boolean = false,
+    val isGoogleLoading: Boolean = false,
     val error: String? = null,
 )
 
@@ -122,7 +123,7 @@ class AuthViewModel @Inject constructor(
         if (googleJob?.isActive == true) return
 
         googleJob = viewModelScope.launch {
-            _loginState.update { it.copy(isLoading = true, error = null) }
+            _loginState.update { it.copy(isGoogleLoading = true, error = null) }
 
             try {
                 // Build the Google ID token request
@@ -150,22 +151,22 @@ class AuthViewModel @Inject constructor(
                 // Exchange the token with Supabase
                 authRepository.signInWithGoogle(idToken).fold(
                     onSuccess = {
-                        _loginState.update { it.copy(isLoading = false) }
+                        _loginState.update { it.copy(isGoogleLoading = false) }
                         _events.send(AuthEvent.LoginSuccess)
                     },
                     onFailure = { cause ->
                         _loginState.update {
-                            it.copy(isLoading = false, error = cause.message)
+                            it.copy(isGoogleLoading = false, error = cause.message)
                         }
                     },
                 )
             } catch (e: GetCredentialCancellationException) {
                 // User dismissed the picker — not an error, just reset loading
-                _loginState.update { it.copy(isLoading = false) }
+                _loginState.update { it.copy(isGoogleLoading = false) }
             } catch (e: Exception) {
                 _loginState.update {
                     it.copy(
-                        isLoading = false,
+                        isGoogleLoading = false,
                         error = when {
                             e.message?.contains("No credentials available", ignoreCase = true) == true ->
                                 "No Google account found on this device."

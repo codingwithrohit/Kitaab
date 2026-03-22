@@ -4,29 +4,33 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import com.kitaab.app.feature.auth.SplashViewModel
 import com.kitaab.app.navigation.MainScreen
 import com.kitaab.app.ui.theme.KitaabTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private var keepSplash = true
+    private val splashViewModel: SplashViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
-        splashScreen.setKeepOnScreenCondition { keepSplash }
+
+        splashScreen.setKeepOnScreenCondition {
+            !splashViewModel.isReady.value
+        }
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             KitaabTheme {
-                MainScreen(
-                    onSplashReady = {
-                        keepSplash = false
-                    },
-                )
+                MainScreen()
             }
         }
     }
