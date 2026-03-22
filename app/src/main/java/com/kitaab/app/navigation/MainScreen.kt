@@ -18,7 +18,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,22 +28,16 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun MainScreen(onSplashReady: () -> Unit) {
+fun MainScreen() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
-    val isAuthScreen = currentRoute == Route.Splash.route ||
+    val isAuthScreen = currentRoute == null ||
+            currentRoute == Route.Splash.route ||
             currentRoute == Route.Onboarding.route ||
             currentRoute == Route.Login.route ||
             currentRoute == Route.SignUp.route
-
-    // Dismiss the system splash screen as soon as MainScreen first composes.
-    // Our custom SplashScreen composable takes over immediately after.
-    // This must not be gated on navigation state — just fire once on entry.
-    LaunchedEffect(Unit) {
-        onSplashReady()
-    }
 
     Scaffold(
         bottomBar = {
@@ -55,8 +48,6 @@ fun MainScreen(onSplashReady: () -> Unit) {
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            // Auth screens (including splash) must fill the entire window —
-            // no bottom bar padding applied. Main screens get the scaffold padding.
             modifier = Modifier.padding(
                 if (isAuthScreen) PaddingValues(0.dp) else innerPadding,
             ),
@@ -76,7 +67,7 @@ private fun KitaabBottomBar(navController: NavHostController) {
     ) {
         BottomNavItem.entries.forEachIndexed { index, item ->
 
-            // Insert the FAB slot between Explore (index 1) and Inbox (index 2)
+            // FAB slot sits between Explore (index 1) and Inbox (index 2)
             if (index == 2) {
                 PostFabSlot(navController = navController)
             }

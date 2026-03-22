@@ -122,7 +122,8 @@ fun LoginScreen(
             // Google Sign-In button — now fully wired
             GoogleSignInButton(
                 onClick = { viewModel.signInWithGoogle(context) },
-                isLoading = state.isLoading,
+                isLoading = state.isGoogleLoading,
+                enabled = !state.isLoading && !state.isGoogleLoading
             )
             Spacer(modifier = Modifier.height(24.dp))
             Row(
@@ -199,7 +200,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
             Button(
                 onClick = { viewModel.signInWithEmail() },
-                enabled = !state.isLoading,
+                enabled = !state.isLoading && !state.isGoogleLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
@@ -278,10 +279,11 @@ fun AppLogoMark() {
 private fun GoogleSignInButton(
     onClick: () -> Unit,
     isLoading: Boolean,
+    enabled: Boolean = true,
 ) {
     Button(
         onClick = onClick,
-        enabled = !isLoading,
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),

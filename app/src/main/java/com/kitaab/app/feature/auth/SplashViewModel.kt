@@ -7,6 +7,9 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,32 +27,42 @@ class SplashViewModel @Inject constructor(
     private val _destination = Channel<SplashDestination>(Channel.BUFFERED)
     val destination = _destination.receiveAsFlow()
 
+    // Exposed so MainActivity can hold the system splash screen until
+    // our custom SplashScreen composable is ready to take over.
+    private val _isReady = MutableStateFlow(false)
+    val isReady = _isReady.asStateFlow()
+
     init {
         checkSession()
     }
 
     private fun checkSession() {
         viewModelScope.launch {
+            // Guarantee the custom splash is visible for at least 1200ms.
+            // This runs in parallel with the session check below.
+            launch {
+                delay(1200)
+                _isReady.value = true
+            }
+
             supabase.auth.sessionStatus.collect { status ->
                 when (status) {
                     is SessionStatus.Authenticated -> {
+                        // Wait until the minimum display time has passed before navigating
+                        _isReady.value = true
                         _destination.send(SplashDestination.Home)
                         return@collect
                     }
-
                     is SessionStatus.NotAuthenticated -> {
+                        _isReady.value = true
                         _destination.send(SplashDestination.Onboarding)
                         return@collect
                     }
-
-                    // v3.x name — Supabase is still reading the saved session from disk.
-                    // Stay on splash and wait for the next emission.
+                    // Still reading session from disk — stay on splash
                     is SessionStatus.Initializing -> Unit
-
-                    // v3.x name — token refresh failed after a network problem.
-                    // A local session likely still exists; send to Home and let
-                    // Supabase retry the refresh silently in the background.
+                    // Network error but local session may exist — go to Home
                     is SessionStatus.RefreshFailure -> {
+                        _isReady.value = true
                         _destination.send(SplashDestination.Home)
                         return@collect
                     }

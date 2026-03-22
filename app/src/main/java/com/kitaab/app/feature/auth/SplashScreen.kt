@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,9 +28,6 @@ import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal700
 
-// SplashScreen does not receive a ViewModel directly —
-// it delegates the session check to SplashViewModel so the
-// coroutine survives configuration changes.
 @Composable
 fun SplashScreen(
     onNavigateToHome: () -> Unit,
@@ -42,13 +37,13 @@ fun SplashScreen(
     val scale = remember { Animatable(0.8f) }
     val alpha = remember { Animatable(0f) }
 
-    // Run animation in parallel with session check
+    // Run animation immediately — this composable is already on screen
     LaunchedEffect(Unit) {
         scale.animateTo(1f, animationSpec = tween(600))
         alpha.animateTo(1f, animationSpec = tween(400))
     }
 
-    // Collect one-shot navigation event from SplashViewModel
+    // Collect the one-shot destination from SplashViewModel
     LaunchedEffect(Unit) {
         viewModel.destination.collect { destination ->
             when (destination) {
@@ -58,14 +53,12 @@ fun SplashScreen(
         }
     }
 
-    // Background must fill the entire screen including behind system bars.
-    // Do NOT use statusBarsPadding() or navigationBarsPadding() here —
-    // that would leave the system bar regions transparent/white.
-    // The Scaffold in MainScreen adds its own padding on non-splash screens.
+    // fillMaxSize + background(Teal700) draws behind ALL system bars.
+    // Do NOT add statusBarsPadding/navigationBarsPadding here — that would
+    // leave white strips at top and bottom.
     Box(
         modifier = Modifier
             .fillMaxSize()
-            // This draws Teal700 behind the status bar AND the navigation bar
             .background(Teal700),
         contentAlignment = Alignment.Center,
     ) {
@@ -111,28 +104,24 @@ private fun BookStackIcon(modifier: Modifier = Modifier) {
         val w = size.width
         val h = size.height
 
-        // Book 1 — back, tallest
         drawRoundRect(
             color = Teal500,
             topLeft = androidx.compose.ui.geometry.Offset(w * 0.1f, h * 0.05f),
             size = androidx.compose.ui.geometry.Size(w * 0.55f, h * 0.85f),
             cornerRadius = androidx.compose.ui.geometry.CornerRadius(8f),
         )
-        // Book 2 — middle
         drawRoundRect(
             color = Teal50.copy(alpha = 0.85f),
             topLeft = androidx.compose.ui.geometry.Offset(w * 0.3f, h * 0.15f),
             size = androidx.compose.ui.geometry.Size(w * 0.55f, h * 0.75f),
             cornerRadius = androidx.compose.ui.geometry.CornerRadius(8f),
         )
-        // Book 3 — front, shortest
         drawRoundRect(
             color = Color(0xFF9FE1CB),
             topLeft = androidx.compose.ui.geometry.Offset(w * 0.5f, h * 0.25f),
             size = androidx.compose.ui.geometry.Size(w * 0.42f, h * 0.62f),
             cornerRadius = androidx.compose.ui.geometry.CornerRadius(8f),
         )
-        // Shelf line
         drawRoundRect(
             color = Color(0xFF085041),
             topLeft = androidx.compose.ui.geometry.Offset(0f, h * 0.88f),
