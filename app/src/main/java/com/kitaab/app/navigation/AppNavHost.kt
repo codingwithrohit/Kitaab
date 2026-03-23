@@ -22,6 +22,7 @@ import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
+import com.kitaab.app.feature.home.HomeScreen
 import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
 import com.kitaab.app.ui.theme.Teal500
@@ -110,10 +111,10 @@ fun AppNavHost(
         }
 
         composable(Route.Home.route) {
-            val viewModel: AuthViewModel = hiltViewModel()
+            val authViewModel: AuthViewModel = hiltViewModel()
 
             LaunchedEffect(Unit) {
-                viewModel.events.collect { event ->
+                authViewModel.events.collect { event ->
                     when (event) {
                         is AuthEvent.SignOutSuccess,
                         is AuthEvent.DeleteAccountSuccess,
@@ -127,10 +128,19 @@ fun AppNavHost(
                 }
             }
 
-            HomePlaceholder(
-                onSignOut = { viewModel.signOut() },
-                onDeleteAccount = { viewModel.deleteAccount() },
+            HomeScreen(
+                onListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+                onSearchClick = {
+                    navController.navigate(Route.Explore.route)
+                },
             )
+        }
+
+        composable(Route.ListingDetail.route) { backStackEntry ->
+            val listingId = backStackEntry.arguments?.getString("listingId") ?: return@composable
+            PlaceholderScreen("Listing: $listingId")
         }
 
         composable(Route.Explore.route) { PlaceholderScreen("Explore") }
