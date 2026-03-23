@@ -22,6 +22,7 @@ import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
+import com.kitaab.app.feature.profile.ProfileSetupScreen
 import com.kitaab.app.ui.theme.Teal500
 
 @Composable
@@ -38,6 +39,11 @@ fun AppNavHost(
             SplashScreen(
                 onNavigateToHome = {
                     navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Splash.route) { inclusive = true }
+                    }
+                },
+                onNavigateToProfileSetup = {
+                    navController.navigate(Route.ProfileSetup.route) {
                         popUpTo(Route.Splash.route) { inclusive = true }
                     }
                 },
@@ -66,6 +72,11 @@ fun AppNavHost(
                         popUpTo(0) { inclusive = true }
                     }
                 },
+                onLoginNeedsProfile = {
+                    navController.navigate(Route.ProfileSetup.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
                 onNavigateToSignUp = {
                     navController.navigate(Route.SignUp.route)
                 },
@@ -74,8 +85,10 @@ fun AppNavHost(
 
         composable(Route.SignUp.route) {
             SignUpScreen(
+                // After signup, always go to ProfileSetup — new users never
+                // have profile_complete = true yet
                 onSignUpSuccess = {
-                    navController.navigate(Route.Home.route) {
+                    navController.navigate(Route.ProfileSetup.route) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
@@ -85,12 +98,19 @@ fun AppNavHost(
             )
         }
 
+        composable(Route.ProfileSetup.route) {
+            ProfileSetupScreen(
+                onSetupComplete = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+            )
+        }
+
         composable(Route.Home.route) {
             val viewModel: AuthViewModel = hiltViewModel()
 
-            // Collect sign-out and delete-account events and navigate to Login.
-            // popUpTo(0) clears the entire back stack so the user cannot
-            // press Back to return to Home after signing out.
             LaunchedEffect(Unit) {
                 viewModel.events.collect { event ->
                     when (event) {
@@ -119,7 +139,6 @@ fun AppNavHost(
     }
 }
 
-// Temporary Home screen — replaced in Phase 2 with real HomeScreen
 @Composable
 private fun HomePlaceholder(
     onSignOut: () -> Unit,
