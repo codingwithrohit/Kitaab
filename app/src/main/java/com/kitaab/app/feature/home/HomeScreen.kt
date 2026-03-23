@@ -1,6 +1,6 @@
 package com.kitaab.app.feature.home
 
-
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +28,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -38,7 +37,6 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
@@ -72,7 +70,6 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val pullRefreshState = rememberPullToRefreshState()
 
-    // Load next page when nearing the end of the list
     LaunchedEffect(listState) {
         snapshotFlow {
             val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -92,32 +89,27 @@ fun HomeScreen(
         }
     }
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background,
-    ) { innerPadding ->
+    // No nested Scaffold — HomeScreen lives inside MainScreen's Scaffold already.
+    // Use a Box so snackbar still works without double inset padding.
+    Box(modifier = modifier.fillMaxSize()) {
         PullToRefreshBox(
             isRefreshing = state.isLoadingListings && state.listings.isEmpty(),
             onRefresh = { viewModel.refresh() },
             state = pullRefreshState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
         ) {
             LazyColumn(
                 state = listState,
                 contentPadding = PaddingValues(bottom = 16.dp),
                 modifier = Modifier.fillMaxSize(),
             ) {
-                // ── Top bar ───────────────────────────────────────────────────
-                item(key = "top_bar"){
+                item(key = "top_bar") {
                     HomeTopBar(
                         userName = state.userProfile?.name,
                         onSearchClick = onSearchClick,
                     )
                 }
 
-                // ── Exam tag chips ────────────────────────────────────────────
                 item(key = "exam_chips") {
                     ExamTagChips(
                         selectedTag = state.selectedExamTag,
@@ -125,23 +117,15 @@ fun HomeScreen(
                     )
                 }
 
-                // ── Shelf row ─────────────────────────────────────────────────
                 item(key = "shelf_section") {
-                    Column(modifier = Modifier.padding(horizontal = 0.dp)) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = "On the shelf",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.onBackground,
-                            )
-                        }
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            text = "On the shelf",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
                         Spacer(modifier = Modifier.height(10.dp))
                         ShelfRow(
                             listings = state.listings.take(15),
@@ -151,7 +135,6 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                // ── Recent listings header ────────────────────────────────────
                 item(key = "recent_header") {
                     Text(
                         text = "Recent listings",
@@ -163,9 +146,8 @@ fun HomeScreen(
                     Spacer(modifier = Modifier.height(10.dp))
                 }
 
-                // ── Loading state (first load) ────────────────────────────────
                 if (state.isLoadingListings && state.listings.isEmpty()) {
-                    item(key = "empty_state") {
+                    item(key = "loading_initial") {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
@@ -177,9 +159,8 @@ fun HomeScreen(
                     }
                 }
 
-                // ── Empty state ───────────────────────────────────────────────
                 if (!state.isLoadingListings && state.listings.isEmpty()) {
-                    item(key = "loading_more") {
+                    item(key = "empty_state") {
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier
@@ -206,7 +187,6 @@ fun HomeScreen(
                     }
                 }
 
-                // ── Listing cards ─────────────────────────────────────────────
                 itemsIndexed(
                     items = state.listings,
                     key = { _, listing -> listing.id },
@@ -218,7 +198,6 @@ fun HomeScreen(
                     )
                 }
 
-                // ── Load more indicator ───────────────────────────────────────
                 if (state.isLoadingMore) {
                     item(key = "loading_more") {
                         Box(
@@ -236,7 +215,6 @@ fun HomeScreen(
                     }
                 }
 
-                // ── End of list ───────────────────────────────────────────────
                 if (!state.hasMorePages && state.listings.isNotEmpty()) {
                     item(key = "end_of_list") {
                         Box(
@@ -255,6 +233,11 @@ fun HomeScreen(
                 }
             }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
     }
 }
 
@@ -269,7 +252,8 @@ private fun HomeTopBar(
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp, bottom = 8.dp),
     ) {
-        val greeting = when (java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)) {
+        val greeting = when (java.util.Calendar.getInstance()
+            .get(java.util.Calendar.HOUR_OF_DAY)) {
             in 5..11 -> "Good morning"
             in 12..16 -> "Good afternoon"
             else -> "Good evening"
@@ -290,7 +274,6 @@ private fun HomeTopBar(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Tappable search bar — navigates to Explore
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
@@ -298,7 +281,7 @@ private fun HomeTopBar(
                 .clickable { onSearchClick() },
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
-            border = androidx.compose.foundation.BorderStroke(1.dp, WarmBorder),
+            border = BorderStroke(1.dp, WarmBorder),
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
