@@ -65,6 +65,7 @@ import com.kitaab.app.ui.theme.WarmMuted
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
+    onLoginNeedsProfile: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel(),
 ) {
@@ -78,6 +79,7 @@ fun LoginScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is AuthEvent.LoginSuccess -> onLoginSuccess()
+                is AuthEvent.LoginNeedsProfile -> onLoginNeedsProfile()
                 else -> Unit
             }
         }

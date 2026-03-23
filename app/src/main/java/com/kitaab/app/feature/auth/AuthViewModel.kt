@@ -52,6 +52,7 @@ data class DeleteAccountUiState(
 
 sealed interface AuthEvent {
     data object LoginSuccess : AuthEvent
+    data object LoginNeedsProfile : AuthEvent
     data object SignUpSuccess : AuthEvent
     data object SignOutSuccess : AuthEvent
     data object DeleteAccountSuccess : AuthEvent
@@ -103,8 +104,14 @@ class AuthViewModel @Inject constructor(
                 password = _loginState.value.password,
             ).fold(
                 onSuccess = {
+                    val complete = authRepository.isProfileComplete()
+                        .getOrDefault(false)
                     _loginState.update { it.copy(isLoading = false) }
-                    _events.send(AuthEvent.LoginSuccess)
+                    if (complete) {
+                        _events.send(AuthEvent.LoginSuccess)
+                    } else {
+                        _events.send(AuthEvent.LoginNeedsProfile)
+                    }
                 },
                 onFailure = { cause ->
                     _loginState.update { it.copy(isLoading = false, error = cause.message) }
@@ -151,8 +158,14 @@ class AuthViewModel @Inject constructor(
                 // Exchange the token with Supabase
                 authRepository.signInWithGoogle(idToken).fold(
                     onSuccess = {
+                        val complete = authRepository.isProfileComplete()
+                            .getOrDefault(false)
                         _loginState.update { it.copy(isGoogleLoading = false) }
-                        _events.send(AuthEvent.LoginSuccess)
+                        if (complete) {
+                            _events.send(AuthEvent.LoginSuccess)
+                        } else {
+                            _events.send(AuthEvent.LoginNeedsProfile)
+                        }
                     },
                     onFailure = { cause ->
                         _loginState.update {

@@ -31,31 +31,28 @@ import com.kitaab.app.ui.theme.Teal700
 @Composable
 fun SplashScreen(
     onNavigateToHome: () -> Unit,
+    onNavigateToProfileSetup: () -> Unit,
     onNavigateToOnboarding: () -> Unit,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
     val scale = remember { Animatable(0.8f) }
     val alpha = remember { Animatable(0f) }
 
-    // Run animation immediately — this composable is already on screen
     LaunchedEffect(Unit) {
         scale.animateTo(1f, animationSpec = tween(600))
         alpha.animateTo(1f, animationSpec = tween(400))
     }
 
-    // Collect the one-shot destination from SplashViewModel
     LaunchedEffect(Unit) {
         viewModel.destination.collect { destination ->
             when (destination) {
                 SplashDestination.Home -> onNavigateToHome()
+                SplashDestination.ProfileSetup -> onNavigateToProfileSetup()
                 SplashDestination.Onboarding -> onNavigateToOnboarding()
             }
         }
     }
 
-    // fillMaxSize + background(Teal700) draws behind ALL system bars.
-    // Do NOT add statusBarsPadding/navigationBarsPadding here — that would
-    // leave white strips at top and bottom.
     Box(
         modifier = Modifier
             .fillMaxSize()

@@ -9,8 +9,15 @@ import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import javax.inject.Inject
 import javax.inject.Singleton
+
+@Serializable
+private data class UserProfileRow(
+    @SerialName("profile_complete") val profileComplete: Boolean = false,
+)
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
@@ -86,6 +93,20 @@ class AuthRepositoryImpl @Inject constructor(
 
             Unit
         }.mapError()
+
+
+    override suspend fun isProfileComplete(): Result<Boolean> =
+        runCatching {
+            val userId = supabase.auth.currentSessionOrNull()?.user?.id
+                ?: return Result.success(false)
+            val result = supabase.postgrest["users"]
+                .select {
+                    filter { eq("id", userId) }
+                }
+                .decodeSingle<UserProfileRow>()
+            result.profileComplete
+        }.mapError()
+
 
     override suspend fun signOut(): Result<Unit> =
         runCatching {
