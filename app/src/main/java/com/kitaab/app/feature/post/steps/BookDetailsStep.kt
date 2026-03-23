@@ -18,12 +18,15 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -53,6 +56,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -105,6 +109,24 @@ fun BookDetailsStep(
         if (granted) showScanner = true
     }
 
+    if (showScanner) {
+        Dialog(
+            onDismissRequest = { showScanner = false },
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+            ),
+        ) {
+            BarcodeScannerView(
+                onBarcodeDetected = { isbn ->
+                    showScanner = false
+                    onIsbnScanned(isbn)
+                },
+                onDismiss = { showScanner = false },
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -113,14 +135,10 @@ fun BookDetailsStep(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Scan barcode button
         OutlinedButton(
             onClick = {
-                if (hasCameraPermission) {
-                    showScanner = true
-                } else {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                }
+                if (hasCameraPermission) showScanner = true
+                else permissionLauncher.launch(Manifest.permission.CAMERA)
             },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
@@ -151,11 +169,7 @@ fun BookDetailsStep(
 
         if (state.isbn.isNotBlank()) {
             Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "ISBN: ${state.isbn}",
-                fontSize = 12.sp,
-                color = WarmMuted,
-            )
+            Text(text = "ISBN: ${state.isbn}", fontSize = 12.sp, color = WarmMuted)
         }
 
         if (state.bookNotFound) {
@@ -176,28 +190,6 @@ fun BookDetailsStep(
             }
         }
 
-        // AFTER
-        if (showScanner) {
-            Dialog(
-                onDismissRequest = { showScanner = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black),
-                ) {
-                    BarcodeScannerView(
-                        onBarcodeDetected = { isbn ->
-                            showScanner = false
-                            onIsbnScanned(isbn)
-                        },
-                        onDismiss = { showScanner = false },
-                    )
-                }
-            }
-        }
-
         Spacer(modifier = Modifier.height(20.dp))
 
         OutlinedTextField(
@@ -206,86 +198,62 @@ fun BookDetailsStep(
             label = { Text("Book title *") },
             isError = state.titleError != null,
             supportingText = state.titleError?.let { { Text(it) } },
-            leadingIcon = {
-                Icon(Icons.Outlined.Book, null, modifier = Modifier.size(18.dp))
-            },
+            leadingIcon = { Icon(Icons.Outlined.Book, null, modifier = Modifier.size(18.dp)) },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Next,
             ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-            ),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
             modifier = Modifier.fillMaxWidth(),
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
         OutlinedTextField(
             value = state.author,
             onValueChange = onAuthorChanged,
             label = { Text("Author") },
-            leadingIcon = {
-                Icon(Icons.Outlined.Person, null, modifier = Modifier.size(18.dp))
-            },
+            leadingIcon = { Icon(Icons.Outlined.Person, null, modifier = Modifier.size(18.dp)) },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Next,
             ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-            ),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
             modifier = Modifier.fillMaxWidth(),
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
         OutlinedTextField(
             value = state.publisher,
             onValueChange = onPublisherChanged,
             label = { Text("Publisher") },
-            leadingIcon = {
-                Icon(Icons.Outlined.BusinessCenter, null, modifier = Modifier.size(18.dp))
-            },
+            leadingIcon = { Icon(Icons.Outlined.BusinessCenter, null, modifier = Modifier.size(18.dp)) },
             keyboardOptions = KeyboardOptions(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Next,
             ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-            ),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
             modifier = Modifier.fillMaxWidth(),
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
         OutlinedTextField(
             value = state.edition,
             onValueChange = onEditionChanged,
             label = { Text("Edition") },
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Next,
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-            ),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
             modifier = Modifier.fillMaxWidth(),
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
         OutlinedTextField(
             value = state.subject,
             onValueChange = onSubjectChanged,
@@ -294,9 +262,7 @@ fun BookDetailsStep(
                 capitalization = KeyboardCapitalization.Words,
                 imeAction = ImeAction.Done,
             ),
-            keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() },
-            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
@@ -304,7 +270,6 @@ fun BookDetailsStep(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-
         Text(
             text = "Exam tags",
             fontSize = 15.sp,
@@ -312,11 +277,7 @@ fun BookDetailsStep(
             color = MaterialTheme.colorScheme.onBackground,
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Optional — helps students find your book",
-            fontSize = 13.sp,
-            color = WarmMuted,
-        )
+        Text(text = "Optional — helps students find your book", fontSize = 13.sp, color = WarmMuted)
         Spacer(modifier = Modifier.height(12.dp))
 
         FlowRow(
@@ -351,39 +312,21 @@ fun BookDetailsStep(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-
-        ToggleRow(
-            label = "Has solutions manual",
-            checked = state.hasSolutions,
-            onToggle = onHasSolutionsToggled,
-        )
+        ToggleRow(label = "Has solutions manual", checked = state.hasSolutions, onToggle = onHasSolutionsToggled)
         Spacer(modifier = Modifier.height(12.dp))
-        ToggleRow(
-            label = "Has handwritten notes",
-            checked = state.hasNotes,
-            onToggle = onHasNotesToggled,
-        )
-
+        ToggleRow(label = "Has handwritten notes", checked = state.hasNotes, onToggle = onHasNotesToggled)
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
 @Composable
-private fun ToggleRow(
-    label: String,
-    checked: Boolean,
-    onToggle: () -> Unit,
-) {
+private fun ToggleRow(label: String, checked: Boolean, onToggle: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onBackground,
-        )
+        Text(text = label, fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground)
         Switch(
             checked = checked,
             onCheckedChange = { onToggle() },
@@ -406,105 +349,168 @@ private fun BarcodeScannerView(
     val lifecycleOwner = LocalLifecycleOwner.current
     var scanned by remember { mutableStateOf(false) }
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            AndroidView(
-                factory = { ctx ->
-                    val previewView = PreviewView(ctx)
-                    val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
-                    cameraProviderFuture.addListener({
-                        val cameraProvider = cameraProviderFuture.get()
-                        val preview = Preview.Builder().build().also {
-                            it.surfaceProvider = previewView.surfaceProvider
-                        }
-                        val executor = Executors.newSingleThreadExecutor()
-                        val barcodeScanner = BarcodeScanning.getClient()
-                        val imageAnalysis = ImageAnalysis.Builder()
-                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                            .build()
-                            .also { analysis ->
-                                analysis.setAnalyzer(executor) { imageProxy ->
-                                    if (!scanned) {
-                                        val mediaImage = imageProxy.image
-                                        if (mediaImage != null) {
-                                            val image = InputImage.fromMediaImage(
-                                                mediaImage,
-                                                imageProxy.imageInfo.rotationDegrees,
-                                            )
-                                            barcodeScanner.process(image)
-                                                .addOnSuccessListener { barcodes ->
-                                                    barcodes.firstOrNull { barcode ->
-                                                        barcode.format == Barcode.FORMAT_EAN_13 ||
-                                                                barcode.format == Barcode.FORMAT_EAN_8
-                                                    }?.rawValue?.let { isbn ->
-                                                        if (!scanned) {
-                                                            scanned = true
-                                                            onBarcodeDetected(isbn)
-                                                        }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
+    ) {
+        // Full screen camera preview
+        AndroidView(
+            factory = { ctx ->
+                val previewView = PreviewView(ctx).apply {
+                    scaleType = PreviewView.ScaleType.FILL_CENTER
+                }
+                val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+                cameraProviderFuture.addListener({
+                    val cameraProvider = cameraProviderFuture.get()
+                    val preview = Preview.Builder().build().also {
+                        it.surfaceProvider = previewView.surfaceProvider
+                    }
+                    val executor = Executors.newSingleThreadExecutor()
+                    val barcodeScanner = BarcodeScanning.getClient()
+                    val imageAnalysis = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build()
+                        .also { analysis ->
+                            analysis.setAnalyzer(executor) { imageProxy ->
+                                if (!scanned) {
+                                    val mediaImage = imageProxy.image
+                                    if (mediaImage != null) {
+                                        val image = InputImage.fromMediaImage(
+                                            mediaImage,
+                                            imageProxy.imageInfo.rotationDegrees,
+                                        )
+                                        barcodeScanner.process(image)
+                                            .addOnSuccessListener { barcodes ->
+                                                barcodes.firstOrNull {
+                                                    it.format == Barcode.FORMAT_EAN_13 ||
+                                                            it.format == Barcode.FORMAT_EAN_8
+                                                }?.rawValue?.let { isbn ->
+                                                    if (!scanned) {
+                                                        scanned = true
+                                                        onBarcodeDetected(isbn)
                                                     }
                                                 }
-                                                .addOnCompleteListener {
-                                                    imageProxy.close()
-                                                }
-                                        } else {
-                                            imageProxy.close()
-                                        }
+                                            }
+                                            .addOnCompleteListener { imageProxy.close() }
                                     } else {
                                         imageProxy.close()
                                     }
+                                } else {
+                                    imageProxy.close()
                                 }
                             }
-                        runCatching {
-                            cameraProvider.unbindAll()
-                            cameraProvider.bindToLifecycle(
-                                lifecycleOwner,
-                                CameraSelector.DEFAULT_BACK_CAMERA,
-                                preview,
-                                imageAnalysis,
-                            )
                         }
-                    }, ContextCompat.getMainExecutor(ctx))
-                    previewView
-                },
-                modifier = Modifier.matchParentSize(),
-            )
+                    runCatching {
+                        cameraProvider.unbindAll()
+                        cameraProvider.bindToLifecycle(
+                            lifecycleOwner,
+                            CameraSelector.DEFAULT_BACK_CAMERA,
+                            preview,
+                            imageAnalysis,
+                        )
+                    }
+                }, ContextCompat.getMainExecutor(ctx))
+                previewView
+            },
+            modifier = Modifier.fillMaxSize(),
+        )
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .size(40.dp)
-                    .background(
-                        Color.Black.copy(alpha = 0.5f),
-                        RoundedCornerShape(20.dp)
+        // Dark gradient overlay at top for status bar area
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.2f)
+                .background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent),
                     )
-                    .clickable { onDismiss() },
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    Icons.Outlined.Close,
-                    contentDescription = "Close scanner",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp),
                 )
-            }
-            // Scanning guide overlay
-            Box(
-                modifier = Modifier.align(Alignment.Center),
-            ) {
-                Text(
-                    text = "Point camera at book barcode",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                )
-            }
+                .align(Alignment.TopCenter)
+                .statusBarsPadding(),
+        )
 
+        // Close button — top right
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(16.dp)
+                .size(44.dp)
+                .background(Color.Black.copy(alpha = 0.55f), CircleShape)
+                .clickable { onDismiss() },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.Outlined.Close,
+                contentDescription = "Close scanner",
+                tint = Color.White,
+                modifier = Modifier.size(22.dp),
+            )
         }
 
+        // Scanning frame + instruction in centre
+        Column(
+            modifier = Modifier.align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            // Scanning viewfinder frame
+            ScannerFrame()
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Point at book barcode",
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier
+                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                    .padding(horizontal = 20.dp, vertical = 8.dp),
+            )
+        }
 
+        // Bottom gradient overlay
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.15f)
+                .background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)),
+                    )
+                )
+                .align(Alignment.BottomCenter),
+        )
+    }
+}
+
+@Composable
+private fun ScannerFrame() {
+    val cornerColor = Color.White
+    val frameSize = 240.dp
+    val cornerLength = 32.dp
+    val cornerThickness = 3.dp
+
+    Box(modifier = Modifier.size(frameSize)) {
+        // Dimmed area is handled by camera contrast — just draw the corner brackets
+        // Top-left
+        Box(modifier = Modifier.align(Alignment.TopStart)) {
+            Box(modifier = Modifier.size(cornerLength, cornerThickness).background(cornerColor))
+            Box(modifier = Modifier.size(cornerThickness, cornerLength).background(cornerColor))
+        }
+        // Top-right
+        Box(modifier = Modifier.align(Alignment.TopEnd)) {
+            Box(modifier = Modifier.size(cornerLength, cornerThickness).align(Alignment.TopEnd).background(cornerColor))
+            Box(modifier = Modifier.size(cornerThickness, cornerLength).align(Alignment.TopEnd).background(cornerColor))
+        }
+        // Bottom-left
+        Box(modifier = Modifier.align(Alignment.BottomStart)) {
+            Box(modifier = Modifier.size(cornerLength, cornerThickness).align(Alignment.BottomStart).background(cornerColor))
+            Box(modifier = Modifier.size(cornerThickness, cornerLength).align(Alignment.BottomStart).background(cornerColor))
+        }
+        // Bottom-right
+        Box(modifier = Modifier.align(Alignment.BottomEnd)) {
+            Box(modifier = Modifier.size(cornerLength, cornerThickness).align(Alignment.BottomEnd).background(cornerColor))
+            Box(modifier = Modifier.size(cornerThickness, cornerLength).align(Alignment.BottomEnd).background(cornerColor))
+        }
+    }
 }
