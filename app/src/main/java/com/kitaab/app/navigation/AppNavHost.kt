@@ -22,6 +22,7 @@ import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
+import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
 import com.kitaab.app.ui.theme.Teal500
 
@@ -133,7 +134,18 @@ fun AppNavHost(
         }
 
         composable(Route.Explore.route) { PlaceholderScreen("Explore") }
-        composable(Route.Post.route) { PlaceholderScreen("Post") }
+        composable(Route.Post.route) {
+            PostScreen(
+                onPostSuccess = {
+                    navController.navigate(Route.Home.route) {
+                        popUpTo(Route.Home.route) { inclusive = true }
+                    }
+                },
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
         composable(Route.Inbox.route) { PlaceholderScreen("Inbox") }
         composable(Route.Profile.route) { PlaceholderScreen("Profile") }
     }
