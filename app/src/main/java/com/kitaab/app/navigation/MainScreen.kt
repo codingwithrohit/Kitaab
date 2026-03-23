@@ -38,7 +38,8 @@ fun MainScreen() {
             currentRoute == Route.Onboarding.route ||
             currentRoute == Route.Login.route ||
             currentRoute == Route.SignUp.route ||
-            currentRoute == Route.ProfileSetup.route
+            currentRoute == Route.ProfileSetup.route ||
+            currentRoute == Route.Post.route
 
     Scaffold(
         bottomBar = {

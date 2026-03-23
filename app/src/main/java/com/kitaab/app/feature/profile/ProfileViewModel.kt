@@ -113,6 +113,10 @@ class ProfileSetupViewModel @Inject constructor(
                 }
 
                 userPrefs.setProfileComplete(true)
+                userPrefs.setLocation(
+                    city = state.city.trim(),
+                    pincode = state.pincode.trim(),
+                )
             }.fold(
                 onSuccess = {
                     _uiState.update { it.copy(isLoading = false) }
