@@ -22,6 +22,7 @@ captures/
 .kotlin/
 
 # Secrets — never commit these
+app/google-services.json
 google-services.json
 keystore/
 *.jks
