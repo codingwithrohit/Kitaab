@@ -2,7 +2,6 @@ package com.kitaab.app.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +21,9 @@ import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
+import com.kitaab.app.feature.explore.ExploreScreen
 import com.kitaab.app.feature.home.HomeScreen
+import com.kitaab.app.feature.listing.ListingDetailScreen
 import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
 import com.kitaab.app.ui.theme.Teal500
@@ -138,12 +139,41 @@ fun AppNavHost(
             )
         }
 
-        composable(Route.ListingDetail.route) { backStackEntry ->
-            val listingId = backStackEntry.arguments?.getString("listingId") ?: return@composable
-            PlaceholderScreen("Listing: $listingId")
+        composable(Route.ListingDetail.route) {
+            ListingDetailScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToChat = { sellerId, listingId ->
+                    navController.navigate(Route.Chat.createRoute("${sellerId}_${listingId}"))
+                },
+                onNavigateToDonationRequest = { listingId ->
+                    // Phase 3 — donation request bottom sheet
+                    // For now navigate back
+                    navController.popBackStack()
+                },
+                onSellerClick = { userId ->
+                    navController.navigate(Route.SellerProfile.createRoute(userId))
+                },
+                onSimilarListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+            )
+        }
+        composable(Route.SellerProfile.route) {
+            PlaceholderScreen("Seller Profile")
         }
 
-        composable(Route.Explore.route) { PlaceholderScreen("Explore") }
+        composable(Route.Chat.route) {
+            PlaceholderScreen("Chat")
+        }
+
+        composable(Route.Explore.route) {
+            ExploreScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+            )
+        }
         composable(Route.Post.route) {
             PostScreen(
                 onPostSuccess = {
@@ -161,41 +191,6 @@ fun AppNavHost(
     }
 }
 
-@Composable
-private fun HomePlaceholder(
-    onSignOut: () -> Unit,
-    onDeleteAccount: () -> Unit,
-) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier.fillMaxSize(),
-    ) {
-        androidx.compose.foundation.layout.Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = "Home",
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
-            Button(
-                onClick = onSignOut,
-                colors = ButtonDefaults.buttonColors(containerColor = Teal500),
-            ) {
-                Text("Sign out")
-            }
-            Button(
-                onClick = onDeleteAccount,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                ),
-            ) {
-                Text("Delete account")
-            }
-        }
-    }
-}
 
 @Composable
 private fun PlaceholderScreen(name: String) {
