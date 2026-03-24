@@ -51,11 +51,16 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -69,12 +74,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.domain.model.UserProfile
+import com.kitaab.app.feature.donation.DonationRequestBottomSheet
+import com.kitaab.app.feature.donation.DonationRequestsSellerSection
 import com.kitaab.app.feature.home.components.BookCoverImage
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal900
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -88,6 +96,9 @@ fun ListingDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var showDonationSheet by rememberSaveable { mutableStateOf(false) }
+    val donationSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -95,7 +106,7 @@ fun ListingDetailScreen(
                 is ListingDetailEvent.NavigateToChat ->
                     onNavigateToChat(event.conversationId)
                 is ListingDetailEvent.NavigateToDonationRequest ->
-                    onNavigateToDonationRequest(event.listingId)
+                    showDonationSheet = true
             }
         }
     }
@@ -300,6 +311,18 @@ fun ListingDetailScreen(
                             }
                         }
 
+                        if (state.isOwnListing && state.listing?.type == "DONATE") {
+                            Spacer(modifier = Modifier.height(20.dp))
+                            HorizontalDivider(color = WarmBorder)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            DonationRequestsSellerSection(
+                                listingId = state.listing!!.id,
+                                onAcceptSuccess = {
+                                    viewModel.load()
+                                },
+                            )
+                        }
+
                         Spacer(modifier = Modifier.height(24.dp))
 
                         // ── Similar listings ──────────────────────────────────
@@ -337,6 +360,19 @@ fun ListingDetailScreen(
                 }
             }
         }
+    }
+    if (showDonationSheet) {
+        DonationRequestBottomSheet(
+            listingId = viewModel.uiState.collectAsState().value.listing?.id ?: "",
+            sheetState = donationSheetState,
+            onDismiss = { showDonationSheet = false },
+            onSuccess = {
+                showDonationSheet = false
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar("Request submitted! The seller will review it.")
+                }
+            },
+        )
     }
 }
 
