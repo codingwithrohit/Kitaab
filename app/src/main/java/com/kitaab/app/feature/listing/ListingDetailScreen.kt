@@ -80,7 +80,7 @@ import com.kitaab.app.ui.theme.WarmMuted
 @Composable
 fun ListingDetailScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToChat: (sellerId: String, listingId: String) -> Unit,
+    onNavigateToChat: (conversationId: String) -> Unit,
     onNavigateToDonationRequest: (listingId: String) -> Unit,
     onSellerClick: (userId: String) -> Unit,
     onSimilarListingClick: (listingId: String) -> Unit,
@@ -93,7 +93,7 @@ fun ListingDetailScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is ListingDetailEvent.NavigateToChat ->
-                    onNavigateToChat(event.sellerId, event.listingId)
+                    onNavigateToChat(event.conversationId)
                 is ListingDetailEvent.NavigateToDonationRequest ->
                     onNavigateToDonationRequest(event.listingId)
             }

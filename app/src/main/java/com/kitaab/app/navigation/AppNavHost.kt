@@ -21,8 +21,10 @@ import com.kitaab.app.feature.auth.LoginScreen
 import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
+import com.kitaab.app.feature.chat.ChatScreen
 import com.kitaab.app.feature.explore.ExploreScreen
 import com.kitaab.app.feature.home.HomeScreen
+import com.kitaab.app.feature.inbox.InboxScreen
 import com.kitaab.app.feature.listing.ListingDetailScreen
 import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
@@ -142,8 +144,8 @@ fun AppNavHost(
         composable(Route.ListingDetail.route) {
             ListingDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToChat = { sellerId, listingId ->
-                    navController.navigate(Route.Chat.createRoute("${sellerId}_${listingId}"))
+                onNavigateToChat = { conversationId ->
+                    navController.navigate(Route.Chat.createRoute(conversationId))
                 },
                 onNavigateToDonationRequest = { listingId ->
                     // Phase 3 — donation request bottom sheet
@@ -160,10 +162,6 @@ fun AppNavHost(
         }
         composable(Route.SellerProfile.route) {
             PlaceholderScreen("Seller Profile")
-        }
-
-        composable(Route.Chat.route) {
-            PlaceholderScreen("Chat")
         }
 
         composable(Route.Explore.route) {
@@ -186,7 +184,19 @@ fun AppNavHost(
                 },
             )
         }
-        composable(Route.Inbox.route) { PlaceholderScreen("Inbox") }
+        composable(Route.Inbox.route) {
+            InboxScreen(
+                onNavigateToChat = { conversationId ->
+                    navController.navigate(Route.Chat.createRoute(conversationId))
+                },
+            )
+        }
+
+        composable(Route.Chat.route) {
+            ChatScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
         composable(Route.Profile.route) { PlaceholderScreen("Profile") }
     }
 }
