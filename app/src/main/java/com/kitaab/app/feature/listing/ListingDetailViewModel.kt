@@ -5,12 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.domain.model.UserProfile
+import com.kitaab.app.domain.repository.ConversationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
-import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,10 +19,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class ListingDetailViewModel @Inject constructor(
     private val supabase: SupabaseClient,
+    private val conversationRepository: ConversationRepository,
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
@@ -33,6 +33,8 @@ class ListingDetailViewModel @Inject constructor(
 
     private val _events = Channel<ListingDetailEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
+
+    private var chatJob: kotlinx.coroutines.Job? = null
 
     init {
         load()
@@ -94,13 +96,24 @@ class ListingDetailViewModel @Inject constructor(
 
     fun onMessageSellerClick() {
         val listing = _uiState.value.listing ?: return
-        viewModelScope.launch {
-            _events.send(
-                ListingDetailEvent.NavigateToChat(
-                    sellerId = listing.sellerId,
-                    listingId = listing.id,
-                )
-            )
+        if (chatJob?.isActive == true) return
+
+        chatJob = viewModelScope.launch {
+            _uiState.update { it.copy(isChatLoading = true) }
+            conversationRepository.getOrCreateConversation(
+                listingId = listing.id,
+                sellerId = listing.sellerId,
+            ).onSuccess { conversation ->
+                _uiState.update { it.copy(isChatLoading = false) }
+                _events.send(ListingDetailEvent.NavigateToChat(conversationId = conversation.id))
+            }.onFailure { cause ->
+                _uiState.update {
+                    it.copy(
+                        isChatLoading = false,
+                        error = cause.message ?: "Could not open chat",
+                    )
+                }
+            }
         }
     }
 

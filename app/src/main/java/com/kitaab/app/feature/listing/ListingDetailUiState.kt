@@ -8,6 +8,7 @@ data class ListingDetailUiState(
     val seller: UserProfile? = null,
     val similarListings: List<Listing> = emptyList(),
     val isLoading: Boolean = true,
+    val isChatLoading: Boolean = false,
     val error: String? = null,
     val isOwnListing: Boolean = false,
 )
