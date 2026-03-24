@@ -87,10 +87,10 @@ class DonationRequestRepositoryImpl @Inject constructor(
             )
             if (createdDate != null) {
                 val ageDays = (java.util.Date().time - createdDate.time) / (1000 * 60 * 60 * 24)
-                if (ageDays < 7) {
-                    val daysLeft = 7 - ageDays
-                    error("Your account must be at least 7 days old to request donations. $daysLeft more days to go.")
-                }
+//                if (ageDays < 7) {
+//                    val daysLeft = 7 - ageDays
+//                    error("Your account must be at least 7 days old to request donations. $daysLeft more days to go.")
+//                }
             }
         }
 
