@@ -18,7 +18,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,37 +28,34 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun MainScreen(onSplashReady: () -> Unit) {
+fun MainScreen() {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val isSplashScreen = currentRoute == Route.Splash.route
-            || currentRoute == Route.Onboarding.route
-            || currentRoute == Route.Login.route
 
-    if (isSplashScreen) {
-        LaunchedEffect(Unit) {
-            onSplashReady()
-        }
-    }
+    val isAuthScreen = currentRoute == null ||
+            currentRoute == Route.Splash.route ||
+            currentRoute == Route.Onboarding.route ||
+            currentRoute == Route.Login.route ||
+            currentRoute == Route.SignUp.route ||
+            currentRoute == Route.ProfileSetup.route ||
+            currentRoute == Route.Post.route ||
+            currentRoute?.startsWith("listing_detail/") == true ||
+            currentRoute?.startsWith("seller_profile/") == true ||
+            currentRoute?.startsWith("chat/") == true
 
     Scaffold(
         bottomBar = {
-            if (!isSplashScreen) {
+            if (!isAuthScreen) {
                 KitaabBottomBar(navController = navController)
             }
         },
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier =
-                Modifier.padding(
-                    if (isSplashScreen) {
-                        PaddingValues(0.dp)
-                    } else {
-                        innerPadding
-                    },
-                ),
+            modifier = Modifier.padding(
+                if (isAuthScreen) PaddingValues(0.dp) else innerPadding,
+            ),
         )
     }
 }
@@ -76,7 +72,7 @@ private fun KitaabBottomBar(navController: NavHostController) {
     ) {
         BottomNavItem.entries.forEachIndexed { index, item ->
 
-            // Insert the FAB slot between Explore (index 1) and Inbox (index 2)
+            // FAB slot sits between Explore (index 1) and Inbox (index 2)
             if (index == 2) {
                 PostFabSlot(navController = navController)
             }
@@ -104,14 +100,13 @@ private fun KitaabBottomBar(navController: NavHostController) {
                         style = MaterialTheme.typography.labelSmall,
                     )
                 },
-                colors =
-                    NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                    ),
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                ),
             )
         }
     }
@@ -119,7 +114,6 @@ private fun KitaabBottomBar(navController: NavHostController) {
 
 @Composable
 private fun PostFabSlot(navController: NavHostController) {
-    // Empty NavigationBarItem as a spacer, FAB sits on top via Box
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier.size(64.dp),
