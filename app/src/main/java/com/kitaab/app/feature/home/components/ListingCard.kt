@@ -22,18 +22,27 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.kitaab.app.domain.model.Listing
-import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal50
+import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
 
@@ -43,9 +52,24 @@ fun ListingCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var rotationY by remember { mutableFloatStateOf(0f) }
+    val screenWidthPx = with(LocalDensity.current) {
+        LocalConfiguration.current.screenWidthDp.dp.toPx()
+    }
+    val density = LocalDensity.current.density
+
     Card(
         modifier = modifier
             .fillMaxWidth()
+            .onGloballyPositioned { coords ->
+                val cardCenterX = coords.boundsInRoot().center.x
+                val offset = (cardCenterX - screenWidthPx / 2f) / (screenWidthPx / 2f)
+                rotationY = (offset * 8f).coerceIn(-8f, 8f)
+            }
+            .graphicsLayer {
+                this.rotationY = rotationY
+                cameraDistance = 12f * density
+            }
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
