@@ -14,4 +14,6 @@ data class UserProfile(
     @SerialName("avg_rating") val avgRating: Double = 0.0,
     @SerialName("review_count") val reviewCount: Int = 0,
     val badge: String? = null,
+    @SerialName("strike_count") val strikeCount: Int = 0,
+    @SerialName("is_suspended") val isSuspended: Boolean = false,
 )

@@ -10,14 +10,12 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,36 +24,49 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.domain.model.Message
+import com.kitaab.app.domain.model.Transaction
+import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
+import com.kitaab.app.ui.theme.Teal900
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +77,8 @@ fun ChatScreen(
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val handoffSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -74,6 +87,9 @@ fun ChatScreen(
                     if (state.messages.isNotEmpty()) {
                         listState.animateScrollToItem(state.messages.lastIndex)
                     }
+                }
+                is ChatEvent.TransactionComplete -> {
+                    snackbarHostState.showSnackbar("🎉 Transaction complete! Don't forget to leave a review.")
                 }
             }
         }
@@ -119,6 +135,13 @@ fun ChatScreen(
                 .navigationBarsPadding()
                 .imePadding(),
         ) {
+            // Transaction banner — shown when transaction exists or can be initiated
+            TransactionBanner(
+                state = state,
+                onMarkComplete = { viewModel.onMarkCompleteClick() },
+                onDispute = { viewModel.raiseDispute() },
+            )
+
             when {
                 state.isLoading -> {
                     Box(
@@ -175,6 +198,266 @@ fun ChatScreen(
                 onTextChange = { viewModel.onInputChanged(it) },
                 onSend = { viewModel.sendMessage() },
             )
+        }
+    }
+
+    // Handoff method bottom sheet
+    if (state.showHandoffSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { viewModel.dismissHandoffSheet() },
+            sheetState = handoffSheetState,
+            containerColor = MaterialTheme.colorScheme.background,
+        ) {
+            HandoffMethodSheet(
+                onMethodSelected = { method ->
+                    coroutineScope.launch {
+                        handoffSheetState.hide()
+                        viewModel.onHandoffMethodSelected(method)
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun TransactionBanner(
+    state: ChatUiState,
+    onMarkComplete: () -> Unit,
+    onDispute: () -> Unit,
+) {
+    val transaction = state.transaction
+
+    // No banner if transaction is fully complete and not disputed
+    if (transaction?.completedAt != null && !transaction.disputed) return
+
+    // No banner if transaction is disputed
+    if (transaction?.disputed == true) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.errorContainer)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+        ) {
+            Text(
+                text = "⚠️ Dispute raised",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onErrorContainer,
+            )
+            Text(
+                text = "Our team will review this transaction.",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f),
+            )
+        }
+        HorizontalDivider(color = WarmBorder)
+        return
+    }
+
+    // Seller: no transaction yet — show initiate button
+    if (transaction == null && state.isSeller) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Teal50)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+        ) {
+            Text(
+                text = "Ready to hand off the book?",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Teal900,
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Button(
+                onClick = onMarkComplete,
+                enabled = !state.isCreatingTransaction,
+                colors = ButtonDefaults.buttonColors(containerColor = Teal500),
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.height(36.dp),
+            ) {
+                if (state.isCreatingTransaction) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(16.dp),
+                    )
+                } else {
+                    Text("Mark as Complete", fontSize = 13.sp)
+                }
+            }
+        }
+        HorizontalDivider(color = WarmBorder)
+        return
+    }
+
+    // Buyer: no transaction yet — wait for seller
+    if (transaction == null && !state.isSeller) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Teal50)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
+        ) {
+            Text(
+                text = "Waiting for seller to initiate handoff…",
+                fontSize = 13.sp,
+                color = Teal900,
+            )
+        }
+        HorizontalDivider(color = WarmBorder)
+        return
+    }
+
+    if (transaction == null) return
+
+    // Transaction exists — show handoff details + confirm/dispute
+    val currentUserConfirmed = if (state.isSeller) transaction.confirmedBySeller
+    else transaction.confirmedByBuyer
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Teal50)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+    ) {
+        // Handoff method + code
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val methodLabel = when (transaction.handoffMethod) {
+                "MEETUP" -> "📍 Meetup"
+                "PORTER" -> "🚚 Porter / Courier"
+                "POST" -> "📦 Post / Courier"
+                else -> transaction.handoffMethod ?: ""
+            }
+            Text(
+                text = methodLabel,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Teal900,
+            )
+        }
+
+        if (!transaction.handoffCode.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Handoff code: ${transaction.handoffCode}",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = Teal500,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        // Confirmation status
+        Text(
+            text = buildString {
+                append("Seller: ${if (transaction.confirmedBySeller) "✓ Confirmed" else "Pending"}")
+                append("   ")
+                append("Buyer: ${if (transaction.confirmedByBuyer) "✓ Confirmed" else "Pending"}")
+            },
+            fontSize = 12.sp,
+            color = WarmMuted,
+        )
+
+        if (!currentUserConfirmed) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = onMarkComplete,
+                    enabled = !state.isConfirming,
+                    colors = ButtonDefaults.buttonColors(containerColor = Teal500),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(36.dp),
+                ) {
+                    if (state.isConfirming) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    } else {
+                        Text("Confirm Receipt", fontSize = 13.sp)
+                    }
+                }
+
+                OutlinedButton(
+                    onClick = onDispute,
+                    enabled = !state.isDisputing,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(36.dp),
+                ) {
+                    Text(
+                        "Dispute",
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+        }
+    }
+    HorizontalDivider(color = WarmBorder)
+}
+
+@Composable
+private fun HandoffMethodSheet(
+    onMethodSelected: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+    ) {
+        Text(
+            text = "How will you hand off the book?",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = "Choose a handoff method. This will be shared with the buyer.",
+            fontSize = 13.sp,
+            color = WarmMuted,
+            lineHeight = 18.sp,
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+
+        listOf(
+            Triple("MEETUP", "📍 Meet in person", "Meet at a public place"),
+            Triple("PORTER", "🚚 Porter / Courier", "A 6-digit code will be generated for pickup verification"),
+            Triple("POST", "📦 Post / Courier", "Ship the book, buyer pays shipping"),
+        ).forEach { (method, title, subtitle) ->
+            TextButton(
+                onClick = { onMethodSelected(method) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                ) {
+                    Text(
+                        text = title,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        text = subtitle,
+                        fontSize = 12.sp,
+                        color = WarmMuted,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+            HorizontalDivider(color = WarmBorder.copy(alpha = 0.5f))
         }
     }
 }
@@ -297,10 +580,12 @@ private fun MessageInputBar(
     }
 }
 
-
 private fun formatMessageTime(isoTimestamp: String): String {
     return try {
-        val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
+        val sdf = java.text.SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss",
+            java.util.Locale.getDefault(),
+        )
         sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
         val date = sdf.parse(isoTimestamp.substringBefore(".").substringBefore("+"))
             ?: return ""
