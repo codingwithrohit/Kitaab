@@ -1,5 +1,7 @@
 package com.kitaab.app.feature.home.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -14,16 +16,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.ui.theme.ShelfPlank
 import com.kitaab.app.ui.theme.ShelfShadow
 import com.kitaab.app.ui.theme.ShelfWood
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 @Composable
@@ -47,7 +52,6 @@ fun ShelfRow(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 listings.forEachIndexed { index, listing ->
-                    // Vary heights slightly for a real bookshelf feel
                     val spineHeight = remember(listing.id) {
                         val seed = listing.id.hashCode()
                         val rng = Random(seed)
@@ -59,12 +63,28 @@ fun ShelfRow(
                         (18 + rng.nextInt(12)).dp
                     }
 
+                    val alpha = remember(listing.id) { Animatable(0f) }
+                    val translationY = remember(listing.id) { Animatable(24f) }
+
+                    LaunchedEffect(listing.id) {
+                        delay(index * 80L)
+                        alpha.animateTo(1f, animationSpec = tween(durationMillis = 200))
+                    }
+                    LaunchedEffect(listing.id) {
+                        delay(index * 80L)
+                        translationY.animateTo(0f, animationSpec = tween(durationMillis = 200))
+                    }
+
                     BookSpine(
                         title = listing.title,
                         color = spineColorForIndex(index),
                         width = spineWidth,
                         height = spineHeight,
                         onClick = { onListingClick(listing.id) },
+                        modifier = Modifier.graphicsLayer {
+                            this.alpha = alpha.value
+                            this.translationY = translationY.value
+                        },
                     )
                 }
 

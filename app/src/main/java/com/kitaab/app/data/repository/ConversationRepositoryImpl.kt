@@ -14,8 +14,10 @@ import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.channel
 import io.github.jan.supabase.realtime.postgresChangeFlow
 import io.github.jan.supabase.realtime.realtime
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
@@ -167,13 +169,26 @@ class ConversationRepositoryImpl @Inject constructor(
 
     override fun subscribeToMessages(conversationId: String): Flow<Message> {
         val channel = supabase.realtime.channel("messages:$conversationId")
-        return channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
+        val flow = channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
             table = "messages"
             filter("conversation_id", FilterOperator.EQ, conversationId)
         }.mapNotNull { action ->
             runCatching {
                 Json.decodeFromString<Message>(action.record.toString())
             }.getOrNull()
+        }
+
+        return kotlinx.coroutines.flow.callbackFlow {
+            val job = kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                flow.collect { send(it) }
+            }
+            channel.subscribe()
+            awaitClose {
+                job.cancel()
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    channel.unsubscribe()
+                }
+            }
         }
     }
 }
