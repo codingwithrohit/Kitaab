@@ -27,6 +27,8 @@ import com.kitaab.app.feature.home.HomeScreen
 import com.kitaab.app.feature.inbox.InboxScreen
 import com.kitaab.app.feature.listing.ListingDetailScreen
 import com.kitaab.app.feature.post.PostScreen
+import com.kitaab.app.feature.profile.EditProfileScreen
+import com.kitaab.app.feature.profile.ProfileScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
 import com.kitaab.app.ui.theme.Teal500
 
@@ -197,7 +199,27 @@ fun AppNavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(Route.Profile.route) { PlaceholderScreen("Profile") }
+        composable(Route.Profile.route) {
+            ProfileScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Route.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onNavigateToEditProfile = {
+                    navController.navigate(Route.EditProfile.route)
+                },
+                onListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+            )
+        }
+
+        composable(Route.EditProfile.route) {
+            EditProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
     }
 }
 

@@ -39,6 +39,7 @@ fun MainScreen() {
             currentRoute == Route.Login.route ||
             currentRoute == Route.SignUp.route ||
             currentRoute == Route.ProfileSetup.route ||
+            currentRoute == Route.EditProfile.route ||
             currentRoute == Route.Post.route ||
             currentRoute?.startsWith("listing_detail/") == true ||
             currentRoute?.startsWith("seller_profile/") == true ||

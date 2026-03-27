@@ -11,6 +11,7 @@ sealed class Route(val route: String) {
     data object SignUp : Route("signup")
 
     data object ProfileSetup : Route("profile_setup")
+    data object EditProfile : Route("edit_profile")
 
     // Main tabs
     data object Home : Route("home")

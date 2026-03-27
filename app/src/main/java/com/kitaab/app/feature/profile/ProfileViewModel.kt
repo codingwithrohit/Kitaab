@@ -2,163 +2,159 @@ package com.kitaab.app.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.kitaab.app.domain.repository.UserPreferencesRepository
+import com.kitaab.app.domain.model.DonationRequest
+import com.kitaab.app.domain.model.Listing
+import com.kitaab.app.domain.model.UserProfile
+import com.kitaab.app.domain.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.exceptions.HttpRequestException
-import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-val EXAM_TAGS = listOf("JEE", "NEET", "UPSC", "CAT", "GATE", "College", "Other")
 
-@Serializable
-private data class ProfileUpdate(
-    val name: String,
-    val city: String,
-    val pincode: String,
-    val exam_tags: List<String>,
-    val profile_complete: Boolean,
-)
-
-data class ProfileSetupUiState(
-    val name: String = "",
-    val city: String = "",
-    val pincode: String = "",
-    val selectedExamTags: Set<String> = emptySet(),
-    val nameError: String? = null,
-    val cityError: String? = null,
-    val pincodeError: String? = null,
-    val isLoading: Boolean = false,
-    val error: String? = null,
-)
-
-sealed interface ProfileSetupEvent {
-    data object SetupComplete : ProfileSetupEvent
-}
+enum class ProfileTab { LISTINGS, REQUESTS }
 
 @HiltViewModel
-class ProfileSetupViewModel @Inject constructor(
+class ProfileViewModel @Inject constructor(
     private val supabase: SupabaseClient,
-    private val userPrefs: UserPreferencesRepository,
+    private val authRepository: AuthRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ProfileSetupUiState())
-    val uiState = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    private val _events = Channel<ProfileSetupEvent>(Channel.BUFFERED)
+    private val _events = Channel<ProfileEvent>(Channel.BUFFERED)
     val events = _events.receiveAsFlow()
 
-    fun onNameChanged(value: String) {
-        _uiState.update { it.copy(name = value, nameError = null) }
+    init {
+        load()
     }
 
-    fun onCityChanged(value: String) {
-        _uiState.update { it.copy(city = value, cityError = null) }
-    }
+    fun load() {
+        viewModelScope.launch {
+            val userId = supabase.auth.currentUserOrNull()?.id ?: return@launch
+            _uiState.update { it.copy(isLoading = true, error = null) }
 
-    fun onPincodeChanged(value: String) {
-        if (value.length <= 6 && value.all { it.isDigit() }) {
-            _uiState.update { it.copy(pincode = value, pincodeError = null) }
+            runCatching {
+                val profile = supabase.postgrest["users"]
+                    .select { filter { eq("id", userId) } }
+                    .decodeList<UserProfile>()
+                    .firstOrNull()
+
+                val listings = supabase.postgrest["listings"]
+                    .select {
+                        filter { eq("seller_id", userId) }
+                        order("created_at", order = Order.DESCENDING)
+                    }
+                    .decodeList<Listing>()
+
+                val requests = supabase.postgrest["donation_requests"]
+                    .select {
+                        filter { eq("requester_id", userId) }
+                        order("created_at", order = Order.DESCENDING)
+                    }
+                    .decodeList<DonationRequest>()
+
+                _uiState.update {
+                    it.copy(
+                        profile = profile,
+                        ownListings = listings,
+                        myRequests = requests,
+                        isLoading = false,
+                    )
+                }
+            }.onFailure { cause ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = cause.message ?: "Failed to load profile",
+                    )
+                }
+            }
         }
     }
 
-    fun onExamTagToggled(tag: String) {
-        _uiState.update { state ->
-            val updated = state.selectedExamTags.toMutableSet()
-            if (tag in updated) updated.remove(tag) else updated.add(tag)
-            state.copy(selectedExamTags = updated)
+    fun onTabSelected(tab: ProfileTab) {
+        _uiState.update { it.copy(selectedTab = tab) }
+    }
+
+    fun pauseListing(listingId: String) {
+        updateListingStatus(listingId, "PAUSED")
+    }
+
+    fun reactivateListing(listingId: String) {
+        updateListingStatus(listingId, "ACTIVE")
+    }
+
+    fun markListingSold(listingId: String) {
+        updateListingStatus(listingId, "COMPLETED")
+    }
+
+    private fun updateListingStatus(listingId: String, status: String) {
+        viewModelScope.launch {
+            runCatching {
+                supabase.postgrest["listings"]
+                    .update(mapOf("status" to status)) {
+                        filter { eq("id", listingId) }
+                    }
+                _uiState.update { state ->
+                    state.copy(
+                        ownListings = state.ownListings.map { listing ->
+                            if (listing.id == listingId) listing.copy(status = status)
+                            else listing
+                        },
+                    )
+                }
+            }.onFailure { cause ->
+                _uiState.update {
+                    it.copy(error = cause.message ?: "Failed to update listing")
+                }
+            }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSigningOut = true) }
+            authRepository.signOut()
+                .onSuccess { _events.send(ProfileEvent.SignedOut) }
+                .onFailure { cause ->
+                    _uiState.update {
+                        it.copy(
+                            isSigningOut = false,
+                            error = cause.message ?: "Failed to sign out",
+                        )
+                    }
+                }
+        }
+    }
+
+    fun deleteAccount() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeletingAccount = true) }
+            authRepository.deleteAccount()
+                .onSuccess { _events.send(ProfileEvent.AccountDeleted) }
+                .onFailure { cause ->
+                    _uiState.update {
+                        it.copy(
+                            isDeletingAccount = false,
+                            error = cause.message ?: "Failed to delete account",
+                        )
+                    }
+                }
         }
     }
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
-    }
-
-    fun saveProfile() {
-        if (!validate()) return
-
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            val userId = supabase.auth.currentSessionOrNull()?.user?.id
-            if (userId == null) {
-                _uiState.update {
-                    it.copy(isLoading = false, error = "Session expired. Please sign in again.")
-                }
-                return@launch
-            }
-
-            runCatching {
-                val state = _uiState.value
-
-                supabase.postgrest["users"].update(
-                    ProfileUpdate(
-                        name = state.name.trim(),
-                        city = state.city.trim(),
-                        pincode = state.pincode.trim(),
-                        exam_tags = state.selectedExamTags.toList(),
-                        profile_complete = true,
-                    )
-                ) {
-                    filter { eq("id", userId) }
-                }
-
-                userPrefs.setProfileComplete(true)
-                userPrefs.setLocation(
-                    city = state.city.trim(),
-                    pincode = state.pincode.trim(),
-                )
-            }.fold(
-                onSuccess = {
-                    _uiState.update { it.copy(isLoading = false) }
-                    _events.send(ProfileSetupEvent.SetupComplete)
-                },
-                onFailure = { cause ->
-                    val message = when (cause) {
-                        is RestException -> "Failed to save profile. Please try again."
-                        is HttpRequestException -> "No internet connection. Please try again."
-                        else -> cause.message ?: "Something went wrong. Please try again."
-                    }
-                    _uiState.update { it.copy(isLoading = false, error = message) }
-                },
-            )
-        }
-    }
-
-    private fun validate(): Boolean {
-        var valid = true
-        val state = _uiState.value
-
-        if (state.name.isBlank()) {
-            _uiState.update { it.copy(nameError = "Name is required") }
-            valid = false
-        } else if (state.name.trim().length < 2) {
-            _uiState.update { it.copy(nameError = "Name must be at least 2 characters") }
-            valid = false
-        }
-
-        if (state.city.isBlank()) {
-            _uiState.update { it.copy(cityError = "City is required") }
-            valid = false
-        }
-
-        if (state.pincode.isBlank()) {
-            _uiState.update { it.copy(pincodeError = "Pincode is required") }
-            valid = false
-        } else if (state.pincode.length != 6) {
-            _uiState.update { it.copy(pincodeError = "Enter a valid 6-digit pincode") }
-            valid = false
-        }
-
-        return valid
     }
 }
