@@ -90,6 +90,7 @@ fun ListingDetailScreen(
     onNavigateBack: () -> Unit,
     onNavigateToChat: (conversationId: String) -> Unit,
     onNavigateToDonationRequest: (listingId: String) -> Unit,
+    onNavigateToDonationRequests: (listingId: String) -> Unit,
     onSellerClick: (userId: String) -> Unit,
     onSimilarListingClick: (listingId: String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel(),
@@ -107,6 +108,8 @@ fun ListingDetailScreen(
                     onNavigateToChat(event.conversationId)
                 is ListingDetailEvent.NavigateToDonationRequest ->
                     showDonationSheet = true
+                is ListingDetailEvent.NavigateToDonationRequests ->
+                    onNavigateToDonationRequests(event.listingId)
             }
         }
     }
@@ -312,13 +315,18 @@ fun ListingDetailScreen(
                         }
 
                         if (state.isOwnListing && state.listing?.type == "DONATE") {
+
                             Spacer(modifier = Modifier.height(20.dp))
+
                             HorizontalDivider(color = WarmBorder)
+
                             Spacer(modifier = Modifier.height(20.dp))
+
                             DonationRequestsSellerSection(
                                 listingId = state.listing!!.id,
-                                onAcceptSuccess = {
-                                    viewModel.load()
+                                onAcceptSuccess = { viewModel.load() },
+                                onSeeAllRequests = {
+                                    onNavigateToDonationRequests(state.listing!!.id)
                                 },
                             )
                         }
@@ -355,7 +363,7 @@ fun ListingDetailScreen(
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(32.dp).navigationBarsPadding())
                     }
                 }
             }

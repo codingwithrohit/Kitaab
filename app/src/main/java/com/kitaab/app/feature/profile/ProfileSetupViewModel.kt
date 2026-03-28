@@ -18,7 +18,11 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 
-val EXAM_TAGS = listOf("JEE", "NEET", "UPSC", "CAT", "GATE", "College", "Other")
+val EXAM_TAGS = listOf(
+    "JEE", "NEET", "UPSC", "CAT", "GATE", "CLAT",
+    "CA/CMA", "NDA", "SSC/Banking", "Class 10", "Class 11-12",
+    "College", "Literature", "History", "Commerce", "Non-fiction", "Other",
+)
 
 @Serializable
 private data class ProfileUpdate(

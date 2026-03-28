@@ -11,6 +11,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +37,8 @@ class ListingDetailViewModel @Inject constructor(
 
     private var chatJob: kotlinx.coroutines.Job? = null
 
+    private val referrerId: String? = savedStateHandle["referrerId"]
+
     init {
         load()
     }
@@ -60,13 +63,16 @@ class ListingDetailViewModel @Inject constructor(
                         .firstOrNull()
                 }.getOrNull()
 
+                val excludeIds = listOfNotNull(listingId, referrerId)
+                    .joinToString(",") { "\"$it\"" }
+
                 val similarListings = runCatching {
                     supabase.postgrest["listings"]
                         .select {
                             filter {
                                 eq("status", "ACTIVE")
-                                neq("id", listingId)
                                 if (listing.city != null) eq("city", listing.city)
+                                filterNot("id", FilterOperator.IN, "($excludeIds)")
                             }
                             order("created_at", order = Order.DESCENDING)
                             limit(6)
@@ -114,6 +120,12 @@ class ListingDetailViewModel @Inject constructor(
                     )
                 }
             }
+        }
+    }
+
+    fun onSeeAllRequestsClick() {
+        viewModelScope.launch {
+            _events.send(ListingDetailEvent.NavigateToDonationRequests(listingId))
         }
     }
 

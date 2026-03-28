@@ -43,7 +43,8 @@ fun MainScreen() {
             currentRoute == Route.Post.route ||
             currentRoute?.startsWith("listing_detail/") == true ||
             currentRoute?.startsWith("seller_profile/") == true ||
-            currentRoute?.startsWith("chat/") == true
+            currentRoute?.startsWith("chat/") == true ||
+            currentRoute?.startsWith("donation_requests/") == true
 
     Scaffold(
         bottomBar = {

@@ -42,6 +42,7 @@ import com.kitaab.app.ui.theme.WarmMuted
 fun DonationRequestsSellerSection(
     listingId: String,
     onAcceptSuccess: () -> Unit,
+    onSeeAllRequests: () -> Unit,
     viewModel: DonationRequestsSellerViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -118,8 +119,12 @@ fun DonationRequestsSellerSection(
             }
 
             else -> {
+                val preview = state.requests.take(3)
+                val remaining = state.requests.size - preview.size
+                val pendingCount = state.requests.count { it.request.status == "PENDING" }
+
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    state.requests.forEach { item ->
+                    preview.forEach { item ->
                         DonationRequestCard(
                             item = item,
                             isAccepting = state.isAccepting == item.request.id,
@@ -128,6 +133,21 @@ fun DonationRequestsSellerSection(
                             },
                         )
                     }
+
+                    if (remaining > 0) {
+                        androidx.compose.material3.OutlinedButton(
+                            onClick = onSeeAllRequests,
+                            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, com.kitaab.app.ui.theme.WarmBorder),
+                            modifier = androidx.compose.ui.Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = "See all $pendingCount pending requests",
+                                fontSize = 13.sp,
+                                color = Teal500,
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -135,7 +155,7 @@ fun DonationRequestsSellerSection(
 }
 
 @Composable
-private fun DonationRequestCard(
+fun DonationRequestCard(
     item: DonationRequestWithRequester,
     isAccepting: Boolean,
     onAccept: () -> Unit,

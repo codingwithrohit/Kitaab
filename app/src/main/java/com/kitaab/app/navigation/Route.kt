@@ -25,8 +25,10 @@ sealed class Route(val route: String) {
     data object Profile : Route("profile")
 
     // Detail screens
-    data object ListingDetail : Route("listing_detail/{listingId}") {
-        fun createRoute(listingId: String) = "listing_detail/$listingId"
+    data object ListingDetail : Route("listing_detail/{listingId}?referrer={referrerId}") {
+        fun createRoute(listingId: String, referrerId: String? = null) =
+            if (referrerId != null) "listing_detail/$listingId?referrer=$referrerId"
+            else "listing_detail/$listingId"
     }
 
     data object SellerProfile : Route("seller_profile/{userId}") {
@@ -35,5 +37,9 @@ sealed class Route(val route: String) {
 
     data object Chat : Route("chat/{conversationId}") {
         fun createRoute(conversationId: String) = "chat/$conversationId"
+    }
+
+    data object DonationRequests : Route("donation_requests/{listingId}") {
+        fun createRoute(listingId: String) = "donation_requests/$listingId"
     }
 }

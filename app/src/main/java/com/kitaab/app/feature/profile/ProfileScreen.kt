@@ -2,6 +2,7 @@ package com.kitaab.app.feature.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,15 +21,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Logout
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -58,7 +58,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -190,7 +189,7 @@ fun ProfileScreen(
                             )
                         } else {
                             Icon(
-                                Icons.Outlined.Logout,
+                                Icons.AutoMirrored.Outlined.Logout,
                                 contentDescription = "Sign out",
                                 tint = MaterialTheme.colorScheme.onBackground,
                             )
@@ -515,16 +514,53 @@ private fun OwnListingRow(
         else -> WarmMuted
     }
 
+    val statusLabel = when (listing.status) {
+        "ACTIVE" -> "Active"
+        "PAUSED" -> "Paused"
+        "RESERVED" -> "Reserved"
+        "COMPLETED" -> "Sold / Donated"
+        else -> listing.status
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable { onClick() }
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.Top,
         ) {
+            // Cover thumbnail
+            Box(
+                modifier = Modifier
+                    .size(width = 52.dp, height = 68.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (!listing.photoUrls.firstOrNull().isNullOrBlank()) {
+                    AsyncImage(
+                        model = listing.photoUrls.first(),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.MenuBook,
+                        contentDescription = null,
+                        tint = Teal500.copy(alpha = 0.5f),
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
             Column(modifier = Modifier.weight(1f)) {
+                // Title
                 Text(
                     text = listing.title,
                     fontSize = 14.sp,
@@ -534,37 +570,82 @@ private fun OwnListingRow(
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 18.sp,
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+
+                if (!listing.author.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = listing.author,
+                        fontSize = 12.sp,
+                        color = WarmMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Badges row
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
+                    // Status pill
                     Text(
-                        text = listing.status,
+                        text = statusLabel,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = statusColor,
+                        modifier = Modifier
+                            .background(
+                                statusColor.copy(alpha = 0.1f),
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
                     )
+
+                    // Type + price
                     Text(
                         text = if (listing.type == "DONATE") "FREE"
                         else listing.price?.let { "₹${it.toInt()}" } ?: "",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.SemiBold,
                         color = Teal500,
+                    )
+
+                    // Condition
+                    Text(
+                        text = listing.condition,
+                        fontSize = 11.sp,
+                        color = WarmMuted,
+                    )
+                }
+
+                // Location
+                val locationParts = listOfNotNull(
+                    listing.locality?.takeIf { it.isNotBlank() },
+                    listing.city?.takeIf { it.isNotBlank() },
+                ).joinToString(", ")
+
+                if (locationParts.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "📍 $locationParts",
+                        fontSize = 11.sp,
+                        color = WarmMuted,
                     )
                 }
             }
         }
 
-        // Action buttons — only for non-completed listings
-        if (listing.status != "COMPLETED") {
-            Spacer(modifier = Modifier.height(8.dp))
+        // Action buttons
+        if (listing.status != "COMPLETED" && listing.status != "RESERVED") {
+            Spacer(modifier = Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (listing.status == "ACTIVE") {
                     OutlinedButton(
                         onClick = onPause,
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                         modifier = Modifier.height(32.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, WarmBorder),
                     ) {
@@ -573,19 +654,20 @@ private fun OwnListingRow(
                     OutlinedButton(
                         onClick = onMarkSold,
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                         modifier = Modifier.height(32.dp),
                         border = androidx.compose.foundation.BorderStroke(1.dp, WarmBorder),
                     ) {
                         Text("Mark sold", fontSize = 12.sp, color = WarmMuted)
                     }
                 }
+
                 if (listing.status == "PAUSED") {
                     Button(
                         onClick = onReactivate,
                         colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
                         modifier = Modifier.height(32.dp),
                     ) {
                         Text("Reactivate", fontSize = 12.sp)

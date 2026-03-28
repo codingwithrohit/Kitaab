@@ -22,6 +22,7 @@ import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
 import com.kitaab.app.feature.chat.ChatScreen
+import com.kitaab.app.feature.donation.DonationRequestsScreen
 import com.kitaab.app.feature.explore.ExploreScreen
 import com.kitaab.app.feature.home.HomeScreen
 import com.kitaab.app.feature.inbox.InboxScreen
@@ -143,22 +144,34 @@ fun AppNavHost(
             )
         }
 
-        composable(Route.ListingDetail.route) {
+        composable(
+            route = Route.ListingDetail.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("listingId") { type = androidx.navigation.NavType.StringType },
+                androidx.navigation.navArgument("referrerId") {
+                    type = androidx.navigation.NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) {
             ListingDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToChat = { conversationId ->
                     navController.navigate(Route.Chat.createRoute(conversationId))
                 },
                 onNavigateToDonationRequest = { listingId ->
-                    // Phase 3 — donation request bottom sheet
-                    // For now navigate back
-                    navController.popBackStack()
+                    // Phase 3 donation request bottom sheet — handled inside screen
+                },
+                onNavigateToDonationRequests = { listingId ->
+                    navController.navigate(Route.DonationRequests.createRoute(listingId))
                 },
                 onSellerClick = { userId ->
                     navController.navigate(Route.SellerProfile.createRoute(userId))
                 },
                 onSimilarListingClick = { listingId ->
-                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                    val currentListingId = it.arguments?.getString("listingId")
+                    navController.navigate(Route.ListingDetail.createRoute(listingId, currentListingId))
                 },
             )
         }
@@ -217,6 +230,14 @@ fun AppNavHost(
 
         composable(Route.EditProfile.route) {
             EditProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(Route.DonationRequests.route) { backStackEntry ->
+            val listingId = backStackEntry.arguments?.getString("listingId") ?: return@composable
+            DonationRequestsScreen(
+                listingId = listingId,
                 onNavigateBack = { navController.popBackStack() },
             )
         }
