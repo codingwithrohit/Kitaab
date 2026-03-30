@@ -1,6 +1,5 @@
 package com.kitaab.app.domain.repository
 
-import com.kitaab.app.domain.model.DonationRequest
 import com.kitaab.app.domain.model.DonationRequestWithRequester
 
 interface DonationRequestRepository {
@@ -10,9 +9,7 @@ interface DonationRequestRepository {
         examTag: String?,
     ): Result<Unit>
 
-    suspend fun getRequestsForListing(
-        listingId: String,
-    ): Result<List<DonationRequestWithRequester>>
+    suspend fun getRequestsForListing(listingId: String): Result<List<DonationRequestWithRequester>>
 
     suspend fun acceptRequest(
         requestId: String,
@@ -20,5 +17,6 @@ interface DonationRequestRepository {
     ): Result<Unit>
 
     suspend fun getActiveRequestCount(userId: String): Result<Int>
+
     suspend fun getLastReceivedDonationDate(userId: String): Result<String?>
 }

@@ -21,7 +21,9 @@ import javax.inject.Inject
 
 sealed interface SplashDestination {
     data object Home : SplashDestination
+
     data object ProfileSetup : SplashDestination
+
     data object Onboarding : SplashDestination
 }
 
@@ -29,74 +31,78 @@ sealed interface SplashDestination {
 private data class UserProfileCheckRow(
     @SerialName("profile_complete") val profileComplete: Boolean = false,
 )
+
 @HiltViewModel
-class SplashViewModel @Inject constructor(
-    private val supabase: SupabaseClient,
-    private val userPrefs: UserPreferencesRepository,
-) : ViewModel() {
+class SplashViewModel
+    @Inject
+    constructor(
+        private val supabase: SupabaseClient,
+        private val userPrefs: UserPreferencesRepository,
+    ) : ViewModel() {
+        private val _destination = Channel<SplashDestination>(Channel.BUFFERED)
+        val destination = _destination.receiveAsFlow()
 
-    private val _destination = Channel<SplashDestination>(Channel.BUFFERED)
-    val destination = _destination.receiveAsFlow()
+        private val _isReady = MutableStateFlow(false)
+        val isReady = _isReady.asStateFlow()
 
-    private val _isReady = MutableStateFlow(false)
-    val isReady = _isReady.asStateFlow()
+        init {
+            checkSession()
+        }
 
-    init {
-        checkSession()
-    }
+        private fun checkSession() {
+            viewModelScope.launch {
+                // Guarantee minimum splash display time in parallel with session check
+                launch {
+                    delay(1200)
+                    _isReady.value = true
+                }
 
-    private fun checkSession() {
-        viewModelScope.launch {
-            // Guarantee minimum splash display time in parallel with session check
-            launch {
-                delay(1200)
-                _isReady.value = true
-            }
+                supabase.auth.sessionStatus.collect { status ->
+                    when (status) {
+                        is SessionStatus.Authenticated -> {
+                            // Supabase is source of truth — DataStore is just a local cache
+                            val profileComplete =
+                                runCatching {
+                                    val userId =
+                                        supabase.auth.currentSessionOrNull()?.user?.id
+                                            ?: return@collect
+                                    supabase.postgrest["users"]
+                                        .select { filter { eq("id", userId) } }
+                                        .decodeSingle<UserProfileCheckRow>()
+                                        .profileComplete
+                                }.getOrDefault(false)
 
-            supabase.auth.sessionStatus.collect { status ->
-                when (status) {
-                    is SessionStatus.Authenticated -> {
-                        // Supabase is source of truth — DataStore is just a local cache
-                        val profileComplete = runCatching {
-                            val userId = supabase.auth.currentSessionOrNull()?.user?.id
-                                ?: return@collect
-                            supabase.postgrest["users"]
-                                .select { filter { eq("id", userId) } }
-                                .decodeSingle<UserProfileCheckRow>()
-                                .profileComplete
-                        }.getOrDefault(false)
+                            // Sync DataStore cache to match Supabase
+                            userPrefs.setProfileComplete(profileComplete)
 
-                        // Sync DataStore cache to match Supabase
-                        userPrefs.setProfileComplete(profileComplete)
-
-                        _isReady.value = true
-                        if (profileComplete) {
-                            _destination.send(SplashDestination.Home)
-                        } else {
-                            _destination.send(SplashDestination.ProfileSetup)
+                            _isReady.value = true
+                            if (profileComplete) {
+                                _destination.send(SplashDestination.Home)
+                            } else {
+                                _destination.send(SplashDestination.ProfileSetup)
+                            }
+                            return@collect
                         }
-                        return@collect
-                    }
-                    is SessionStatus.NotAuthenticated -> {
-                        _isReady.value = true
-                        _destination.send(SplashDestination.Onboarding)
-                        return@collect
-                    }
-                    is SessionStatus.Initializing -> Unit
-                    is SessionStatus.RefreshFailure -> {
-                        // Local session exists, network failed — go to Home
-                        // and let Supabase retry token refresh in background
-                        val profileComplete = userPrefs.isProfileComplete.first()
-                        _isReady.value = true
-                        if (profileComplete) {
-                            _destination.send(SplashDestination.Home)
-                        } else {
-                            _destination.send(SplashDestination.ProfileSetup)
+                        is SessionStatus.NotAuthenticated -> {
+                            _isReady.value = true
+                            _destination.send(SplashDestination.Onboarding)
+                            return@collect
                         }
-                        return@collect
+                        is SessionStatus.Initializing -> Unit
+                        is SessionStatus.RefreshFailure -> {
+                            // Local session exists, network failed — go to Home
+                            // and let Supabase retry token refresh in background
+                            val profileComplete = userPrefs.isProfileComplete.first()
+                            _isReady.value = true
+                            if (profileComplete) {
+                                _destination.send(SplashDestination.Home)
+                            } else {
+                                _destination.send(SplashDestination.ProfileSetup)
+                            }
+                            return@collect
+                        }
                     }
                 }
             }
         }
     }
-}

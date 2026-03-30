@@ -11,6 +11,7 @@ sealed class Route(val route: String) {
     data object SignUp : Route("signup")
 
     data object ProfileSetup : Route("profile_setup")
+
     data object EditProfile : Route("edit_profile")
 
     // Main tabs
@@ -26,9 +27,14 @@ sealed class Route(val route: String) {
 
     // Detail screens
     data object ListingDetail : Route("listing_detail/{listingId}?referrer={referrerId}") {
-        fun createRoute(listingId: String, referrerId: String? = null) =
-            if (referrerId != null) "listing_detail/$listingId?referrer=$referrerId"
-            else "listing_detail/$listingId"
+        fun createRoute(
+            listingId: String,
+            referrerId: String? = null,
+        ) = if (referrerId != null) {
+            "listing_detail/$listingId?referrer=$referrerId"
+        } else {
+            "listing_detail/$listingId"
+        }
     }
 
     data object SellerProfile : Route("seller_profile/{userId}") {

@@ -39,29 +39,33 @@ fun ShelfRow(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .background(ShelfWood),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .background(ShelfWood),
         ) {
             Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier =
+                    Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.Bottom,
             ) {
                 listings.forEachIndexed { index, listing ->
-                    val spineHeight = remember(listing.id) {
-                        val seed = listing.id.hashCode()
-                        val rng = Random(seed)
-                        (50 + rng.nextInt(30)).dp
-                    }
-                    val spineWidth = remember(listing.id) {
-                        val seed = listing.id.hashCode() + 1
-                        val rng = Random(seed)
-                        (18 + rng.nextInt(12)).dp
-                    }
+                    val spineHeight =
+                        remember(listing.id) {
+                            val seed = listing.id.hashCode()
+                            val rng = Random(seed)
+                            (50 + rng.nextInt(30)).dp
+                        }
+                    val spineWidth =
+                        remember(listing.id) {
+                            val seed = listing.id.hashCode() + 1
+                            val rng = Random(seed)
+                            (18 + rng.nextInt(12)).dp
+                        }
 
                     val alpha = remember(listing.id) { Animatable(0f) }
                     val translationY = remember(listing.id) { Animatable(24f) }
@@ -81,10 +85,11 @@ fun ShelfRow(
                         width = spineWidth,
                         height = spineHeight,
                         onClick = { onListingClick(listing.id) },
-                        modifier = Modifier.graphicsLayer {
-                            this.alpha = alpha.value
-                            this.translationY = translationY.value
-                        },
+                        modifier =
+                            Modifier.graphicsLayer {
+                                this.alpha = alpha.value
+                                this.translationY = translationY.value
+                            },
                     )
                 }
 
@@ -96,16 +101,18 @@ fun ShelfRow(
 
         // Wooden plank at the bottom of the shelf
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp)
-                .background(ShelfPlank),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .background(ShelfPlank),
         )
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .background(ShelfShadow),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(ShelfShadow),
         )
     }
 }

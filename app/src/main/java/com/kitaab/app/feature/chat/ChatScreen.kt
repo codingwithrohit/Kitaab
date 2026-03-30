@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.domain.model.Message
-import com.kitaab.app.domain.model.Transaction
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal900
@@ -122,18 +121,20 @@ fun ChatScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
             )
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .navigationBarsPadding()
-                .imePadding(),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .navigationBarsPadding()
+                    .imePadding(),
         ) {
             // Transaction banner — shown when transaction exists or can be initiated
             TransactionBanner(
@@ -170,14 +171,16 @@ fun ChatScreen(
                 else -> {
                     LazyColumn(
                         state = listState,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(4.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                            horizontal = 16.dp,
-                            vertical = 12.dp,
-                        ),
+                        contentPadding =
+                            androidx.compose.foundation.layout.PaddingValues(
+                                horizontal = 16.dp,
+                                vertical = 12.dp,
+                            ),
                     ) {
                         items(
                             items = state.messages,
@@ -234,10 +237,11 @@ private fun TransactionBanner(
     // No banner if transaction is disputed
     if (transaction?.disputed == true) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.errorContainer)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             Text(
                 text = "⚠️ Dispute raised",
@@ -258,10 +262,11 @@ private fun TransactionBanner(
     // Seller: no transaction yet — show initiate button
     if (transaction == null && state.isSeller) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Teal50)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(Teal50)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             Text(
                 text = "Ready to hand off the book?",
@@ -295,10 +300,11 @@ private fun TransactionBanner(
     // Buyer: no transaction yet — wait for seller
     if (transaction == null && !state.isSeller) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Teal50)
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .background(Teal50)
+                    .padding(horizontal = 16.dp, vertical = 10.dp),
         ) {
             Text(
                 text = "Waiting for seller to initiate handoff…",
@@ -313,23 +319,29 @@ private fun TransactionBanner(
     if (transaction == null) return
 
     // Transaction exists — show handoff details + confirm/dispute
-    val currentUserConfirmed = if (state.isSeller) transaction.confirmedBySeller
-    else transaction.confirmedByBuyer
+    val currentUserConfirmed =
+        if (state.isSeller) {
+            transaction.confirmedBySeller
+        } else {
+            transaction.confirmedByBuyer
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Teal50)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(Teal50)
+                .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
         // Handoff method + code
         Row(verticalAlignment = Alignment.CenterVertically) {
-            val methodLabel = when (transaction.handoffMethod) {
-                "MEETUP" -> "📍 Meetup"
-                "PORTER" -> "🚚 Porter / Courier"
-                "POST" -> "📦 Post / Courier"
-                else -> transaction.handoffMethod ?: ""
-            }
+            val methodLabel =
+                when (transaction.handoffMethod) {
+                    "MEETUP" -> "📍 Meetup"
+                    "PORTER" -> "🚚 Porter / Courier"
+                    "POST" -> "📦 Post / Courier"
+                    else -> transaction.handoffMethod ?: ""
+                }
             Text(
                 text = methodLabel,
                 fontSize = 13.sp,
@@ -352,11 +364,12 @@ private fun TransactionBanner(
 
         // Confirmation status
         Text(
-            text = buildString {
-                append("Seller: ${if (transaction.confirmedBySeller) "✓ Confirmed" else "Pending"}")
-                append("   ")
-                append("Buyer: ${if (transaction.confirmedByBuyer) "✓ Confirmed" else "Pending"}")
-            },
+            text =
+                buildString {
+                    append("Seller: ${if (transaction.confirmedBySeller) "✓ Confirmed" else "Pending"}")
+                    append("   ")
+                    append("Buyer: ${if (transaction.confirmedByBuyer) "✓ Confirmed" else "Pending"}")
+                },
             fontSize = 12.sp,
             color = WarmMuted,
         )
@@ -401,14 +414,13 @@ private fun TransactionBanner(
 }
 
 @Composable
-private fun HandoffMethodSheet(
-    onMethodSelected: (String) -> Unit,
-) {
+private fun HandoffMethodSheet(onMethodSelected: (String) -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 32.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 32.dp),
     ) {
         Text(
             text = "How will you hand off the book?",
@@ -436,9 +448,10 @@ private fun HandoffMethodSheet(
                 shape = RoundedCornerShape(10.dp),
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
                 ) {
                     Text(
                         text = title,
@@ -467,33 +480,47 @@ private fun MessageBubble(
     message: Message,
     isFromCurrentUser: Boolean,
 ) {
-    val bubbleColor = if (isFromCurrentUser) Teal500
-    else MaterialTheme.colorScheme.surfaceVariant
+    val bubbleColor =
+        if (isFromCurrentUser) {
+            Teal500
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        }
 
-    val textColor = if (isFromCurrentUser) Color.White
-    else MaterialTheme.colorScheme.onSurfaceVariant
+    val textColor =
+        if (isFromCurrentUser) {
+            Color.White
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
 
-    val shape = if (isFromCurrentUser) {
-        RoundedCornerShape(
-            topStart = 16.dp, topEnd = 16.dp,
-            bottomStart = 16.dp, bottomEnd = 4.dp,
-        )
-    } else {
-        RoundedCornerShape(
-            topStart = 4.dp, topEnd = 16.dp,
-            bottomStart = 16.dp, bottomEnd = 16.dp,
-        )
-    }
+    val shape =
+        if (isFromCurrentUser) {
+            RoundedCornerShape(
+                topStart = 16.dp,
+                topEnd = 16.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 4.dp,
+            )
+        } else {
+            RoundedCornerShape(
+                topStart = 4.dp,
+                topEnd = 16.dp,
+                bottomStart = 16.dp,
+                bottomEnd = 16.dp,
+            )
+        }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isFromCurrentUser) Arrangement.End else Arrangement.Start,
     ) {
         Box(
-            modifier = Modifier
-                .widthIn(max = 280.dp)
-                .background(bubbleColor, shape)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+            modifier =
+                Modifier
+                    .widthIn(max = 280.dp)
+                    .background(bubbleColor, shape)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
         ) {
             Column {
                 Text(
@@ -522,10 +549,11 @@ private fun MessageInputBar(
     onSend: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OutlinedTextField(
@@ -536,26 +564,29 @@ private fun MessageInputBar(
             },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(24.dp),
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                ),
             maxLines = 4,
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Teal500,
-                unfocusedBorderColor = WarmBorder,
-            ),
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Teal500,
+                    unfocusedBorderColor = WarmBorder,
+                ),
         )
 
         Spacer(modifier = Modifier.width(8.dp))
 
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(44.dp)
-                .background(
-                    if (text.isBlank()) WarmBorder else Teal500,
-                    shape = RoundedCornerShape(22.dp),
-                ),
+            modifier =
+                Modifier
+                    .size(44.dp)
+                    .background(
+                        if (text.isBlank()) WarmBorder else Teal500,
+                        shape = RoundedCornerShape(22.dp),
+                    ),
         ) {
             if (isSending) {
                 CircularProgressIndicator(
@@ -582,23 +613,26 @@ private fun MessageInputBar(
 
 private fun formatMessageTime(isoTimestamp: String): String {
     return try {
-        val sdf = java.text.SimpleDateFormat(
-            "yyyy-MM-dd'T'HH:mm:ss",
-            java.util.Locale.getDefault(),
-        )
+        val sdf =
+            java.text.SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss",
+                java.util.Locale.getDefault(),
+            )
         sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        val date = sdf.parse(isoTimestamp.substringBefore(".").substringBefore("+"))
-            ?: return ""
+        val date =
+            sdf.parse(isoTimestamp.substringBefore(".").substringBefore("+"))
+                ?: return ""
         val cal = java.util.Calendar.getInstance()
         cal.time = date
         val hour = cal.get(java.util.Calendar.HOUR_OF_DAY)
         val minute = cal.get(java.util.Calendar.MINUTE).toString().padStart(2, '0')
         val amPm = if (hour < 12) "AM" else "PM"
-        val displayHour = when {
-            hour == 0 -> 12
-            hour > 12 -> hour - 12
-            else -> hour
-        }
+        val displayHour =
+            when {
+                hour == 0 -> 12
+                hour > 12 -> hour - 12
+                else -> hour
+            }
         "$displayHour:$minute $amPm"
     } catch (e: Exception) {
         ""

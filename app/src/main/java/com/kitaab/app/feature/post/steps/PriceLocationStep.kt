@@ -23,8 +23,6 @@ import androidx.compose.material.icons.outlined.LocationCity
 import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material.icons.outlined.Pin
 import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -63,17 +61,19 @@ fun PriceLocationStep(
 ) {
     val focusManager = LocalFocusManager.current
 
-    val locationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) onFetchLocation()
-    }
+    val locationPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { granted ->
+            if (granted) onFetchLocation()
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
     ) {
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -85,10 +85,12 @@ fun PriceLocationStep(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = if (state.listingType == ListingType.SELL)
-                "Set your price and pickup location"
-            else
-                "Set your pickup location",
+            text =
+                if (state.listingType == ListingType.SELL) {
+                    "Set your price and pickup location"
+                } else {
+                    "Set your pickup location"
+                },
             fontSize = 14.sp,
             color = WarmMuted,
         )
@@ -109,13 +111,15 @@ fun PriceLocationStep(
                         modifier = Modifier.size(18.dp),
                     )
                 },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Decimal,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Decimal,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -169,9 +173,11 @@ fun PriceLocationStep(
                 enabled = !state.isFetchingLocation,
                 shape = RoundedCornerShape(8.dp),
                 border = BorderStroke(1.dp, Teal500),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    horizontal = 10.dp, vertical = 6.dp,
-                ),
+                contentPadding =
+                    androidx.compose.foundation.layout.PaddingValues(
+                        horizontal = 10.dp,
+                        vertical = 6.dp,
+                    ),
             ) {
                 if (state.isFetchingLocation) {
                     CircularProgressIndicator(
@@ -213,13 +219,15 @@ fun PriceLocationStep(
                     modifier = Modifier.size(18.dp),
                 )
             },
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
-                imeAction = ImeAction.Next,
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next,
+                ),
+            keyboardActions =
+                KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                ),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
@@ -242,13 +250,15 @@ fun PriceLocationStep(
                     modifier = Modifier.size(18.dp),
                 )
             },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next,
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Down) },
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next,
+                ),
+            keyboardActions =
+                KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                ),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
@@ -270,13 +280,15 @@ fun PriceLocationStep(
                     modifier = Modifier.size(18.dp),
                 )
             },
-            keyboardOptions = KeyboardOptions(
-                capitalization = KeyboardCapitalization.Words,
-                imeAction = ImeAction.Done,
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = { focusManager.clearFocus() },
-            ),
+            keyboardOptions =
+                KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Done,
+                ),
+            keyboardActions =
+                KeyboardActions(
+                    onDone = { focusManager.clearFocus() },
+                ),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
             colors = kitaabTextFieldColors(),
@@ -327,20 +339,28 @@ private fun ListingPreviewCard(state: PostUiState) {
                     PreviewBadge(text = state.condition.label, color = Teal500)
                     Spacer(modifier = Modifier.width(6.dp))
                 }
-                val typeLabel = if (state.listingType == ListingType.SELL) {
-                    if (state.price.isNotBlank()) "₹${state.price}" else "SELL"
-                } else "FREE"
+                val typeLabel =
+                    if (state.listingType == ListingType.SELL) {
+                        if (state.price.isNotBlank()) "₹${state.price}" else "SELL"
+                    } else {
+                        "FREE"
+                    }
                 PreviewBadge(
                     text = typeLabel,
-                    color = if (state.listingType == ListingType.DONATE) Teal500
-                    else MaterialTheme.colorScheme.primary,
+                    color =
+                        if (state.listingType == ListingType.DONATE) {
+                            Teal500
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
                 )
             }
-            val locationParts = listOfNotNull(
-                state.locality.trim().ifBlank { null },
-                state.city.trim().ifBlank { null },
-                state.pincode.trim().ifBlank { null },
-            )
+            val locationParts =
+                listOfNotNull(
+                    state.locality.trim().ifBlank { null },
+                    state.city.trim().ifBlank { null },
+                    state.pincode.trim().ifBlank { null },
+                )
             if (locationParts.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(

@@ -97,12 +97,13 @@ fun LoginScreen(
         containerColor = MaterialTheme.colorScheme.background,
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .statusBarsPadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.Center,
         ) {
             AppLogoMark()
@@ -125,7 +126,7 @@ fun LoginScreen(
             GoogleSignInButton(
                 onClick = { viewModel.signInWithGoogle(context) },
                 isLoading = state.isGoogleLoading,
-                enabled = !state.isLoading && !state.isGoogleLoading
+                enabled = !state.isLoading && !state.isGoogleLoading,
             )
             Spacer(modifier = Modifier.height(24.dp))
             Row(
@@ -151,13 +152,15 @@ fun LoginScreen(
                         modifier = Modifier.size(18.dp),
                     )
                 },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -187,13 +190,15 @@ fun LoginScreen(
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = { focusManager.clearFocus() },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -205,9 +210,10 @@ fun LoginScreen(
                 enabled = !state.isLoading && !state.isGoogleLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(
@@ -286,14 +292,16 @@ private fun GoogleSignInButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
+        colors =
+            ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(52.dp)
-            .border(1.dp, WarmBorder, RoundedCornerShape(12.dp)),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(52.dp)
+                .border(1.dp, WarmBorder, RoundedCornerShape(12.dp)),
     ) {
         if (isLoading) {
             CircularProgressIndicator(

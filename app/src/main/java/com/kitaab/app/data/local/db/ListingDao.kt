@@ -14,7 +14,10 @@ interface ListingDao {
     suspend fun upsertAll(listings: List<CachedListing>)
 
     @Query("UPDATE own_listings SET status = :status WHERE id = :id")
-    suspend fun updateStatus(id: String, status: String)
+    suspend fun updateStatus(
+        id: String,
+        status: String,
+    )
 
     @Query("DELETE FROM own_listings")
     suspend fun clear()

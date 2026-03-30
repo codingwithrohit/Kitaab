@@ -12,5 +12,6 @@ import androidx.room.TypeConverters
 @TypeConverters(Converters::class)
 abstract class KitaabDatabase : RoomDatabase() {
     abstract fun userProfileDao(): UserProfileDao
+
     abstract fun listingDao(): ListingDao
 }

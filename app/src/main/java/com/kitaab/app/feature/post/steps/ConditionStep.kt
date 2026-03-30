@@ -25,8 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kitaab.app.feature.post.BookCondition
-import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal50
+import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
 
@@ -37,9 +37,10 @@ fun ConditionStep(
     onConditionSelected: (BookCondition) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
     ) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -88,10 +89,11 @@ private fun ConditionCard(
     val containerColor = if (isSelected) Teal50 else MaterialTheme.colorScheme.surface
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
-            .clickable { onClick() },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
+                .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -115,8 +117,12 @@ private fun ConditionCard(
                 )
             }
             Icon(
-                imageVector = if (isSelected) Icons.Outlined.CheckCircle
-                else Icons.Outlined.RadioButtonUnchecked,
+                imageVector =
+                    if (isSelected) {
+                        Icons.Outlined.CheckCircle
+                    } else {
+                        Icons.Outlined.RadioButtonUnchecked
+                    },
                 contentDescription = null,
                 tint = if (isSelected) Teal500 else WarmMuted,
                 modifier = Modifier.size(22.dp),

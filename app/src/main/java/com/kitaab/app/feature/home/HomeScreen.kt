@@ -151,13 +151,14 @@ fun HomeScreen(
 
                 item(key = "recent_header") {
                     Text(
-                        text = when (state.sortOption) {
-                            HomeSortOption.RECENT -> "Recent listings"
-                            HomeSortOption.OLDEST -> "Oldest listings"
-                            HomeSortOption.PRICE_LOW_HIGH -> "Listings: cheap first"
-                            HomeSortOption.PRICE_HIGH_LOW -> "Listings: expensive first"
-                            HomeSortOption.NEARBY -> "Nearby listings"
-                        },
+                        text =
+                            when (state.sortOption) {
+                                HomeSortOption.RECENT -> "Recent listings"
+                                HomeSortOption.OLDEST -> "Oldest listings"
+                                HomeSortOption.PRICE_LOW_HIGH -> "Listings: cheap first"
+                                HomeSortOption.PRICE_HIGH_LOW -> "Listings: expensive first"
+                                HomeSortOption.NEARBY -> "Nearby listings"
+                            },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -170,9 +171,10 @@ fun HomeScreen(
                     item(key = "loading_initial") {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
                         ) {
                             CircularProgressIndicator(color = Teal500)
                         }
@@ -183,9 +185,10 @@ fun HomeScreen(
                     item(key = "empty_state") {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(40.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(40.dp),
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(text = "📚", fontSize = 48.sp)
@@ -233,9 +236,10 @@ fun HomeScreen(
                     item(key = "loading_more") {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                         ) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp),
@@ -250,9 +254,10 @@ fun HomeScreen(
                     item(key = "end_of_list") {
                         Box(
                             contentAlignment = Alignment.Center,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 16.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
                         ) {
                             Text(
                                 text = "You've seen all listings",
@@ -278,9 +283,10 @@ private fun ListingsGrid(
     onListingClick: (String) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         listings.chunked(2).forEach { rowItems ->
@@ -316,23 +322,32 @@ private fun HomeTopBar(
     var showSortMenu by rememberSaveable { mutableStateOf(false) }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp, bottom = 8.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp, bottom = 8.dp),
     ) {
-        val greeting = when (java.util.Calendar.getInstance()
-            .get(java.util.Calendar.HOUR_OF_DAY)) {
-            in 5..11 -> "Good morning"
-            in 12..16 -> "Good afternoon"
-            else -> "Good evening"
-        }
-        val displayName = userName?.takeIf { it.isNotBlank() }
-            ?.split(" ")?.firstOrNull()
+        val greeting =
+            when (
+                java.util.Calendar.getInstance()
+                    .get(java.util.Calendar.HOUR_OF_DAY)
+            ) {
+                in 5..11 -> "Good morning"
+                in 12..16 -> "Good afternoon"
+                else -> "Good evening"
+            }
+        val displayName =
+            userName?.takeIf { it.isNotBlank() }
+                ?.split(" ")?.firstOrNull()
 
         Text(
-            text = if (displayName != null) "$greeting, $displayName 👋"
-            else "$greeting 👋",
+            text =
+                if (displayName != null) {
+                    "$greeting, $displayName 👋"
+                } else {
+                    "$greeting 👋"
+                },
             fontSize = 22.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onBackground,
@@ -346,10 +361,11 @@ private fun HomeTopBar(
         Spacer(modifier = Modifier.height(16.dp))
 
         Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .clickable { onSearchClick() },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onSearchClick() },
             shape = RoundedCornerShape(12.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(1.dp, WarmBorder),
@@ -383,10 +399,11 @@ private fun HomeTopBar(
         ) {
             Box {
                 Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { showSortMenu = true }
-                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    modifier =
+                        Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { showSortMenu = true }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
@@ -414,10 +431,18 @@ private fun HomeTopBar(
                                 Text(
                                     text = option.label,
                                     fontSize = 14.sp,
-                                    fontWeight = if (option == sortOption)
-                                        FontWeight.SemiBold else FontWeight.Normal,
-                                    color = if (option == sortOption) Teal500
-                                    else MaterialTheme.colorScheme.onBackground,
+                                    fontWeight =
+                                        if (option == sortOption) {
+                                            FontWeight.SemiBold
+                                        } else {
+                                            FontWeight.Normal
+                                        },
+                                    color =
+                                        if (option == sortOption) {
+                                            Teal500
+                                        } else {
+                                            MaterialTheme.colorScheme.onBackground
+                                        },
                                 )
                             },
                             onClick = {
@@ -431,8 +456,12 @@ private fun HomeTopBar(
 
             IconButton(onClick = onViewModeToggle) {
                 Icon(
-                    imageVector = if (viewMode == HomeViewMode.LIST)
-                        Icons.Outlined.GridView else Icons.AutoMirrored.Outlined.ViewList,
+                    imageVector =
+                        if (viewMode == HomeViewMode.LIST) {
+                            Icons.Outlined.GridView
+                        } else {
+                            Icons.AutoMirrored.Outlined.ViewList
+                        },
                     contentDescription = "Toggle view",
                     tint = MaterialTheme.colorScheme.onBackground,
                 )
@@ -463,16 +492,18 @@ private fun ExamTagChips(
                         fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
                     )
                 },
-                colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = Teal50,
-                    selectedLabelColor = Teal900,
-                ),
-                border = FilterChipDefaults.filterChipBorder(
-                    enabled = true,
-                    selected = selected,
-                    selectedBorderColor = Teal500,
-                    selectedBorderWidth = 1.5.dp,
-                ),
+                colors =
+                    FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = Teal50,
+                        selectedLabelColor = Teal900,
+                    ),
+                border =
+                    FilterChipDefaults.filterChipBorder(
+                        enabled = true,
+                        selected = selected,
+                        selectedBorderColor = Teal500,
+                        selectedBorderWidth = 1.5.dp,
+                    ),
                 shape = RoundedCornerShape(8.dp),
             )
         }

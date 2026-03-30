@@ -21,121 +21,127 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ListingDetailViewModel @Inject constructor(
-    private val supabase: SupabaseClient,
-    private val conversationRepository: ConversationRepository,
-    savedStateHandle: SavedStateHandle,
-) : ViewModel() {
+class ListingDetailViewModel
+    @Inject
+    constructor(
+        private val supabase: SupabaseClient,
+        private val conversationRepository: ConversationRepository,
+        savedStateHandle: SavedStateHandle,
+    ) : ViewModel() {
+        private val listingId: String = checkNotNull(savedStateHandle["listingId"])
 
-    private val listingId: String = checkNotNull(savedStateHandle["listingId"])
+        private val _uiState = MutableStateFlow(ListingDetailUiState())
+        val uiState = _uiState.asStateFlow()
 
-    private val _uiState = MutableStateFlow(ListingDetailUiState())
-    val uiState = _uiState.asStateFlow()
+        private val _events = Channel<ListingDetailEvent>(Channel.BUFFERED)
+        val events = _events.receiveAsFlow()
 
-    private val _events = Channel<ListingDetailEvent>(Channel.BUFFERED)
-    val events = _events.receiveAsFlow()
+        private var chatJob: kotlinx.coroutines.Job? = null
 
-    private var chatJob: kotlinx.coroutines.Job? = null
+        private val referrerId: String? = savedStateHandle["referrerId"]
 
-    private val referrerId: String? = savedStateHandle["referrerId"]
+        init {
+            load()
+        }
 
-    init {
-        load()
-    }
+        fun load() {
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true, error = null) }
 
-    fun load() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+                runCatching {
+                    val currentUserId = supabase.auth.currentSessionOrNull()?.user?.id
 
-            runCatching {
-                val currentUserId = supabase.auth.currentSessionOrNull()?.user?.id
+                    val listing =
+                        supabase.postgrest["listings"]
+                            .select { filter { eq("id", listingId) } }
+                            .decodeList<Listing>()
+                            .firstOrNull()
+                            ?: error("Listing not found")
 
-                val listing = supabase.postgrest["listings"]
-                    .select { filter { eq("id", listingId) } }
-                    .decodeList<Listing>()
-                    .firstOrNull()
-                    ?: error("Listing not found")
+                    val seller =
+                        runCatching {
+                            supabase.postgrest["users"]
+                                .select { filter { eq("id", listing.sellerId) } }
+                                .decodeList<UserProfile>()
+                                .firstOrNull()
+                        }.getOrNull()
 
-                val seller = runCatching {
-                    supabase.postgrest["users"]
-                        .select { filter { eq("id", listing.sellerId) } }
-                        .decodeList<UserProfile>()
-                        .firstOrNull()
-                }.getOrNull()
+                    val excludeIds =
+                        listOfNotNull(listingId, referrerId)
+                            .joinToString(",") { "\"$it\"" }
 
-                val excludeIds = listOfNotNull(listingId, referrerId)
-                    .joinToString(",") { "\"$it\"" }
+                    val similarListings =
+                        runCatching {
+                            supabase.postgrest["listings"]
+                                .select {
+                                    filter {
+                                        eq("status", "ACTIVE")
+                                        if (listing.city != null) eq("city", listing.city)
+                                        filterNot("id", FilterOperator.IN, "($excludeIds)")
+                                    }
+                                    order("created_at", order = Order.DESCENDING)
+                                    limit(6)
+                                }
+                                .decodeList<Listing>()
+                        }.getOrDefault(emptyList())
 
-                val similarListings = runCatching {
-                    supabase.postgrest["listings"]
-                        .select {
-                            filter {
-                                eq("status", "ACTIVE")
-                                if (listing.city != null) eq("city", listing.city)
-                                filterNot("id", FilterOperator.IN, "($excludeIds)")
-                            }
-                            order("created_at", order = Order.DESCENDING)
-                            limit(6)
+                    _uiState.update {
+                        it.copy(
+                            listing = listing,
+                            seller = seller,
+                            similarListings = similarListings,
+                            isLoading = false,
+                            isOwnListing = currentUserId == listing.sellerId,
+                        )
+                    }
+                }.onFailure { cause ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = cause.message ?: "Failed to load listing",
+                        )
+                    }
+                }
+            }
+        }
+
+        fun onMessageSellerClick() {
+            val listing = _uiState.value.listing ?: return
+            if (chatJob?.isActive == true) return
+
+            chatJob =
+                viewModelScope.launch {
+                    _uiState.update { it.copy(isChatLoading = true) }
+                    conversationRepository.getOrCreateConversation(
+                        listingId = listing.id,
+                        sellerId = listing.sellerId,
+                    ).onSuccess { conversation ->
+                        _uiState.update { it.copy(isChatLoading = false) }
+                        _events.send(ListingDetailEvent.NavigateToChat(conversationId = conversation.id))
+                    }.onFailure { cause ->
+                        _uiState.update {
+                            it.copy(
+                                isChatLoading = false,
+                                error = cause.message ?: "Could not open chat",
+                            )
                         }
-                        .decodeList<Listing>()
-                }.getOrDefault(emptyList())
+                    }
+                }
+        }
 
-                _uiState.update {
-                    it.copy(
-                        listing = listing,
-                        seller = seller,
-                        similarListings = similarListings,
-                        isLoading = false,
-                        isOwnListing = currentUserId == listing.sellerId,
-                    )
-                }
-            }.onFailure { cause ->
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = cause.message ?: "Failed to load listing",
-                    )
-                }
+        fun onSeeAllRequestsClick() {
+            viewModelScope.launch {
+                _events.send(ListingDetailEvent.NavigateToDonationRequests(listingId))
             }
         }
-    }
 
-    fun onMessageSellerClick() {
-        val listing = _uiState.value.listing ?: return
-        if (chatJob?.isActive == true) return
-
-        chatJob = viewModelScope.launch {
-            _uiState.update { it.copy(isChatLoading = true) }
-            conversationRepository.getOrCreateConversation(
-                listingId = listing.id,
-                sellerId = listing.sellerId,
-            ).onSuccess { conversation ->
-                _uiState.update { it.copy(isChatLoading = false) }
-                _events.send(ListingDetailEvent.NavigateToChat(conversationId = conversation.id))
-            }.onFailure { cause ->
-                _uiState.update {
-                    it.copy(
-                        isChatLoading = false,
-                        error = cause.message ?: "Could not open chat",
-                    )
-                }
+        fun onRequestDonationClick() {
+            viewModelScope.launch {
+                _events.send(ListingDetailEvent.NavigateToDonationRequest(listingId = listingId))
             }
         }
-    }
 
-    fun onSeeAllRequestsClick() {
-        viewModelScope.launch {
-            _events.send(ListingDetailEvent.NavigateToDonationRequests(listingId))
+        fun clearError() {
+            _uiState.update { it.copy(error = null) }
         }
     }
-
-    fun onRequestDonationClick() {
-        viewModelScope.launch {
-            _events.send(ListingDetailEvent.NavigateToDonationRequest(listingId = listingId))
-        }
-    }
-
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
-    }
-}

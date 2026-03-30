@@ -1,6 +1,5 @@
 package com.kitaab.app.di
 
-
 import com.kitaab.app.data.repository.AuthRepositoryImpl
 import com.kitaab.app.data.repository.ConversationRepositoryImpl
 import com.kitaab.app.data.repository.DonationRequestRepositoryImpl
@@ -18,28 +17,19 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-
     @Binds
     @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
 
     @Binds
     @Singleton
-    abstract fun bindConversationRepository(
-        impl: ConversationRepositoryImpl,
-    ): ConversationRepository
+    abstract fun bindConversationRepository(impl: ConversationRepositoryImpl): ConversationRepository
 
     @Binds
     @Singleton
-    abstract fun bindDonationRequestRepository(
-        impl: DonationRequestRepositoryImpl,
-    ): DonationRequestRepository
+    abstract fun bindDonationRequestRepository(impl: DonationRequestRepositoryImpl): DonationRequestRepository
 
     @Binds
     @Singleton
-    abstract fun bindTransactionRepository(
-        impl: TransactionRepositoryImpl,
-    ): TransactionRepository
-
-
+    abstract fun bindTransactionRepository(impl: TransactionRepositoryImpl): TransactionRepository
 }

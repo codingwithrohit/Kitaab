@@ -126,13 +126,15 @@ fun SignUpScreen(
                 },
                 isError = state.emailError != null,
                 supportingText = state.emailError?.let { { Text(it) } },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -162,13 +164,15 @@ fun SignUpScreen(
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 isError = state.passwordError != null,
                 supportingText = state.passwordError?.let { { Text(it) } },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -198,13 +202,15 @@ fun SignUpScreen(
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 isError = state.confirmPasswordError != null,
                 supportingText = state.confirmPasswordError?.let { { Text(it) } },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Password,
+                        imeAction = ImeAction.Done,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = { focusManager.clearFocus() },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -216,9 +222,10 @@ fun SignUpScreen(
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(

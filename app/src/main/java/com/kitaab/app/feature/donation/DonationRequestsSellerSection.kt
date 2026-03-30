@@ -74,9 +74,10 @@ fun DonationRequestsSellerSection(
             if (state.requests.isNotEmpty()) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(Teal500, CircleShape),
+                    modifier =
+                        Modifier
+                            .size(24.dp)
+                            .background(Teal500, CircleShape),
                 ) {
                     Text(
                         text = state.requests.count { it.request.status == "PENDING" }.toString(),
@@ -94,9 +95,10 @@ fun DonationRequestsSellerSection(
             state.isLoading -> {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(80.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(80.dp),
                 ) {
                     CircularProgressIndicator(color = Teal500, modifier = Modifier.size(24.dp))
                 }
@@ -160,28 +162,33 @@ fun DonationRequestCard(
     isAccepting: Boolean,
     onAccept: () -> Unit,
 ) {
-    val statusColor = when (item.request.status) {
-        "ACCEPTED" -> Teal500
-        "REJECTED" -> WarmMuted
-        else -> MaterialTheme.colorScheme.onBackground
-    }
+    val statusColor =
+        when (item.request.status) {
+            "ACCEPTED" -> Teal500
+            "REJECTED" -> WarmMuted
+            else -> MaterialTheme.colorScheme.onBackground
+        }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = when (item.request.status) {
-                "ACCEPTED" -> Teal50
-                else -> MaterialTheme.colorScheme.surface
-            },
-        ),
-        border = androidx.compose.foundation.BorderStroke(
-            width = 0.5.dp,
-            color = when (item.request.status) {
-                "ACCEPTED" -> Teal500.copy(alpha = 0.4f)
-                else -> WarmBorder
-            },
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    when (item.request.status) {
+                        "ACCEPTED" -> Teal50
+                        else -> MaterialTheme.colorScheme.surface
+                    },
+            ),
+        border =
+            androidx.compose.foundation.BorderStroke(
+                width = 0.5.dp,
+                color =
+                    when (item.request.status) {
+                        "ACCEPTED" -> Teal500.copy(alpha = 0.4f)
+                        else -> WarmBorder
+                    },
+            ),
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -211,9 +218,10 @@ fun DonationRequestCard(
                             fontSize = 11.sp,
                             color = Teal900,
                             fontWeight = FontWeight.Medium,
-                            modifier = Modifier
-                                .background(Teal50, RoundedCornerShape(4.dp))
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                            modifier =
+                                Modifier
+                                    .background(Teal50, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                     }
@@ -232,9 +240,10 @@ fun DonationRequestCard(
                     text = item.request.examTag,
                     fontSize = 11.sp,
                     color = Teal900,
-                    modifier = Modifier
-                        .background(Teal50, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    modifier =
+                        Modifier
+                            .background(Teal50, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
                 )
             }
 

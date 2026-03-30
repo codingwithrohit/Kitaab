@@ -120,9 +120,10 @@ fun ProfileScreen(
                         showDeleteDialog = false
                         viewModel.deleteAccount()
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                    ),
+                    colors =
+                        ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                        ),
                 ) {
                     Text("Delete")
                 }
@@ -196,18 +197,20 @@ fun ProfileScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
             )
         },
     ) { innerPadding ->
         PullToRefreshBox(
             isRefreshing = state.isRefreshing,
             onRefresh = { viewModel.load(showFullLoader = false) },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             if (state.isLoading && state.profile == null) {
                 Box(
@@ -245,9 +248,10 @@ fun ProfileScreen(
                             contentColor = Teal500,
                             indicator = { tabPositions ->
                                 SecondaryIndicator(
-                                    modifier = Modifier.tabIndicatorOffset(
-                                        tabPositions[state.selectedTab.ordinal]
-                                    ),
+                                    modifier =
+                                        Modifier.tabIndicatorOffset(
+                                            tabPositions[state.selectedTab.ordinal],
+                                        ),
                                     color = Teal500,
                                 )
                             },
@@ -335,14 +339,16 @@ fun ProfileScreen(
                             onClick = { showDeleteDialog = true },
                             enabled = !state.isDeletingAccount,
                             shape = RoundedCornerShape(10.dp),
-                            border = androidx.compose.foundation.BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .height(44.dp),
+                            border =
+                                androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.error.copy(alpha = 0.5f),
+                                ),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .height(44.dp),
                         ) {
                             if (state.isDeletingAccount) {
                                 CircularProgressIndicator(
@@ -376,17 +382,19 @@ fun ProfileScreen(
 @Composable
 private fun ProfileHeader(profile: UserProfile) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         // Avatar
         Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier =
+                Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
             if (!profile.profilePhotoUrl.isNullOrBlank()) {
@@ -432,10 +440,11 @@ private fun ProfileHeader(profile: UserProfile) {
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium,
                 color = Teal900,
-                modifier = Modifier
-                    .background(Teal50, RoundedCornerShape(20.dp))
-                    .border(1.dp, Teal500.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                modifier =
+                    Modifier
+                        .background(Teal50, RoundedCornerShape(20.dp))
+                        .border(1.dp, Teal500.copy(alpha = 0.3f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 12.dp, vertical = 4.dp),
             )
         }
 
@@ -454,9 +463,10 @@ private fun ProfileHeader(profile: UserProfile) {
 @Composable
 private fun StatsRow(profile: UserProfile) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         StatItem(value = profile.totalSold.toString(), label = "Sold")
@@ -464,15 +474,22 @@ private fun StatsRow(profile: UserProfile) {
         StatItem(value = profile.totalDonated.toString(), label = "Donated")
         VerticalDivider()
         StatItem(
-            value = if (profile.examTags.isEmpty()) "—"
-            else profile.examTags.take(2).joinToString(", "),
+            value =
+                if (profile.examTags.isEmpty()) {
+                    "—"
+                } else {
+                    profile.examTags.take(2).joinToString(", ")
+                },
             label = "Studying for",
         )
     }
 }
 
 @Composable
-private fun StatItem(value: String, label: String) {
+private fun StatItem(
+    value: String,
+    label: String,
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = value,
@@ -491,10 +508,11 @@ private fun StatItem(value: String, label: String) {
 @Composable
 private fun VerticalDivider() {
     Box(
-        modifier = Modifier
-            .width(1.dp)
-            .height(32.dp)
-            .background(WarmBorder),
+        modifier =
+            Modifier
+                .width(1.dp)
+                .height(32.dp)
+                .background(WarmBorder),
     )
 }
 
@@ -506,27 +524,30 @@ private fun OwnListingRow(
     onReactivate: () -> Unit,
     onMarkSold: () -> Unit,
 ) {
-    val statusColor = when (listing.status) {
-        "ACTIVE" -> Teal500
-        "PAUSED" -> WarmMuted
-        "RESERVED" -> MaterialTheme.colorScheme.tertiary
-        "COMPLETED" -> WarmMuted
-        else -> WarmMuted
-    }
+    val statusColor =
+        when (listing.status) {
+            "ACTIVE" -> Teal500
+            "PAUSED" -> WarmMuted
+            "RESERVED" -> MaterialTheme.colorScheme.tertiary
+            "COMPLETED" -> WarmMuted
+            else -> WarmMuted
+        }
 
-    val statusLabel = when (listing.status) {
-        "ACTIVE" -> "Active"
-        "PAUSED" -> "Paused"
-        "RESERVED" -> "Reserved"
-        "COMPLETED" -> "Sold / Donated"
-        else -> listing.status
-    }
+    val statusLabel =
+        when (listing.status) {
+            "ACTIVE" -> "Active"
+            "PAUSED" -> "Paused"
+            "RESERVED" -> "Reserved"
+            "COMPLETED" -> "Sold / Donated"
+            else -> listing.status
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onClick() }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -534,10 +555,11 @@ private fun OwnListingRow(
         ) {
             // Cover thumbnail
             Box(
-                modifier = Modifier
-                    .size(width = 52.dp, height = 68.dp)
-                    .clip(RoundedCornerShape(6.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                modifier =
+                    Modifier
+                        .size(width = 52.dp, height = 68.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center,
             ) {
                 if (!listing.photoUrls.firstOrNull().isNullOrBlank()) {
@@ -595,18 +617,23 @@ private fun OwnListingRow(
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = statusColor,
-                        modifier = Modifier
-                            .background(
-                                statusColor.copy(alpha = 0.1f),
-                                RoundedCornerShape(4.dp),
-                            )
-                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                        modifier =
+                            Modifier
+                                .background(
+                                    statusColor.copy(alpha = 0.1f),
+                                    RoundedCornerShape(4.dp),
+                                )
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
                     )
 
                     // Type + price
                     Text(
-                        text = if (listing.type == "DONATE") "FREE"
-                        else listing.price?.let { "₹${it.toInt()}" } ?: "",
+                        text =
+                            if (listing.type == "DONATE") {
+                                "FREE"
+                            } else {
+                                listing.price?.let { "₹${it.toInt()}" } ?: ""
+                            },
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Teal500,
@@ -621,10 +648,11 @@ private fun OwnListingRow(
                 }
 
                 // Location
-                val locationParts = listOfNotNull(
-                    listing.locality?.takeIf { it.isNotBlank() },
-                    listing.city?.takeIf { it.isNotBlank() },
-                ).joinToString(", ")
+                val locationParts =
+                    listOfNotNull(
+                        listing.locality?.takeIf { it.isNotBlank() },
+                        listing.city?.takeIf { it.isNotBlank() },
+                    ).joinToString(", ")
 
                 if (locationParts.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -680,22 +708,25 @@ private fun OwnListingRow(
 
 @Composable
 private fun DonationRequestRow(request: DonationRequest) {
-    val statusColor = when (request.status) {
-        "ACCEPTED" -> Teal500
-        "REJECTED" -> MaterialTheme.colorScheme.error
-        else -> WarmMuted
-    }
+    val statusColor =
+        when (request.status) {
+            "ACCEPTED" -> Teal500
+            "REJECTED" -> MaterialTheme.colorScheme.error
+            else -> WarmMuted
+        }
 
-    val statusLabel = when (request.status) {
-        "ACCEPTED" -> "✓ Accepted"
-        "REJECTED" -> "✗ Rejected"
-        else -> "Pending"
-    }
+    val statusLabel =
+        when (request.status) {
+            "ACCEPTED" -> "✓ Accepted"
+            "REJECTED" -> "✗ Rejected"
+            else -> "Pending"
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -713,9 +744,10 @@ private fun DonationRequestRow(request: DonationRequest) {
                     text = request.examTag,
                     fontSize = 11.sp,
                     color = Teal900,
-                    modifier = Modifier
-                        .background(Teal50, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    modifier =
+                        Modifier
+                            .background(Teal50, RoundedCornerShape(4.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
                 )
             }
         }
@@ -739,9 +771,10 @@ private fun EmptyTabState(
 ) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 48.dp),
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = emoji, fontSize = 40.sp)

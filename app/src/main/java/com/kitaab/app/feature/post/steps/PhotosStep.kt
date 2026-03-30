@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.times
 import coil.compose.AsyncImage
-import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal50
+import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
 
@@ -51,16 +51,18 @@ fun PhotosStep(
 ) {
     val remaining = 5 - photoUris.size
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickMultipleVisualMedia(maxItems = remaining.coerceAtLeast(1))
-    ) { uris ->
-        if (uris.isNotEmpty()) onPhotosSelected(uris)
-    }
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickMultipleVisualMedia(maxItems = remaining.coerceAtLeast(1)),
+        ) { uris ->
+            if (uris.isNotEmpty()) onPhotosSelected(uris)
+        }
 
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
     ) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -89,10 +91,11 @@ fun PhotosStep(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.height(
-                // Fixed height to avoid nested scroll conflict
-                ((photoUris.size + 1).coerceAtMost(6) / 3 + 1).coerceAtLeast(1) * 120.dp
-            ),
+            modifier =
+                Modifier.height(
+                    // Fixed height to avoid nested scroll conflict
+                    ((photoUris.size + 1).coerceAtMost(6) / 3 + 1).coerceAtLeast(1) * 120.dp,
+                ),
         ) {
             items(photoUris) { uri ->
                 PhotoThumbnail(
@@ -107,8 +110,8 @@ fun PhotosStep(
                         onClick = {
                             photoPickerLauncher.launch(
                                 PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly,
+                                ),
                             )
                         },
                     )
@@ -133,9 +136,10 @@ private fun PhotoThumbnail(
     onRemove: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(10.dp)),
+        modifier =
+            Modifier
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(10.dp)),
     ) {
         AsyncImage(
             model = uri,
@@ -144,12 +148,13 @@ private fun PhotoThumbnail(
             modifier = Modifier.matchParentSize(),
         )
         Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(4.dp)
-                .size(22.dp)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f), CircleShape)
-                .clickable { onRemove() },
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .size(22.dp)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f), CircleShape)
+                    .clickable { onRemove() },
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -165,11 +170,12 @@ private fun PhotoThumbnail(
 @Composable
 private fun AddPhotoButton(onClick: () -> Unit) {
     Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .border(1.dp, WarmBorder, RoundedCornerShape(10.dp))
-            .background(Teal50, RoundedCornerShape(10.dp))
-            .clickable { onClick() },
+        modifier =
+            Modifier
+                .aspectRatio(1f)
+                .border(1.dp, WarmBorder, RoundedCornerShape(10.dp))
+                .background(Teal50, RoundedCornerShape(10.dp))
+                .clickable { onClick() },
         contentAlignment = Alignment.Center,
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {

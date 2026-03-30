@@ -33,7 +33,8 @@ fun MainScreen() {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
-    val isAuthScreen = currentRoute == null ||
+    val isAuthScreen =
+        currentRoute == null ||
             currentRoute == Route.Splash.route ||
             currentRoute == Route.Onboarding.route ||
             currentRoute == Route.Login.route ||
@@ -55,9 +56,10 @@ fun MainScreen() {
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(
-                if (isAuthScreen) PaddingValues(0.dp) else innerPadding,
-            ),
+            modifier =
+                Modifier.padding(
+                    if (isAuthScreen) PaddingValues(0.dp) else innerPadding,
+                ),
         )
     }
 }
@@ -102,13 +104,14 @@ private fun KitaabBottomBar(navController: NavHostController) {
                         style = MaterialTheme.typography.labelSmall,
                     )
                 },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                ),
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
             )
         }
     }

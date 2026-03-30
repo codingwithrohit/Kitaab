@@ -2,15 +2,12 @@ package com.kitaab.app.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -31,7 +28,6 @@ import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.EditProfileScreen
 import com.kitaab.app.feature.profile.ProfileScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
-import com.kitaab.app.ui.theme.Teal500
 
 @Composable
 fun AppNavHost(
@@ -124,7 +120,7 @@ fun AppNavHost(
                     when (event) {
                         is AuthEvent.SignOutSuccess,
                         is AuthEvent.DeleteAccountSuccess,
-                            -> {
+                        -> {
                             navController.navigate(Route.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
@@ -146,14 +142,15 @@ fun AppNavHost(
 
         composable(
             route = Route.ListingDetail.route,
-            arguments = listOf(
-                androidx.navigation.navArgument("listingId") { type = androidx.navigation.NavType.StringType },
-                androidx.navigation.navArgument("referrerId") {
-                    type = androidx.navigation.NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                },
-            ),
+            arguments =
+                listOf(
+                    androidx.navigation.navArgument("listingId") { type = androidx.navigation.NavType.StringType },
+                    androidx.navigation.navArgument("referrerId") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
         ) {
             ListingDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -243,7 +240,6 @@ fun AppNavHost(
         }
     }
 }
-
 
 @Composable
 private fun PlaceholderScreen(name: String) {

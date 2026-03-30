@@ -23,5 +23,6 @@ data class ChatUiState(
 
 sealed interface ChatEvent {
     data object ScrollToBottom : ChatEvent
+
     data object TransactionComplete : ChatEvent
 }

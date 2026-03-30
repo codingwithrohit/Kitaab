@@ -54,24 +54,26 @@ fun ListingCard(
     modifier: Modifier = Modifier,
 ) {
     var rotationY by remember { mutableFloatStateOf(0f) }
-    val screenWidthPx = with(LocalDensity.current) {
-        LocalConfiguration.current.screenWidthDp.dp.toPx()
-    }
+    val screenWidthPx =
+        with(LocalDensity.current) {
+            LocalConfiguration.current.screenWidthDp.dp.toPx()
+        }
     val density = LocalDensity.current.density
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { coords ->
-                val cardCenterX = coords.boundsInRoot().center.x
-                val offset = (cardCenterX - screenWidthPx / 2f) / (screenWidthPx / 2f)
-                rotationY = (offset * 8f).coerceIn(-8f, 8f)
-            }
-            .graphicsLayer {
-                this.rotationY = rotationY
-                cameraDistance = 12f * density
-            }
-            .clickable { onClick() },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coords ->
+                    val cardCenterX = coords.boundsInRoot().center.x
+                    val offset = (cardCenterX - screenWidthPx / 2f) / (screenWidthPx / 2f)
+                    rotationY = (offset * 8f).coerceIn(-8f, 8f)
+                }
+                .graphicsLayer {
+                    this.rotationY = rotationY
+                    cameraDistance = 12f * density
+                }
+                .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(0.5.dp, WarmBorder),
@@ -83,9 +85,10 @@ fun ListingCard(
         ) {
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
-                modifier = Modifier
-                    .size(width = 52.dp, height = 68.dp)
-                    .clip(RoundedCornerShape(6.dp)),
+                modifier =
+                    Modifier
+                        .size(width = 52.dp, height = 68.dp)
+                        .clip(RoundedCornerShape(6.dp)),
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -122,10 +125,11 @@ fun ListingCard(
                     PriceBadge(listing = listing)
                 }
 
-                val locationParts = listOfNotNull(
-                    listing.locality?.takeIf { it.isNotBlank() },
-                    listing.city?.takeIf { it.isNotBlank() },
-                ).joinToString(", ")
+                val locationParts =
+                    listOfNotNull(
+                        listing.locality?.takeIf { it.isNotBlank() },
+                        listing.city?.takeIf { it.isNotBlank() },
+                    ).joinToString(", ")
 
                 if (locationParts.isNotBlank()) {
                     Spacer(modifier = Modifier.height(6.dp))
@@ -170,11 +174,12 @@ fun BookCoverImage(
 
 @Composable
 private fun ConditionBadge(condition: String) {
-    val color = when (condition) {
-        "New", "LikeNew" -> Teal500
-        "Good" -> MaterialTheme.colorScheme.primary
-        else -> WarmMuted
-    }
+    val color =
+        when (condition) {
+            "New", "LikeNew" -> Teal500
+            "Good" -> MaterialTheme.colorScheme.primary
+            else -> WarmMuted
+        }
     Text(
         text = condition,
         fontSize = 11.sp,

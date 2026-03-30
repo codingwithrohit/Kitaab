@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
@@ -81,7 +80,6 @@ import com.kitaab.app.ui.theme.WarmMuted
 private val CONDITIONS = listOf("New", "LikeNew", "Good", "Fair", "Poor")
 private val EXAM_TAGS = listOf("JEE", "NEET", "UPSC", "CAT", "GATE", "College", "Other")
 
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExploreScreen(
@@ -127,7 +125,7 @@ fun ExploreScreen(
             contentWindowInsets = { WindowInsets.safeDrawing },
             containerColor = MaterialTheme.colorScheme.background,
             dragHandle = { BottomSheetDefaults.DragHandle() },
-        ){
+        ) {
             FilterSheet(
                 filters = state.filters,
                 onTypeChanged = viewModel::onTypeFilterChanged,
@@ -147,15 +145,17 @@ fun ExploreScreen(
         contentWindowInsets = WindowInsets(0.dp),
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             // ── Search bar row — no statusBarsPadding, MainScreen owns insets ──
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(onClick = onNavigateBack) {
@@ -191,19 +191,21 @@ fun ExploreScreen(
                         }
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                            viewModel.onSearchSubmit()
-                        },
-                    ),
+                    keyboardActions =
+                        KeyboardActions(
+                            onSearch = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                viewModel.onSearchSubmit()
+                            },
+                        ),
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = kitaabTextFieldColors(),
-                    modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(focusRequester),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .focusRequester(focusRequester),
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -219,8 +221,12 @@ fun ExploreScreen(
                         Icon(
                             Icons.Outlined.FilterList,
                             contentDescription = "Filters",
-                            tint = if (state.filters.isActive) Teal500
-                            else MaterialTheme.colorScheme.onBackground,
+                            tint =
+                                if (state.filters.isActive) {
+                                    Teal500
+                                } else {
+                                    MaterialTheme.colorScheme.onBackground
+                                },
                         )
                     }
                 }
@@ -301,8 +307,12 @@ fun ExploreScreen(
                         ) {
                             item(key = "results_count") {
                                 Text(
-                                    text = if (state.hasMorePages) "Results"
-                                    else "${state.listings.size} result${if (state.listings.size != 1) "s" else ""}",
+                                    text =
+                                        if (state.hasMorePages) {
+                                            "Results"
+                                        } else {
+                                            "${state.listings.size} result${if (state.listings.size != 1) "s" else ""}"
+                                        },
                                     fontSize = 13.sp,
                                     color = WarmMuted,
                                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -324,9 +334,10 @@ fun ExploreScreen(
                                 item(key = "loading_more") {
                                     Box(
                                         contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(16.dp),
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp),
                                     ) {
                                         CircularProgressIndicator(
                                             modifier = Modifier.size(24.dp),
@@ -341,9 +352,10 @@ fun ExploreScreen(
                                 item(key = "end_of_list") {
                                     Box(
                                         contentAlignment = Alignment.Center,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 16.dp),
+                                        modifier =
+                                            Modifier
+                                                .fillMaxWidth()
+                                                .padding(vertical = 16.dp),
                                     ) {
                                         Text(
                                             text = "You've seen all results",
@@ -374,18 +386,19 @@ private fun FilterSheet(
     onClear: () -> Unit,
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .imePadding(),
-        contentPadding = PaddingValues(
-            start = 20.dp,
-            end = 20.dp,
-            top = 8.dp,
-            bottom = 16.dp
-        ),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .imePadding(),
+        contentPadding =
+            PaddingValues(
+                start = 20.dp,
+                end = 20.dp,
+                top = 8.dp,
+                bottom = 16.dp,
+            ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -496,10 +509,11 @@ private fun FilterSheet(
                         onValueChange = onMinPriceChanged,
                         label = { Text("Min") },
                         placeholder = { Text("0") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Next,
-                        ),
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Next,
+                            ),
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
@@ -511,10 +525,11 @@ private fun FilterSheet(
                         onValueChange = onMaxPriceChanged,
                         label = { Text("Max") },
                         placeholder = { Text("Any") },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done,
-                        ),
+                        keyboardOptions =
+                            KeyboardOptions(
+                                keyboardType = KeyboardType.Number,
+                                imeAction = ImeAction.Done,
+                            ),
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(10.dp),
@@ -530,9 +545,10 @@ private fun FilterSheet(
 
             Button(
                 onClick = onApply,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
             ) {
@@ -543,8 +559,9 @@ private fun FilterSheet(
         // prevents last item being hidden by keyboard
         item {
             Spacer(
-                modifier = Modifier
-                    .windowInsetsBottomHeight(WindowInsets.ime)
+                modifier =
+                    Modifier
+                        .windowInsetsBottomHeight(WindowInsets.ime),
             )
         }
     }
@@ -562,16 +579,18 @@ private fun FilterSectionLabel(text: String) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun chipColors() = FilterChipDefaults.filterChipColors(
-    selectedContainerColor = Teal50,
-    selectedLabelColor = Teal900,
-)
+private fun chipColors() =
+    FilterChipDefaults.filterChipColors(
+        selectedContainerColor = Teal50,
+        selectedLabelColor = Teal900,
+    )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun chipBorder(selected: Boolean) = FilterChipDefaults.filterChipBorder(
-    enabled = true,
-    selected = selected,
-    selectedBorderColor = Teal500,
-    selectedBorderWidth = 1.5.dp,
-)
+private fun chipBorder(selected: Boolean) =
+    FilterChipDefaults.filterChipBorder(
+        enabled = true,
+        selected = selected,
+        selectedBorderColor = Teal500,
+        selectedBorderWidth = 1.5.dp,
+    )

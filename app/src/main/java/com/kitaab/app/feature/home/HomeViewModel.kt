@@ -17,110 +17,117 @@ import javax.inject.Inject
 
 private const val PAGE_SIZE = 10
 
-
 @HiltViewModel
-class HomeViewModel @Inject constructor(
-    private val supabase: SupabaseClient,
-) : ViewModel() {
+class HomeViewModel
+    @Inject
+    constructor(
+        private val supabase: SupabaseClient,
+    ) : ViewModel() {
+        private val _uiState = MutableStateFlow(HomeUiState())
+        val uiState = _uiState.asStateFlow()
 
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState = _uiState.asStateFlow()
+        init {
+            loadUserProfile()
+            loadListings(reset = true)
+        }
 
-    init {
-        loadUserProfile()
-        loadListings(reset = true)
-    }
-
-    fun loadUserProfile() {
-        viewModelScope.launch {
-            val userId = supabase.auth.currentSessionOrNull()?.user?.id ?: return@launch
-            runCatching {
-                supabase.postgrest["users"]
-                    .select { filter { eq("id", userId) } }
-                    .decodeSingle<UserProfile>()
-            }.onSuccess { profile ->
-                _uiState.update { it.copy(userProfile = profile, isLoadingProfile = false) }
-            }.onFailure {
-                _uiState.update { it.copy(isLoadingProfile = false) }
+        fun loadUserProfile() {
+            viewModelScope.launch {
+                val userId = supabase.auth.currentSessionOrNull()?.user?.id ?: return@launch
+                runCatching {
+                    supabase.postgrest["users"]
+                        .select { filter { eq("id", userId) } }
+                        .decodeSingle<UserProfile>()
+                }.onSuccess { profile ->
+                    _uiState.update { it.copy(userProfile = profile, isLoadingProfile = false) }
+                }.onFailure {
+                    _uiState.update { it.copy(isLoadingProfile = false) }
+                }
             }
         }
-    }
 
-    fun onExamTagSelected(tag: String) {
-        if (_uiState.value.selectedExamTag == tag) return
-        _uiState.update { it.copy(selectedExamTag = tag) }
-        loadListings(reset = true)
-    }
+        fun onExamTagSelected(tag: String) {
+            if (_uiState.value.selectedExamTag == tag) return
+            _uiState.update { it.copy(selectedExamTag = tag) }
+            loadListings(reset = true)
+        }
 
-    fun loadListings(reset: Boolean = false) {
-        val state = _uiState.value
-        if (!reset && (!state.hasMorePages || state.isLoadingMore)) return
+        fun loadListings(reset: Boolean = false) {
+            val state = _uiState.value
+            if (!reset && (!state.hasMorePages || state.isLoadingMore)) return
 
-        val page = if (reset) 0 else state.currentPage
-        val from = page * PAGE_SIZE
-        val to = from + PAGE_SIZE - 1
+            val page = if (reset) 0 else state.currentPage
+            val from = page * PAGE_SIZE
+            val to = from + PAGE_SIZE - 1
 
-        viewModelScope.launch {
-            _uiState.update {
-                if (reset) it.copy(isLoadingListings = true, listings = emptyList(), currentPage = 0)
-                else it.copy(isLoadingMore = true)
-            }
-
-            runCatching {
-                supabase.postgrest["listings"]
-                    .select {
-                        filter {
-                            eq("status", "ACTIVE")
-                            if (state.selectedExamTag != "All") {
-                                contains("exam_tags", listOf(state.selectedExamTag))
-                            }
-                        }
-                        order("created_at", order = Order.DESCENDING)
-                        range(from.toLong(), to.toLong())
-                    }
-                    .decodeList<Listing>()
-            }.onSuccess { newListings ->
-                _uiState.update { current ->
-                    current.copy(
-                        listings = if (reset) newListings
-                        else (current.listings + newListings).distinctBy { it.id },
-                        isLoadingListings = false,
-                        isLoadingMore = false,
-                        hasMorePages = newListings.size == PAGE_SIZE,
-                        currentPage = page + 1,
-                        error = null,
-                    )
-                }
-            }.onFailure { cause ->
+            viewModelScope.launch {
                 _uiState.update {
-                    it.copy(
-                        isLoadingListings = false,
-                        isLoadingMore = false,
-                        error = cause.message,
-                    )
+                    if (reset) {
+                        it.copy(isLoadingListings = true, listings = emptyList(), currentPage = 0)
+                    } else {
+                        it.copy(isLoadingMore = true)
+                    }
+                }
+
+                runCatching {
+                    supabase.postgrest["listings"]
+                        .select {
+                            filter {
+                                eq("status", "ACTIVE")
+                                if (state.selectedExamTag != "All") {
+                                    contains("exam_tags", listOf(state.selectedExamTag))
+                                }
+                            }
+                            order("created_at", order = Order.DESCENDING)
+                            range(from.toLong(), to.toLong())
+                        }
+                        .decodeList<Listing>()
+                }.onSuccess { newListings ->
+                    _uiState.update { current ->
+                        current.copy(
+                            listings =
+                                if (reset) {
+                                    newListings
+                                } else {
+                                    (current.listings + newListings).distinctBy { it.id }
+                                },
+                            isLoadingListings = false,
+                            isLoadingMore = false,
+                            hasMorePages = newListings.size == PAGE_SIZE,
+                            currentPage = page + 1,
+                            error = null,
+                        )
+                    }
+                }.onFailure { cause ->
+                    _uiState.update {
+                        it.copy(
+                            isLoadingListings = false,
+                            isLoadingMore = false,
+                            error = cause.message,
+                        )
+                    }
                 }
             }
         }
-    }
 
-    fun onViewModeToggled() {
-        _uiState.update { it.copy(viewMode = if (it.viewMode == HomeViewMode.LIST) HomeViewMode.GRID else HomeViewMode.LIST) }
-    }
+        fun onViewModeToggled() {
+            _uiState.update { it.copy(viewMode = if (it.viewMode == HomeViewMode.LIST) HomeViewMode.GRID else HomeViewMode.LIST) }
+        }
 
-    fun onSortOptionSelected(option: HomeSortOption) {
-        _uiState.update { it.copy(sortOption = option) }
-    }
+        fun onSortOptionSelected(option: HomeSortOption) {
+            _uiState.update { it.copy(sortOption = option) }
+        }
 
-    fun loadNextPage() {
-        loadListings(reset = false)
-    }
+        fun loadNextPage() {
+            loadListings(reset = false)
+        }
 
-    fun refresh() {
-        loadUserProfile()
-        loadListings(reset = true)
-    }
+        fun refresh() {
+            loadUserProfile()
+            loadListings(reset = true)
+        }
 
-    fun clearError() {
-        _uiState.update { it.copy(error = null) }
+        fun clearError() {
+            _uiState.update { it.copy(error = null) }
+        }
     }
-}

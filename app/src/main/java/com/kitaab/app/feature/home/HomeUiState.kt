@@ -26,15 +26,18 @@ data class HomeUiState(
     val viewMode: HomeViewMode = HomeViewMode.LIST,
     val sortOption: HomeSortOption = HomeSortOption.RECENT,
 ) {
-    val sortedListings: List<Listing> get() = when (sortOption) {
-        HomeSortOption.RECENT -> listings.sortedByDescending { it.createdAt }
-        HomeSortOption.OLDEST -> listings.sortedBy { it.createdAt }
-        HomeSortOption.PRICE_LOW_HIGH -> listings.sortedWith(
-            compareBy(nullsLast()) { it.price }
-        )
-        HomeSortOption.PRICE_HIGH_LOW -> listings.sortedWith(
-            compareByDescending(nullsFirst()) { it.price }
-        )
-        HomeSortOption.NEARBY -> listings
-    }
+    val sortedListings: List<Listing> get() =
+        when (sortOption) {
+            HomeSortOption.RECENT -> listings.sortedByDescending { it.createdAt }
+            HomeSortOption.OLDEST -> listings.sortedBy { it.createdAt }
+            HomeSortOption.PRICE_LOW_HIGH ->
+                listings.sortedWith(
+                    compareBy(nullsLast()) { it.price },
+                )
+            HomeSortOption.PRICE_HIGH_LOW ->
+                listings.sortedWith(
+                    compareByDescending(nullsFirst()) { it.price },
+                )
+            HomeSortOption.NEARBY -> listings
+        }
 }

@@ -133,9 +133,10 @@ fun ListingDetailScreen(
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.Transparent,
+                    ),
             )
         },
         bottomBar = {
@@ -152,9 +153,10 @@ fun ListingDetailScreen(
             state.isLoading -> {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
                 ) {
                     CircularProgressIndicator(color = Teal500)
                 }
@@ -163,9 +165,10 @@ fun ListingDetailScreen(
             state.listing == null -> {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = "Listing not found", fontSize = 16.sp, color = WarmMuted)
@@ -180,10 +183,11 @@ fun ListingDetailScreen(
             else -> {
                 val listing = state.listing!!
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .verticalScroll(rememberScrollState()),
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .verticalScroll(rememberScrollState()),
                 ) {
                     // ── Photo carousel ────────────────────────────────────────
                     PhotoCarousel(photoUrls = listing.photoUrls)
@@ -219,10 +223,11 @@ fun ListingDetailScreen(
 
                         if (!listing.publisher.isNullOrBlank() || !listing.edition.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(2.dp))
-                            val pubInfo = listOfNotNull(
-                                listing.publisher,
-                                listing.edition?.let { "Edition: $it" },
-                            ).joinToString(" · ")
+                            val pubInfo =
+                                listOfNotNull(
+                                    listing.publisher,
+                                    listing.edition?.let { "Edition: $it" },
+                                ).joinToString(" · ")
                             Text(text = pubInfo, fontSize = 13.sp, color = WarmMuted)
                         }
 
@@ -235,10 +240,11 @@ fun ListingDetailScreen(
                                         selected = false,
                                         onClick = {},
                                         label = { Text(tag, fontSize = 12.sp) },
-                                        colors = FilterChipDefaults.filterChipColors(
-                                            containerColor = Teal50,
-                                            labelColor = Teal900,
-                                        ),
+                                        colors =
+                                            FilterChipDefaults.filterChipColors(
+                                                containerColor = Teal50,
+                                                labelColor = Teal900,
+                                            ),
                                         shape = RoundedCornerShape(6.dp),
                                     )
                                 }
@@ -246,18 +252,20 @@ fun ListingDetailScreen(
                         }
 
                         // ── Extras ────────────────────────────────────────────
-                        val extras = buildList {
-                            if (listing.hasSolutions) add("Has solutions manual")
-                            if (listing.hasNotes) add("Has handwritten notes")
-                        }
+                        val extras =
+                            buildList {
+                                if (listing.hasSolutions) add("Has solutions manual")
+                                if (listing.hasNotes) add("Has handwritten notes")
+                            }
                         if (extras.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(10.dp))
                             extras.forEach { extra ->
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(6.dp)
-                                            .background(Teal500, CircleShape),
+                                        modifier =
+                                            Modifier
+                                                .size(6.dp)
+                                                .background(Teal500, CircleShape),
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(text = extra, fontSize = 13.sp, color = WarmMuted)
@@ -267,11 +275,12 @@ fun ListingDetailScreen(
                         }
 
                         // ── Location ──────────────────────────────────────────
-                        val locationParts = listOfNotNull(
-                            listing.locality?.takeIf { it.isNotBlank() },
-                            listing.city?.takeIf { it.isNotBlank() },
-                            listing.pincode?.takeIf { it.isNotBlank() },
-                        ).joinToString(", ")
+                        val locationParts =
+                            listOfNotNull(
+                                listing.locality?.takeIf { it.isNotBlank() },
+                                listing.city?.takeIf { it.isNotBlank() },
+                                listing.pincode?.takeIf { it.isNotBlank() },
+                            ).joinToString(", ")
 
                         if (locationParts.isNotBlank()) {
                             Spacer(modifier = Modifier.height(10.dp))
@@ -300,9 +309,10 @@ fun ListingDetailScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Teal50,
-                                ),
+                                colors =
+                                    CardDefaults.cardColors(
+                                        containerColor = Teal50,
+                                    ),
                             ) {
                                 Text(
                                     text = "This is your listing",
@@ -315,7 +325,6 @@ fun ListingDetailScreen(
                         }
 
                         if (state.isOwnListing && state.listing?.type == "DONATE") {
-
                             Spacer(modifier = Modifier.height(20.dp))
 
                             HorizontalDivider(color = WarmBorder)
@@ -389,10 +398,11 @@ private fun PhotoCarousel(photoUrls: List<String>) {
     if (photoUrls.isEmpty()) {
         // Full-width default cover
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(4f / 3f)
-                .background(Teal50),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(4f / 3f)
+                    .background(Teal50),
             contentAlignment = Alignment.Center,
         ) {
             BookCoverImage(
@@ -406,9 +416,10 @@ private fun PhotoCarousel(photoUrls: List<String>) {
     val pagerState = rememberPagerState { photoUrls.size }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(4f / 3f),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(4f / 3f),
     ) {
         HorizontalPager(
             state = pagerState,
@@ -425,20 +436,25 @@ private fun PhotoCarousel(photoUrls: List<String>) {
         // Page indicator dots
         if (photoUrls.size > 1) {
             Row(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 12.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 photoUrls.indices.forEach { index ->
                     Box(
-                        modifier = Modifier
-                            .size(if (index == pagerState.currentPage) 8.dp else 6.dp)
-                            .background(
-                                if (index == pagerState.currentPage) Color.White
-                                else Color.White.copy(alpha = 0.5f),
-                                CircleShape,
-                            ),
+                        modifier =
+                            Modifier
+                                .size(if (index == pagerState.currentPage) 8.dp else 6.dp)
+                                .background(
+                                    if (index == pagerState.currentPage) {
+                                        Color.White
+                                    } else {
+                                        Color.White.copy(alpha = 0.5f)
+                                    },
+                                    CircleShape,
+                                ),
                     )
                 }
             }
@@ -447,15 +463,20 @@ private fun PhotoCarousel(photoUrls: List<String>) {
 }
 
 @Composable
-private fun TypeBadge(type: String, price: Double?) {
-    val (text, bgColor, textColor) = when (type) {
-        "DONATE" -> Triple("FREE", Teal500.copy(alpha = 0.15f), Teal500)
-        else -> Triple(
-            if (price != null) "₹${price.toInt()}" else "SELL",
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-        )
-    }
+private fun TypeBadge(
+    type: String,
+    price: Double?,
+) {
+    val (text, bgColor, textColor) =
+        when (type) {
+            "DONATE" -> Triple("FREE", Teal500.copy(alpha = 0.15f), Teal500)
+            else ->
+                Triple(
+                    if (price != null) "₹${price.toInt()}" else "SELL",
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.onPrimaryContainer,
+                )
+        }
     Card(
         shape = RoundedCornerShape(6.dp),
         colors = CardDefaults.cardColors(containerColor = bgColor),
@@ -472,16 +493,18 @@ private fun TypeBadge(type: String, price: Double?) {
 
 @Composable
 private fun ConditionChip(condition: String) {
-    val color = when (condition) {
-        "New", "LikeNew" -> Teal500
-        "Good" -> MaterialTheme.colorScheme.primary
-        else -> WarmMuted
-    }
+    val color =
+        when (condition) {
+            "New", "LikeNew" -> Teal500
+            "Good" -> MaterialTheme.colorScheme.primary
+            else -> WarmMuted
+        }
     Card(
         shape = RoundedCornerShape(6.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = color.copy(alpha = 0.1f),
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = color.copy(alpha = 0.1f),
+            ),
     ) {
         Text(
             text = condition,
@@ -499,9 +522,10 @@ private fun SellerRow(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (!seller.profilePhotoUrl.isNullOrBlank()) {
@@ -509,9 +533,10 @@ private fun SellerRow(
                 model = seller.profilePhotoUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(44.dp)
-                    .clip(CircleShape),
+                modifier =
+                    Modifier
+                        .size(44.dp)
+                        .clip(CircleShape),
             )
         } else {
             Icon(
@@ -572,11 +597,12 @@ private fun ActionBar(
     onRequestDonation: () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.background)
-            .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.background)
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         HorizontalDivider(color = WarmBorder)
         Spacer(modifier = Modifier.height(12.dp))
@@ -586,9 +612,10 @@ private fun ActionBar(
                 onClick = onRequestDonation,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
             ) {
                 Text(
                     text = "Request This Book",
@@ -601,9 +628,10 @@ private fun ActionBar(
                 onClick = onMessageSeller,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
             ) {
                 Text(
                     text = "Message Seller",
@@ -621,9 +649,10 @@ private fun SimilarListingCard(
     onClick: () -> Unit,
 ) {
     Card(
-        modifier = Modifier
-            .width(140.dp)
-            .clickable { onClick() },
+        modifier =
+            Modifier
+                .width(140.dp)
+                .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(0.5.dp, WarmBorder),
@@ -632,9 +661,10 @@ private fun SimilarListingCard(
         Column {
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(90.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(90.dp),
             )
             Column(modifier = Modifier.padding(10.dp)) {
                 Text(
@@ -648,8 +678,12 @@ private fun SimilarListingCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = if (listing.type == "DONATE") "FREE"
-                    else listing.price?.let { "₹${it.toInt()}" } ?: "SELL",
+                    text =
+                        if (listing.type == "DONATE") {
+                            "FREE"
+                        } else {
+                            listing.price?.let { "₹${it.toInt()}" } ?: "SELL"
+                        },
                     fontSize = 12.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Teal500,
