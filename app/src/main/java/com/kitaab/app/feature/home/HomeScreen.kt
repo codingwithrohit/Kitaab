@@ -17,16 +17,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ViewList
+import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -38,7 +43,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,7 +55,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.feature.home.components.ListingCard
+import com.kitaab.app.feature.home.components.ListingGridCard
 import com.kitaab.app.feature.home.components.ShelfRow
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
@@ -107,6 +117,10 @@ fun HomeScreen(
                     HomeTopBar(
                         userName = state.userProfile?.name,
                         onSearchClick = onSearchClick,
+                        viewMode = state.viewMode,
+                        sortOption = state.sortOption,
+                        onViewModeToggle = { viewModel.onViewModeToggled() },
+                        onSortSelected = { viewModel.onSortOptionSelected(it) },
                     )
                 }
 
@@ -137,7 +151,13 @@ fun HomeScreen(
 
                 item(key = "recent_header") {
                     Text(
-                        text = "Recent listings",
+                        text = when (state.sortOption) {
+                            HomeSortOption.RECENT -> "Recent listings"
+                            HomeSortOption.OLDEST -> "Oldest listings"
+                            HomeSortOption.PRICE_LOW_HIGH -> "Listings: cheap first"
+                            HomeSortOption.PRICE_HIGH_LOW -> "Listings: expensive first"
+                            HomeSortOption.NEARBY -> "Nearby listings"
+                        },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onBackground,
@@ -187,15 +207,26 @@ fun HomeScreen(
                     }
                 }
 
-                itemsIndexed(
-                    items = state.listings,
-                    key = { _, listing -> listing.id },
-                ) { _, listing ->
-                    ListingCard(
-                        listing = listing,
-                        onClick = { onListingClick(listing.id) },
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 5.dp),
-                    )
+                item(key = "listings") {
+                    if (state.viewMode == HomeViewMode.LIST) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            state.sortedListings.forEach { listing ->
+                                ListingCard(
+                                    listing = listing,
+                                    onClick = { onListingClick(listing.id) },
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
+                            }
+                        }
+                    } else {
+                        ListingsGrid(
+                            listings = state.sortedListings,
+                            onListingClick = onListingClick,
+                        )
+                    }
                 }
 
                 if (state.isLoadingMore) {
@@ -242,10 +273,48 @@ fun HomeScreen(
 }
 
 @Composable
+private fun ListingsGrid(
+    listings: List<Listing>,
+    onListingClick: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        listings.chunked(2).forEach { rowItems ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                rowItems.forEach { listing ->
+                    ListingGridCard(
+                        listing = listing,
+                        onClick = { onListingClick(listing.id) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                // Fill empty slot if odd number of items
+                if (rowItems.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun HomeTopBar(
     userName: String?,
     onSearchClick: () -> Unit,
+    viewMode: HomeViewMode,
+    sortOption: HomeSortOption,
+    onViewModeToggle: () -> Unit,
+    onSortSelected: (HomeSortOption) -> Unit,
 ) {
+    var showSortMenu by rememberSaveable { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -258,10 +327,12 @@ private fun HomeTopBar(
             in 12..16 -> "Good afternoon"
             else -> "Good evening"
         }
-        val displayName = userName?.takeIf { it.isNotBlank() }?.split(" ")?.firstOrNull()
+        val displayName = userName?.takeIf { it.isNotBlank() }
+            ?.split(" ")?.firstOrNull()
 
         Text(
-            text = if (displayName != null) "$greeting, $displayName 👋" else "$greeting 👋",
+            text = if (displayName != null) "$greeting, $displayName 👋"
+            else "$greeting 👋",
             fontSize = 22.sp,
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onBackground,
@@ -298,6 +369,72 @@ private fun HomeTopBar(
                     text = "Search books, authors, subjects...",
                     fontSize = 14.sp,
                     color = WarmMuted,
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Sort + view mode row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box {
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { showSortMenu = true }
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Text(
+                        text = sortOption.label,
+                        fontSize = 13.sp,
+                        color = Teal500,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Icon(
+                        Icons.Outlined.ArrowDropDown,
+                        contentDescription = null,
+                        tint = Teal500,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = showSortMenu,
+                    onDismissRequest = { showSortMenu = false },
+                ) {
+                    HomeSortOption.entries.forEach { option ->
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = option.label,
+                                    fontSize = 14.sp,
+                                    fontWeight = if (option == sortOption)
+                                        FontWeight.SemiBold else FontWeight.Normal,
+                                    color = if (option == sortOption) Teal500
+                                    else MaterialTheme.colorScheme.onBackground,
+                                )
+                            },
+                            onClick = {
+                                onSortSelected(option)
+                                showSortMenu = false
+                            },
+                        )
+                    }
+                }
+            }
+
+            IconButton(onClick = onViewModeToggle) {
+                Icon(
+                    imageVector = if (viewMode == HomeViewMode.LIST)
+                        Icons.Outlined.GridView else Icons.AutoMirrored.Outlined.ViewList,
+                    contentDescription = "Toggle view",
+                    tint = MaterialTheme.colorScheme.onBackground,
                 )
             }
         }

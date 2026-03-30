@@ -103,6 +103,14 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    fun onViewModeToggled() {
+        _uiState.update { it.copy(viewMode = if (it.viewMode == HomeViewMode.LIST) HomeViewMode.GRID else HomeViewMode.LIST) }
+    }
+
+    fun onSortOptionSelected(option: HomeSortOption) {
+        _uiState.update { it.copy(sortOption = option) }
+    }
+
     fun loadNextPage() {
         loadListings(reset = false)
     }
