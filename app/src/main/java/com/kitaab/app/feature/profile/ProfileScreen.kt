@@ -203,8 +203,8 @@ fun ProfileScreen(
         },
     ) { innerPadding ->
         PullToRefreshBox(
-            isRefreshing = state.isLoading,
-            onRefresh = { viewModel.load() },
+            isRefreshing = state.isRefreshing,
+            onRefresh = { viewModel.load(showFullLoader = false) },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),

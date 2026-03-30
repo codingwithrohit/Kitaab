@@ -2,6 +2,10 @@ package com.kitaab.app.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kitaab.app.data.local.db.ListingDao
+import com.kitaab.app.data.local.db.UserProfileDao
+import com.kitaab.app.data.local.db.toCached
+import com.kitaab.app.data.local.db.toDomain
 import com.kitaab.app.domain.model.DonationRequest
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.domain.model.UserProfile
@@ -27,6 +31,8 @@ enum class ProfileTab { LISTINGS, REQUESTS }
 class ProfileViewModel @Inject constructor(
     private val supabase: SupabaseClient,
     private val authRepository: AuthRepository,
+    private val userProfileDao: UserProfileDao,
+    private val listingDao: ListingDao,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileUiState())
@@ -36,13 +42,32 @@ class ProfileViewModel @Inject constructor(
     val events = _events.receiveAsFlow()
 
     init {
-        load()
+        loadFromCache()
+        load(showFullLoader = false)
     }
 
-    fun load() {
+    private fun loadFromCache() {
+        viewModelScope.launch {
+            val cachedProfile = userProfileDao.get()?.toDomain()
+            val cachedListings = listingDao.getAll().map { it.toDomain() }
+            if (cachedProfile != null) {
+                _uiState.update {
+                    it.copy(
+                        profile = cachedProfile,
+                        ownListings = cachedListings,
+                    )
+                }
+            }
+        }
+    }
+
+    fun load(showFullLoader: Boolean = true) {
         viewModelScope.launch {
             val userId = supabase.auth.currentUserOrNull()?.id ?: return@launch
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            _uiState.update {
+                if (showFullLoader) it.copy(isLoading = true, error = null)
+                else it.copy(isRefreshing = true, error = null)
+            }
 
             runCatching {
                 val profile = supabase.postgrest["users"]
@@ -64,18 +89,24 @@ class ProfileViewModel @Inject constructor(
                     }
                     .decodeList<DonationRequest>()
 
+                // Update cache
+                if (profile != null) userProfileDao.upsert(profile.toCached())
+                listingDao.upsertAll(listings.map { it.toCached() })
+
                 _uiState.update {
                     it.copy(
                         profile = profile,
                         ownListings = listings,
                         myRequests = requests,
                         isLoading = false,
+                        isRefreshing = false,
                     )
                 }
             }.onFailure { cause ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
+                        isRefreshing = false,
                         error = cause.message ?: "Failed to load profile",
                     )
                 }
@@ -106,6 +137,8 @@ class ProfileViewModel @Inject constructor(
                     .update(mapOf("status" to status)) {
                         filter { eq("id", listingId) }
                     }
+                // Update both cache and state
+                listingDao.updateStatus(listingId, status)
                 _uiState.update { state ->
                     state.copy(
                         ownListings = state.ownListings.map { listing ->
@@ -125,6 +158,9 @@ class ProfileViewModel @Inject constructor(
     fun signOut() {
         viewModelScope.launch {
             _uiState.update { it.copy(isSigningOut = true) }
+            // Clear cache on sign out
+            userProfileDao.clear()
+            listingDao.clear()
             authRepository.signOut()
                 .onSuccess { _events.send(ProfileEvent.SignedOut) }
                 .onFailure { cause ->
@@ -141,6 +177,8 @@ class ProfileViewModel @Inject constructor(
     fun deleteAccount() {
         viewModelScope.launch {
             _uiState.update { it.copy(isDeletingAccount = true) }
+            userProfileDao.clear()
+            listingDao.clear()
             authRepository.deleteAccount()
                 .onSuccess { _events.send(ProfileEvent.AccountDeleted) }
                 .onFailure { cause ->

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -158,7 +159,7 @@ fun BookCoverImage(
             contentAlignment = Alignment.Center,
         ) {
             Icon(
-                imageVector = Icons.Outlined.MenuBook,
+                imageVector = Icons.AutoMirrored.Outlined.MenuBook,
                 contentDescription = null,
                 tint = Teal500.copy(alpha = 0.6f),
                 modifier = Modifier.size(24.dp),

@@ -9,6 +9,7 @@ data class ProfileUiState(
     val ownListings: List<Listing> = emptyList(),
     val myRequests: List<DonationRequest> = emptyList(),
     val isLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val isSigningOut: Boolean = false,
     val isDeletingAccount: Boolean = false,
     val error: String? = null,
