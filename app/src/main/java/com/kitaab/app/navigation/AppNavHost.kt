@@ -33,6 +33,7 @@ import com.kitaab.app.feature.profile.ProfileSetupScreen
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    onMultiPostComplete: (successCount: Int, bookCount: Int) -> Unit = { _, _ -> },
 ) {
     NavHost(
         navController = navController,
@@ -89,8 +90,6 @@ fun AppNavHost(
 
         composable(Route.SignUp.route) {
             SignUpScreen(
-                // After signup, always go to ProfileSetup — new users never
-                // have profile_complete = true yet
                 onSignUpSuccess = {
                     navController.navigate(Route.ProfileSetup.route) {
                         popUpTo(0) { inclusive = true }
@@ -120,11 +119,12 @@ fun AppNavHost(
                     when (event) {
                         is AuthEvent.SignOutSuccess,
                         is AuthEvent.DeleteAccountSuccess,
-                        -> {
+                            -> {
                             navController.navigate(Route.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
                         }
+
                         else -> Unit
                     }
                 }
@@ -142,23 +142,24 @@ fun AppNavHost(
 
         composable(
             route = Route.ListingDetail.route,
-            arguments =
-                listOf(
-                    androidx.navigation.navArgument("listingId") { type = androidx.navigation.NavType.StringType },
-                    androidx.navigation.navArgument("referrerId") {
-                        type = androidx.navigation.NavType.StringType
-                        nullable = true
-                        defaultValue = null
-                    },
-                ),
-        ) {
+            arguments = listOf(
+                androidx.navigation.navArgument("listingId") {
+                    type = androidx.navigation.NavType.StringType
+                },
+                androidx.navigation.navArgument("referrerId") {
+                    type = androidx.navigation.NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) { backStackEntry ->
             ListingDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToChat = { conversationId ->
                     navController.navigate(Route.Chat.createRoute(conversationId))
                 },
-                onNavigateToDonationRequest = { listingId ->
-                    // Phase 3 donation request bottom sheet — handled inside screen
+                onNavigateToDonationRequest = { _ ->
+                    // Handled inside ListingDetailScreen as a bottom sheet
                 },
                 onNavigateToDonationRequests = { listingId ->
                     navController.navigate(Route.DonationRequests.createRoute(listingId))
@@ -167,11 +168,17 @@ fun AppNavHost(
                     navController.navigate(Route.SellerProfile.createRoute(userId))
                 },
                 onSimilarListingClick = { listingId ->
-                    val currentListingId = it.arguments?.getString("listingId")
-                    navController.navigate(Route.ListingDetail.createRoute(listingId, currentListingId))
+                    val currentListingId = backStackEntry.arguments?.getString("listingId")
+                    navController.navigate(
+                        Route.ListingDetail.createRoute(listingId, currentListingId),
+                    ) {
+                        popUpTo(Route.ListingDetail.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
                 },
             )
         }
+
         composable(Route.SellerProfile.route) {
             PlaceholderScreen("Seller Profile")
         }
@@ -184,6 +191,7 @@ fun AppNavHost(
                 },
             )
         }
+
         composable(Route.Post.route) {
             PostScreen(
                 onPostSuccess = {
@@ -196,6 +204,7 @@ fun AppNavHost(
                 },
             )
         }
+
         composable(Route.Inbox.route) {
             InboxScreen(
                 onNavigateToChat = { conversationId ->
@@ -209,6 +218,7 @@ fun AppNavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
+
         composable(Route.Profile.route) {
             ProfileScreen(
                 onNavigateToLogin = {
@@ -238,6 +248,12 @@ fun AppNavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
+
+        // ── Multi-book posting nested graph ───────────────────────────────────
+        multiPostNavGraph(
+            navController = navController,
+            onSessionComplete = onMultiPostComplete,
+        )
     }
 }
 

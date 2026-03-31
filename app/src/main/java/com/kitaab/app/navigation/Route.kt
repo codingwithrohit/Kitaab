@@ -3,26 +3,17 @@ package com.kitaab.app.navigation
 sealed class Route(val route: String) {
     // Entry flow
     data object Splash : Route("splash")
-
     data object Onboarding : Route("onboarding")
-
     data object Login : Route("login")
-
     data object SignUp : Route("signup")
-
     data object ProfileSetup : Route("profile_setup")
-
     data object EditProfile : Route("edit_profile")
 
     // Main tabs
     data object Home : Route("home")
-
     data object Explore : Route("explore")
-
     data object Post : Route("post")
-
     data object Inbox : Route("inbox")
-
     data object Profile : Route("profile")
 
     // Detail screens
@@ -48,4 +39,18 @@ sealed class Route(val route: String) {
     data object DonationRequests : Route("donation_requests/{listingId}") {
         fun createRoute(listingId: String) = "donation_requests/$listingId"
     }
+
+    // ── Multi-book posting — nested nav graph ─────────────────────────────────
+    // These four routes live inside a nested "multi_post_graph" NavGraph so that
+    // MultiPostViewModel can be scoped to the graph and survive across all four screens.
+
+    data object MultiPost : Route("multi_post_graph")
+
+    data object MultiPostSessionDefaults : Route("multi_post/session_defaults")
+
+    data object MultiPostTray : Route("multi_post/tray")
+
+    data object MultiPostOrganise : Route("multi_post/organise")
+
+    data object MultiPostReview : Route("multi_post/review")
 }
