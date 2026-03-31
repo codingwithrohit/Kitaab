@@ -23,6 +23,7 @@ import com.kitaab.app.feature.donation.DonationRequestsScreen
 import com.kitaab.app.feature.explore.ExploreScreen
 import com.kitaab.app.feature.home.HomeScreen
 import com.kitaab.app.feature.inbox.InboxScreen
+import com.kitaab.app.feature.listing.EditListingScreen
 import com.kitaab.app.feature.listing.ListingDetailScreen
 import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.EditProfileScreen
@@ -176,6 +177,9 @@ fun AppNavHost(
                         launchSingleTop = true
                     }
                 },
+                onNavigateToEditListing = { listingId ->
+                    navController.navigate(Route.EditListing.createRoute(listingId))
+                }
             )
         }
 
@@ -239,6 +243,17 @@ fun AppNavHost(
             EditProfileScreen(
                 onNavigateBack = { navController.popBackStack() },
             )
+        }
+
+        composable(
+            route = Route.EditListing.route,
+            arguments = listOf(
+                androidx.navigation.navArgument("listingId") {
+                    type = androidx.navigation.NavType.StringType
+                }
+            ),
+        ) {
+            EditListingScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(Route.DonationRequests.route) { backStackEntry ->

@@ -28,6 +28,10 @@ sealed class Route(val route: String) {
         }
     }
 
+    data object EditListing : Route("edit_listing/{listingId}") {
+        fun createRoute(listingId: String) = "edit_listing/$listingId"
+    }
+
     data object SellerProfile : Route("seller_profile/{userId}") {
         fun createRoute(userId: String) = "seller_profile/$userId"
     }

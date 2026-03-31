@@ -91,6 +91,7 @@ fun ListingDetailScreen(
     onNavigateToChat: (conversationId: String) -> Unit,
     onNavigateToDonationRequest: (listingId: String) -> Unit,
     onNavigateToDonationRequests: (listingId: String) -> Unit,
+    onNavigateToEditListing: (listingId: String) -> Unit,
     onSellerClick: (userId: String) -> Unit,
     onSimilarListingClick: (listingId: String) -> Unit,
     viewModel: ListingDetailViewModel = hiltViewModel(),
@@ -106,8 +107,10 @@ fun ListingDetailScreen(
             when (event) {
                 is ListingDetailEvent.NavigateToChat ->
                     onNavigateToChat(event.conversationId)
+
                 is ListingDetailEvent.NavigateToDonationRequest ->
                     showDonationSheet = true
+
                 is ListingDetailEvent.NavigateToDonationRequests ->
                     onNavigateToDonationRequests(event.listingId)
             }
@@ -323,6 +326,16 @@ fun ListingDetailScreen(
                                 )
                             }
                         }
+                        if (state.isOwnListing) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = { onNavigateToEditListing(listing.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                            ) {
+                                Text("Edit listing")
+                            }
+                        }
 
                         if (state.isOwnListing && state.listing?.type == "DONATE") {
                             Spacer(modifier = Modifier.height(20.dp))
@@ -372,7 +385,11 @@ fun ListingDetailScreen(
                                 )
                             }
                         }
-                        Spacer(modifier = Modifier.height(32.dp).navigationBarsPadding())
+                        Spacer(
+                            modifier = Modifier
+                                .height(32.dp)
+                                .navigationBarsPadding()
+                        )
                     }
                 }
             }

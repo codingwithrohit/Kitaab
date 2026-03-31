@@ -49,12 +49,13 @@ data class MultiPostUiState(
     val totalBookCount: Int
         get() = stagedBooks.size
 
-    // Review screen readiness
+    // Review screen readiness — passes session default so DONATE books don't require price
     val allListingsReady: Boolean
         get() {
-            val individualOk = unbundledBooks.all { it.isReadyToPublish }
+            val default = sessionDefaults.listingType
+            val individualOk = unbundledBooks.all { it.isReadyToPublish(default) }
             val bundlesOk = stagedBundles.all { bundle ->
-                bundle.isReadyToPublish && booksForBundle(bundle.id).isNotEmpty()
+                bundle.isReadyToPublish(default) && booksForBundle(bundle.id).isNotEmpty()
             }
             return stagedBooks.isNotEmpty() && individualOk && bundlesOk
         }

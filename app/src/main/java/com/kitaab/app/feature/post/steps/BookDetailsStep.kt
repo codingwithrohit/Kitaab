@@ -1,8 +1,5 @@
 package com.kitaab.app.feature.post.steps
 
-import android.Manifest
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -36,15 +33,12 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.BusinessCenter
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -60,21 +54,18 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.kitaab.app.feature.auth.kitaabTextFieldColors
+import com.kitaab.app.feature.post.BarcodeScanButton
 import com.kitaab.app.feature.post.PostUiState
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
@@ -99,35 +90,7 @@ fun BookDetailsStep(
     onHasNotesToggled: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
-    var showScanner by remember { mutableStateOf(false) }
-    var hasCameraPermission by remember { mutableStateOf(false) }
 
-    val permissionLauncher =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission(),
-        ) { granted ->
-            hasCameraPermission = granted
-            if (granted) showScanner = true
-        }
-
-    if (showScanner) {
-        Dialog(
-            onDismissRequest = { showScanner = false },
-            properties =
-                DialogProperties(
-                    usePlatformDefaultWidth = false,
-                    decorFitsSystemWindows = false,
-                ),
-        ) {
-            BarcodeScannerView(
-                onBarcodeDetected = { isbn ->
-                    showScanner = false
-                    onIsbnScanned(isbn)
-                },
-                onDismiss = { showScanner = false },
-            )
-        }
-    }
 
     Column(
         modifier =
@@ -138,40 +101,10 @@ fun BookDetailsStep(
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        OutlinedButton(
-            onClick = {
-                if (hasCameraPermission) {
-                    showScanner = true
-                } else {
-                    permissionLauncher.launch(Manifest.permission.CAMERA)
-                }
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Teal500),
-        ) {
-            Icon(
-                Icons.Outlined.QrCodeScanner,
-                contentDescription = null,
-                tint = Teal500,
-                modifier = Modifier.size(18.dp),
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Text(
-                text = "Scan barcode",
-                color = Teal500,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-            )
-            if (state.isFetchingBookDetails) {
-                Spacer(modifier = Modifier.size(8.dp))
-                CircularProgressIndicator(
-                    modifier = Modifier.size(14.dp),
-                    color = Teal500,
-                    strokeWidth = 2.dp,
-                )
-            }
-        }
+        BarcodeScanButton(
+            isFetchingBookDetails = state.isFetchingBookDetails,
+            onIsbnScanned = onIsbnScanned,
+        )
 
         if (state.isbn.isNotBlank()) {
             Spacer(modifier = Modifier.height(8.dp))
@@ -239,7 +172,13 @@ fun BookDetailsStep(
             value = state.publisher,
             onValueChange = onPublisherChanged,
             label = { Text("Publisher") },
-            leadingIcon = { Icon(Icons.Outlined.BusinessCenter, null, modifier = Modifier.size(18.dp)) },
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.BusinessCenter,
+                    null,
+                    modifier = Modifier.size(18.dp)
+                )
+            },
             keyboardOptions =
                 KeyboardOptions(
                     capitalization = KeyboardCapitalization.Words,
@@ -325,9 +264,17 @@ fun BookDetailsStep(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        ToggleRow(label = "Has solutions manual", checked = state.hasSolutions, onToggle = onHasSolutionsToggled)
+        ToggleRow(
+            label = "Has solutions manual",
+            checked = state.hasSolutions,
+            onToggle = onHasSolutionsToggled
+        )
         Spacer(modifier = Modifier.height(12.dp))
-        ToggleRow(label = "Has handwritten notes", checked = state.hasNotes, onToggle = onHasNotesToggled)
+        ToggleRow(
+            label = "Has handwritten notes",
+            checked = state.hasNotes,
+            onToggle = onHasNotesToggled
+        )
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
@@ -407,7 +354,7 @@ private fun BarcodeScannerView(
                                                 .addOnSuccessListener { barcodes ->
                                                     barcodes.firstOrNull {
                                                         it.format == Barcode.FORMAT_EAN_13 ||
-                                                            it.format == Barcode.FORMAT_EAN_8
+                                                                it.format == Barcode.FORMAT_EAN_8
                                                     }?.rawValue?.let { isbn ->
                                                         if (!scanned) {
                                                             scanned = true
@@ -521,23 +468,61 @@ private fun ScannerFrame() {
         // Dimmed area is handled by camera contrast — just draw the corner brackets
         // Top-left
         Box(modifier = Modifier.align(Alignment.TopStart)) {
-            Box(modifier = Modifier.size(cornerLength, cornerThickness).background(cornerColor))
-            Box(modifier = Modifier.size(cornerThickness, cornerLength).background(cornerColor))
+            Box(
+                modifier = Modifier
+                    .size(cornerLength, cornerThickness)
+                    .background(cornerColor)
+            )
+            Box(
+                modifier = Modifier
+                    .size(cornerThickness, cornerLength)
+                    .background(cornerColor)
+            )
         }
         // Top-right
         Box(modifier = Modifier.align(Alignment.TopEnd)) {
-            Box(modifier = Modifier.size(cornerLength, cornerThickness).align(Alignment.TopEnd).background(cornerColor))
-            Box(modifier = Modifier.size(cornerThickness, cornerLength).align(Alignment.TopEnd).background(cornerColor))
+            Box(
+                modifier = Modifier
+                    .size(cornerLength, cornerThickness)
+                    .align(Alignment.TopEnd)
+                    .background(cornerColor)
+            )
+            Box(
+                modifier = Modifier
+                    .size(cornerThickness, cornerLength)
+                    .align(Alignment.TopEnd)
+                    .background(cornerColor)
+            )
         }
         // Bottom-left
         Box(modifier = Modifier.align(Alignment.BottomStart)) {
-            Box(modifier = Modifier.size(cornerLength, cornerThickness).align(Alignment.BottomStart).background(cornerColor))
-            Box(modifier = Modifier.size(cornerThickness, cornerLength).align(Alignment.BottomStart).background(cornerColor))
+            Box(
+                modifier = Modifier
+                    .size(cornerLength, cornerThickness)
+                    .align(Alignment.BottomStart)
+                    .background(cornerColor)
+            )
+            Box(
+                modifier = Modifier
+                    .size(cornerThickness, cornerLength)
+                    .align(Alignment.BottomStart)
+                    .background(cornerColor)
+            )
         }
         // Bottom-right
         Box(modifier = Modifier.align(Alignment.BottomEnd)) {
-            Box(modifier = Modifier.size(cornerLength, cornerThickness).align(Alignment.BottomEnd).background(cornerColor))
-            Box(modifier = Modifier.size(cornerThickness, cornerLength).align(Alignment.BottomEnd).background(cornerColor))
+            Box(
+                modifier = Modifier
+                    .size(cornerLength, cornerThickness)
+                    .align(Alignment.BottomEnd)
+                    .background(cornerColor)
+            )
+            Box(
+                modifier = Modifier
+                    .size(cornerThickness, cornerLength)
+                    .align(Alignment.BottomEnd)
+                    .background(cornerColor)
+            )
         }
     }
 }

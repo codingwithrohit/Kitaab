@@ -32,30 +32,29 @@ fun ListingGridCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .clickable { onClick() },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(0.5.dp, WarmBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column {
-            // Book cover — portrait aspect ratio like a real book
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(2f / 3f)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(2f / 3f)
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
             )
 
             Column(modifier = Modifier.padding(8.dp)) {
+                if (listing.isBundle) {
+                    BundleBadge(bookCount = listing.bookCount)
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
+
                 Text(
                     text = listing.title,
                     fontSize = 12.sp,
@@ -66,7 +65,7 @@ fun ListingGridCard(
                     lineHeight = 16.sp,
                 )
 
-                if (!listing.author.isNullOrBlank()) {
+                if (!listing.isBundle && !listing.author.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = listing.author,
@@ -80,22 +79,16 @@ fun ListingGridCard(
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
-                    text =
-                        if (listing.type == "DONATE") {
-                            "FREE"
-                        } else {
-                            listing.price?.let { "₹${it.toInt()}" } ?: ""
-                        },
+                    text = if (listing.type == "DONATE") "FREE"
+                    else listing.price?.let { "₹${it.toInt()}" } ?: "",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Teal500,
                 )
 
-                Text(
-                    text = listing.condition,
-                    fontSize = 11.sp,
-                    color = WarmMuted,
-                )
+                if (!listing.isBundle) {
+                    Text(text = listing.condition, fontSize = 11.sp, color = WarmMuted)
+                }
             }
         }
     }

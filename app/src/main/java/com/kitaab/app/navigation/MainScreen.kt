@@ -61,6 +61,7 @@ fun MainScreen() {
                 currentRoute?.startsWith("seller_profile/") == true ||
                 currentRoute?.startsWith("chat/") == true ||
                 currentRoute?.startsWith("donation_requests/") == true ||
+                currentRoute?.startsWith("edit_listing/") == true ||
                 // Multi-post screens — all hide the bottom nav
                 currentRoute == Route.MultiPostSessionDefaults.route ||
                 currentRoute == Route.MultiPostTray.route ||

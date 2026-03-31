@@ -17,19 +17,30 @@ data class StagedBook(
     val hasSolutions: Boolean = false,
     val hasNotes: Boolean = false,
     val condition: BookCondition? = null,
-    // Raw price string — empty means not yet set (valid for donations)
     val individualPrice: String = "",
-    // Stable internal-storage file paths — NOT picker URIs
     val photoPaths: List<String> = emptyList(),
-    val typeOverride: ListingType? = null,           // null = use session default
+    val typeOverride: ListingType? = null,
     val sortOrder: Int = 0,
 ) {
-    // First photo path is always the cover
     val coverPhotoPath: String? get() = photoPaths.firstOrNull()
 
-    val effectiveType: ListingType
-        get() = typeOverride ?: ListingType.SELL     // caller passes session default when needed
+    // Always requires session default — never falls back to SELL silently
+    fun effectiveType(sessionDefault: ListingType): ListingType = typeOverride ?: sessionDefault
 
-    val isReadyToPublish: Boolean
-        get() = title.isNotBlank() && condition != null
+    fun isReadyToPublish(sessionDefault: ListingType): Boolean {
+        val type = effectiveType(sessionDefault)
+        val priceOk = type == ListingType.DONATE || individualPrice.isNotBlank()
+        return title.isNotBlank() && condition != null && priceOk
+    }
+
+    // Warning text shown in ReviewPublishScreen per book
+    fun warningText(sessionDefault: ListingType): String? {
+        val type = effectiveType(sessionDefault)
+        return when {
+            title.isBlank() -> "Title required"
+            condition == null -> "Condition required"
+            type == ListingType.SELL && individualPrice.isBlank() -> "Price required"
+            else -> null
+        }
+    }
 }

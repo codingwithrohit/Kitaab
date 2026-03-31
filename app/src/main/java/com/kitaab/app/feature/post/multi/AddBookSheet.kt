@@ -49,6 +49,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.kitaab.app.feature.post.BarcodeScanButton
 import com.kitaab.app.feature.post.BookCondition
 import com.kitaab.app.feature.post.ListingType
 
@@ -108,6 +109,28 @@ fun AddBookSheet(
                     "Book not found — fill in the details below.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            // ── Barcode scanner ───────────────────────────────────────────────
+            BarcodeScanButton(
+                isFetchingBookDetails = sheet.isFetchingBookDetails,
+                onIsbnScanned = viewModel::onBookIsbnScanned,
+            )
+
+            if (sheet.isbn.isNotBlank()) {
+                Text(
+                    "ISBN: ${sheet.isbn}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            if (sheet.bookNotFound) {
+                Text(
+                    "Book not found — fill in the details below.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
                 )
             }
 

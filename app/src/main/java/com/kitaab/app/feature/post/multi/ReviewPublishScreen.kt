@@ -60,11 +60,9 @@ fun ReviewPublishScreen(
             )
         },
     ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -150,8 +148,8 @@ fun ReviewPublishScreen(
                     }
                     items(state.stagedBundles, key = { "review_bundle_${it.id}" }) { bundle ->
                         val books = state.booksForBundle(bundle.id)
-                        val effectiveType = bundle.typeOverride ?: state.sessionDefaults.listingType
-                        val isReady = bundle.isReadyToPublish && books.isNotEmpty()
+                        val default = state.sessionDefaults.listingType
+                        val effectiveType = bundle.effectiveType(default)
                         ReviewListingCard(
                             title = bundle.name,
                             subtitle = "${books.size} books · ${
@@ -160,13 +158,9 @@ fun ReviewPublishScreen(
                             }" +
                                     if (effectiveType == ListingType.SELL && bundle.bundlePrice.isNotBlank()) " · ₹${bundle.bundlePrice}" else "",
                             isBundle = true,
-                            isReady = isReady,
-                            warningText = when {
-                                bundle.name.isBlank() -> "Bundle name required"
-                                effectiveType == ListingType.SELL && bundle.bundlePrice.isBlank() -> "Price required"
-                                books.isEmpty() -> "Add at least one book"
-                                else -> null
-                            },
+                            isReady = bundle.isReadyToPublish(default) && books.isNotEmpty(),
+                            warningText = if (books.isEmpty()) "Add at least one book"
+                            else bundle.warningText(default),
                         )
                     }
                 }
@@ -182,28 +176,24 @@ fun ReviewPublishScreen(
                         )
                     }
                     items(state.unbundledBooks, key = { "review_book_${it.id}" }) { book ->
-                        val effectiveType = book.typeOverride ?: state.sessionDefaults.listingType
+                        val default = state.sessionDefaults.listingType
+                        val effectiveType = book.effectiveType(default)
                         ReviewListingCard(
                             title = book.title,
                             subtitle = buildString {
                                 append(
                                     effectiveType.name.lowercase()
                                         .replaceFirstChar { it.uppercaseChar() })
-                                if (effectiveType == ListingType.SELL) {
-                                    if (book.individualPrice.isNotBlank()) append(" · ₹${book.individualPrice}")
+                                if (effectiveType == ListingType.SELL && book.individualPrice.isNotBlank()) {
+                                    append(" · ₹${book.individualPrice}")
                                 }
                                 book.condition?.let { append(" · ${it.label}") }
                                 val photoCount = book.photoPaths.size
                                 append(" · $photoCount photo${if (photoCount == 1) "" else "s"}")
                             },
                             isBundle = false,
-                            isReady = book.isReadyToPublish,
-                            warningText = when {
-                                book.title.isBlank() -> "Title required"
-                                book.condition == null -> "Condition required"
-                                effectiveType == ListingType.SELL && book.individualPrice.isBlank() -> "Price required"
-                                else -> null
-                            },
+                            isReady = book.isReadyToPublish(default),
+                            warningText = book.warningText(default),
                         )
                     }
                 }
@@ -220,7 +210,7 @@ fun ReviewPublishScreen(
             ) {
                 if (state.publishError != null) {
                     Text(
-                        state.publishError!!,
+                        state.publishError.toString(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
                     )

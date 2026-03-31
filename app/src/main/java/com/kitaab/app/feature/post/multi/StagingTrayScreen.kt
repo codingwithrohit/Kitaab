@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -31,6 +32,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -201,7 +203,8 @@ private fun BookChip(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val effectiveType = book.typeOverride ?: sessionDefaultType
+    val effectiveType = book.effectiveType(sessionDefaultType)
+    val isOverridden = book.typeOverride != null
     val conditionColor = when (book.condition?.name) {
         "New", "LikeNew" -> MaterialTheme.colorScheme.primary
         "Good" -> MaterialTheme.colorScheme.tertiary
@@ -216,7 +219,6 @@ private fun BookChip(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Condition colour dot
             Box(
                 modifier = Modifier
                     .size(10.dp)
@@ -233,23 +235,54 @@ private fun BookChip(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                val subtitle = buildString {
-                    append(effectiveType.name.lowercase().replaceFirstChar { it.uppercaseChar() })
-                    if (effectiveType == ListingType.SELL) {
-                        if (book.individualPrice.isNotBlank()) append(" · ₹${book.individualPrice}")
-                        else append(" · no price yet")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 2.dp),
+                ) {
+                    // Type pill — tinted differently if overridden from session default
+                    val pillBg = if (effectiveType == ListingType.DONATE)
+                        MaterialTheme.colorScheme.tertiaryContainer
+                    else MaterialTheme.colorScheme.primaryContainer
+                    val pillText = if (effectiveType == ListingType.DONATE)
+                        MaterialTheme.colorScheme.onTertiaryContainer
+                    else MaterialTheme.colorScheme.onPrimaryContainer
+
+                    Surface(
+                        color = pillBg,
+                        shape = RoundedCornerShape(4.dp),
+                    ) {
+                        Text(
+                            text = if (effectiveType == ListingType.DONATE) "Donate" else "Sell",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = pillText,
+                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                        )
                     }
-                    book.condition?.let { append(" · ${it.label}") }
-                    if (book.photoPaths.isEmpty()) append(" · no photos")
-                    else append(" · ${book.photoPaths.size} photo${if (book.photoPaths.size == 1) "" else "s"}")
+                    if (isOverridden) {
+                        Text(
+                            text = "overridden",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    val priceText = when {
+                        effectiveType == ListingType.SELL && book.individualPrice.isNotBlank() ->
+                            "· ₹${book.individualPrice}"
+
+                        effectiveType == ListingType.SELL -> "· no price"
+                        else -> ""
+                    }
+                    if (priceText.isNotBlank()) {
+                        Text(
+                            text = priceText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (effectiveType == ListingType.SELL && book.individualPrice.isBlank())
+                                MaterialTheme.colorScheme.error
+                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
             }
 
             IconButton(onClick = onDelete) {
