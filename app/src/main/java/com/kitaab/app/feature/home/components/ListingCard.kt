@@ -73,7 +73,9 @@ fun ListingCard(
             }
             .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
         border = BorderStroke(0.5.dp, WarmBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -81,17 +83,17 @@ fun ListingCard(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.Top,
         ) {
+            // Photo with type badge overlaid
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
                 modifier = Modifier
-                    .size(width = 52.dp, height = 68.dp)
-                    .clip(RoundedCornerShape(6.dp)),
+                    .size(width = 64.dp, height = 86.dp)
+                    .clip(RoundedCornerShape(8.dp)),
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                // Bundle badge — shown above title when listing is a bundle
                 if (listing.isBundle) {
                     BundleBadge(bookCount = listing.bookCount)
                     Spacer(modifier = Modifier.height(4.dp))
@@ -118,14 +120,34 @@ fun ListingCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    if (!listing.isBundle) ConditionBadge(condition = listing.condition)
-                    PriceBadge(listing = listing)
+                    val priceText = when {
+                        listing.type == "DONATE" -> "FREE"
+                        listing.price != null -> "₹${listing.price.toInt()}"
+                        else -> ""
+                    }
+                    Text(
+                        text = priceText,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Teal500,
+                    )
+
+                    if (!listing.isBundle) {
+                        Text(
+                            text = "· ${listing.condition}",
+                            fontSize = 12.sp,
+                            color = WarmMuted,
+                        )
+                    }
+
+
+                    InlineTypePill(listing = listing)
                 }
 
                 val locationParts = listOfNotNull(
@@ -134,8 +156,12 @@ fun ListingCard(
                 ).joinToString(", ")
 
                 if (locationParts.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Text(text = "📍 $locationParts", fontSize = 11.sp, color = WarmMuted)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "📍 $locationParts",
+                        fontSize = 11.sp,
+                        color = WarmMuted,
+                    )
                 }
             }
         }
@@ -154,6 +180,45 @@ fun BundleBadge(bookCount: Int) {
             fontWeight = FontWeight.Medium,
             color = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+        )
+    }
+}
+
+@Composable
+private fun InlineTypePill(listing: Listing) {
+    val (label, bgColor, textColor) = when {
+        listing.isBundle -> Triple(
+            "Bundle",
+            MaterialTheme.colorScheme.secondaryContainer,
+            MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+
+        listing.type == "DONATE" -> Triple(
+            "Donate",
+            MaterialTheme.colorScheme.primaryContainer,
+            MaterialTheme.colorScheme.onPrimaryContainer,
+        )
+
+        else -> Triple(
+            "Sell",
+            MaterialTheme.colorScheme.surfaceVariant,
+            MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .background(
+                color = bgColor,
+                shape = RoundedCornerShape(4.dp),
+            )
+            .padding(horizontal = 6.dp, vertical = 2.dp),
+    ) {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Medium,
+            color = textColor,
         )
     }
 }
