@@ -2,6 +2,7 @@ package com.kitaab.app.feature.post.multi
 
 sealed interface MultiPostEvent {
     data object NavigateToTray : MultiPostEvent
+
     data object NavigateToReview : MultiPostEvent
 
     data class PublishComplete(

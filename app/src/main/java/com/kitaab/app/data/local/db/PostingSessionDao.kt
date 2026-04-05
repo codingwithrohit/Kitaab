@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface PostingSessionDao {
-
     @Query("SELECT * FROM posting_sessions")
     suspend fun getAllSessions(): List<CachedPostingSession>
 
@@ -36,7 +35,7 @@ interface PostingSessionDao {
         defaultPincode = :pincode, 
         defaultLocality = :locality 
     WHERE id = :sessionId
-"""
+""",
     )
     suspend fun updateDefaults(
         sessionId: String,

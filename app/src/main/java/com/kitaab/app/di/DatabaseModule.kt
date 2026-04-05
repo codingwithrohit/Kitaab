@@ -18,10 +18,11 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): KitaabDatabase =
+    fun provideDatabase(
+        @ApplicationContext context: Context,
+    ): KitaabDatabase =
         Room.databaseBuilder(context, KitaabDatabase::class.java, "kitaab_db")
             .addMigrations(KitaabDatabase.MIGRATION_1_2)
             .build()

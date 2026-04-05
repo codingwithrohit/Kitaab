@@ -48,12 +48,13 @@ fun SessionDefaultsSheet(
         sheetState = sheetState,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
@@ -61,15 +62,18 @@ fun SessionDefaultsSheet(
                 style = MaterialTheme.typography.titleMedium,
             )
             Text(
-                if (state.sessionDefaultsRequiredBanner)
+                if (state.sessionDefaultsRequiredBanner) {
                     "Location is needed to continue. Set it once for all books in this session."
-                else
-                    "Set once for all books. Override per book or bundle anytime.",
+                } else {
+                    "Set once for all books. Override per book or bundle anytime."
+                },
                 style = MaterialTheme.typography.bodySmall,
-                color = if (state.sessionDefaultsRequiredBanner)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant,
+                color =
+                    if (state.sessionDefaultsRequiredBanner) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
             )
 
             // Type

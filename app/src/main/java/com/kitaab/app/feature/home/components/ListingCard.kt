@@ -54,28 +54,31 @@ fun ListingCard(
     modifier: Modifier = Modifier,
 ) {
     var rotationY by remember { mutableFloatStateOf(0f) }
-    val screenWidthPx = with(LocalDensity.current) {
-        LocalConfiguration.current.screenWidthDp.dp.toPx()
-    }
+    val screenWidthPx =
+        with(LocalDensity.current) {
+            LocalConfiguration.current.screenWidthDp.dp.toPx()
+        }
     val density = LocalDensity.current.density
 
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { coords ->
-                val cardCenterX = coords.boundsInRoot().center.x
-                val offset = (cardCenterX - screenWidthPx / 2f) / (screenWidthPx / 2f)
-                rotationY = (offset * 8f).coerceIn(-8f, 8f)
-            }
-            .graphicsLayer {
-                this.rotationY = rotationY
-                cameraDistance = 12f * density
-            }
-            .clickable { onClick() },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .onGloballyPositioned { coords ->
+                    val cardCenterX = coords.boundsInRoot().center.x
+                    val offset = (cardCenterX - screenWidthPx / 2f) / (screenWidthPx / 2f)
+                    rotationY = (offset * 8f).coerceIn(-8f, 8f)
+                }
+                .graphicsLayer {
+                    this.rotationY = rotationY
+                    cameraDistance = 12f * density
+                }
+                .clickable { onClick() },
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
         border = BorderStroke(0.5.dp, WarmBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
@@ -86,9 +89,10 @@ fun ListingCard(
             // Photo with type badge overlaid
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
-                modifier = Modifier
-                    .size(width = 64.dp, height = 86.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                modifier =
+                    Modifier
+                        .size(width = 64.dp, height = 86.dp)
+                        .clip(RoundedCornerShape(8.dp)),
             )
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -126,11 +130,12 @@ fun ListingCard(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    val priceText = when {
-                        listing.type == "DONATE" -> "FREE"
-                        listing.price != null -> "₹${listing.price.toInt()}"
-                        else -> ""
-                    }
+                    val priceText =
+                        when {
+                            listing.type == "DONATE" -> "FREE"
+                            listing.price != null -> "₹${listing.price.toInt()}"
+                            else -> ""
+                        }
                     Text(
                         text = priceText,
                         fontSize = 15.sp,
@@ -146,14 +151,14 @@ fun ListingCard(
                         )
                     }
 
-
                     InlineTypePill(listing = listing)
                 }
 
-                val locationParts = listOfNotNull(
-                    listing.locality?.takeIf { it.isNotBlank() },
-                    listing.city?.takeIf { it.isNotBlank() },
-                ).joinToString(", ")
+                val locationParts =
+                    listOfNotNull(
+                        listing.locality?.takeIf { it.isNotBlank() },
+                        listing.city?.takeIf { it.isNotBlank() },
+                    ).joinToString(", ")
 
                 if (locationParts.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -186,33 +191,38 @@ fun BundleBadge(bookCount: Int) {
 
 @Composable
 private fun InlineTypePill(listing: Listing) {
-    val (label, bgColor, textColor) = when {
-        listing.isBundle -> Triple(
-            "Bundle",
-            MaterialTheme.colorScheme.secondaryContainer,
-            MaterialTheme.colorScheme.onSecondaryContainer,
-        )
+    val (label, bgColor, textColor) =
+        when {
+            listing.isBundle ->
+                Triple(
+                    "Bundle",
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    MaterialTheme.colorScheme.onSecondaryContainer,
+                )
 
-        listing.type == "DONATE" -> Triple(
-            "Donate",
-            MaterialTheme.colorScheme.primaryContainer,
-            MaterialTheme.colorScheme.onPrimaryContainer,
-        )
+            listing.type == "DONATE" ->
+                Triple(
+                    "Donate",
+                    MaterialTheme.colorScheme.primaryContainer,
+                    MaterialTheme.colorScheme.onPrimaryContainer,
+                )
 
-        else -> Triple(
-            "Sell",
-            MaterialTheme.colorScheme.surfaceVariant,
-            MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+            else ->
+                Triple(
+                    "Sell",
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+        }
 
     Box(
-        modifier = Modifier
-            .background(
-                color = bgColor,
-                shape = RoundedCornerShape(4.dp),
-            )
-            .padding(horizontal = 6.dp, vertical = 2.dp),
+        modifier =
+            Modifier
+                .background(
+                    color = bgColor,
+                    shape = RoundedCornerShape(4.dp),
+                )
+                .padding(horizontal = 6.dp, vertical = 2.dp),
     ) {
         Text(
             text = label,
@@ -252,11 +262,12 @@ fun BookCoverImage(
 
 @Composable
 private fun ConditionBadge(condition: String) {
-    val color = when (condition) {
-        "New", "LikeNew" -> Teal500
-        "Good" -> MaterialTheme.colorScheme.primary
-        else -> WarmMuted
-    }
+    val color =
+        when (condition) {
+            "New", "LikeNew" -> Teal500
+            "Good" -> MaterialTheme.colorScheme.primary
+            else -> WarmMuted
+        }
     Text(text = condition, fontSize = 11.sp, fontWeight = FontWeight.Medium, color = color)
 }
 

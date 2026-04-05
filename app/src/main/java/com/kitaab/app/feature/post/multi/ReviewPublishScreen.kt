@@ -60,18 +60,23 @@ fun ReviewPublishScreen(
             )
         },
     ) { padding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)) {
-            LazyColumn(
-                modifier = Modifier
+        Box(
+            modifier =
+                Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                    .padding(padding),
+        ) {
+            LazyColumn(
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    top = 8.dp,
-                    bottom = 120.dp,
-                ),
+                contentPadding =
+                    androidx.compose.foundation.layout.PaddingValues(
+                        top = 8.dp,
+                        bottom = 120.dp,
+                    ),
             ) {
                 // Summary header
                 item {
@@ -152,15 +157,24 @@ fun ReviewPublishScreen(
                         val effectiveType = bundle.effectiveType(default)
                         ReviewListingCard(
                             title = bundle.name,
-                            subtitle = "${books.size} books · ${
-                                effectiveType.name.lowercase()
-                                    .replaceFirstChar { it.uppercaseChar() }
-                            }" +
-                                    if (effectiveType == ListingType.SELL && bundle.bundlePrice.isNotBlank()) " · ₹${bundle.bundlePrice}" else "",
+                            subtitle =
+                                "${books.size} books · ${
+                                    effectiveType.name.lowercase()
+                                        .replaceFirstChar { it.uppercaseChar() }
+                                }" +
+                                    if (effectiveType == ListingType.SELL && bundle.bundlePrice.isNotBlank()) {
+                                        " · ₹${bundle.bundlePrice}"
+                                    } else {
+                                        ""
+                                    },
                             isBundle = true,
                             isReady = bundle.isReadyToPublish(default) && books.isNotEmpty(),
-                            warningText = if (books.isEmpty()) "Add at least one book"
-                            else bundle.warningText(default),
+                            warningText =
+                                if (books.isEmpty()) {
+                                    "Add at least one book"
+                                } else {
+                                    bundle.warningText(default)
+                                },
                         )
                     }
                 }
@@ -180,17 +194,19 @@ fun ReviewPublishScreen(
                         val effectiveType = book.effectiveType(default)
                         ReviewListingCard(
                             title = book.title,
-                            subtitle = buildString {
-                                append(
-                                    effectiveType.name.lowercase()
-                                        .replaceFirstChar { it.uppercaseChar() })
-                                if (effectiveType == ListingType.SELL && book.individualPrice.isNotBlank()) {
-                                    append(" · ₹${book.individualPrice}")
-                                }
-                                book.condition?.let { append(" · ${it.label}") }
-                                val photoCount = book.photoPaths.size
-                                append(" · $photoCount photo${if (photoCount == 1) "" else "s"}")
-                            },
+                            subtitle =
+                                buildString {
+                                    append(
+                                        effectiveType.name.lowercase()
+                                            .replaceFirstChar { it.uppercaseChar() },
+                                    )
+                                    if (effectiveType == ListingType.SELL && book.individualPrice.isNotBlank()) {
+                                        append(" · ₹${book.individualPrice}")
+                                    }
+                                    book.condition?.let { append(" · ${it.label}") }
+                                    val photoCount = book.photoPaths.size
+                                    append(" · $photoCount photo${if (photoCount == 1) "" else "s"}")
+                                },
                             isBundle = false,
                             isReady = book.isReadyToPublish(default),
                             warningText = book.warningText(default),
@@ -201,11 +217,12 @@ fun ReviewPublishScreen(
 
             // ── Publish button ────────────────────────────────────────────────
             Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 if (state.publishError != null) {
@@ -223,12 +240,15 @@ fun ReviewPublishScreen(
                     if (state.isPublishing) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp
+                            strokeWidth = 2.dp,
                         )
                     } else {
                         Text(
-                            if (state.failedListingTitles.isNotEmpty()) "Retry failed listings"
-                            else "Publish ${state.totalListingCount} listing${if (state.totalListingCount == 1) "" else "s"}",
+                            if (state.failedListingTitles.isNotEmpty()) {
+                                "Retry failed listings"
+                            } else {
+                                "Publish ${state.totalListingCount} listing${if (state.totalListingCount == 1) "" else "s"}"
+                            },
                         )
                     }
                 }
@@ -254,10 +274,15 @@ private fun ReviewListingCard(
     warningText: String?,
 ) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = if (isReady) MaterialTheme.colorScheme.surfaceVariant
-            else MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (isReady) {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    } else {
+                        MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
+                    },
+            ),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
@@ -266,7 +291,7 @@ private fun ReviewListingCard(
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

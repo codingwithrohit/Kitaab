@@ -82,19 +82,22 @@ fun OrganiseScreen(
         },
     ) { padding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
         ) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    top = 8.dp,
-                    bottom = 140.dp,
-                ),
+                contentPadding =
+                    androidx.compose.foundation.layout.PaddingValues(
+                        top = 8.dp,
+                        bottom = 140.dp,
+                    ),
             ) {
                 // ── Bundles (with their member books) ──────────────────────────
                 if (state.stagedBundles.isNotEmpty()) {
@@ -141,11 +144,12 @@ fun OrganiseScreen(
 
             // ── Bottom action bar ─────────────────────────────────────────────
             Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-                    .navigationBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 if (state.selectedBookIds.isNotEmpty()) {
@@ -200,9 +204,10 @@ fun OrganiseScreen(
         CreateBundleSheet(
             viewModel = viewModel,
             sessionDefaultType = state.sessionDefaults.listingType,
-            selectedBookTitles = state.stagedBooks
-                .filter { it.id in state.selectedBookIds }
-                .map { it.title },
+            selectedBookTitles =
+                state.stagedBooks
+                    .filter { it.id in state.selectedBookIds }
+                    .map { it.title },
             onDismiss = { viewModel.dismissCreateBundleSheet() },
         )
     }
@@ -216,25 +221,34 @@ private fun SelectableBookRow(
     onToggle: () -> Unit,
 ) {
     val borderColor by animateColorAsState(
-        if (isSelected) MaterialTheme.colorScheme.primary
-        else MaterialTheme.colorScheme.outlineVariant,
+        if (isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.outlineVariant
+        },
         label = "border",
     )
 
     Card(
         onClick = onToggle,
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-            else MaterialTheme.colorScheme.surfaceVariant,
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = if (isSelected) 1.5.dp else 0.5.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(12.dp),
-            )
-            .clip(RoundedCornerShape(12.dp)),
+        colors =
+            CardDefaults.cardColors(
+                containerColor =
+                    if (isSelected) {
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    },
+            ),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(
+                    width = if (isSelected) 1.5.dp else 0.5.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(12.dp),
+                )
+                .clip(RoundedCornerShape(12.dp)),
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -261,7 +275,8 @@ private fun SelectableBookRow(
                 Text(
                     buildString {
                         append(
-                            effectiveType.name.lowercase().replaceFirstChar { it.uppercaseChar() })
+                            effectiveType.name.lowercase().replaceFirstChar { it.uppercaseChar() },
+                        )
                         if (book.individualPrice.isNotBlank()) append(" · ₹${book.individualPrice}")
                     },
                     style = MaterialTheme.typography.bodySmall,
@@ -287,7 +302,7 @@ private fun BundleCard(
     ) {
         Column(
             modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -305,7 +320,7 @@ private fun BundleCard(
                                 "Bundle · ${books.size} books · ${
                                     effectiveType.name.lowercase()
                                         .replaceFirstChar { it.uppercaseChar() }
-                                }"
+                                }",
                             )
                             if (effectiveType == ListingType.SELL && bundle.bundlePrice.isNotBlank()) {
                                 append(" · ₹${bundle.bundlePrice}")
@@ -349,10 +364,11 @@ fun CreateBundleSheet(
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(

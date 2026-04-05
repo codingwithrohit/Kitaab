@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StagedBundleDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(bundle: CachedStagedBundle)
 

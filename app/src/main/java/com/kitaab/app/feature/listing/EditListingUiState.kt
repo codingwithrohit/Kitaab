@@ -8,7 +8,6 @@ data class EditListingUiState(
     val isLoading: Boolean = true,
     val isSubmitting: Boolean = false,
     val error: String? = null,
-
     // Fields
     val title: String = "",
     val author: String = "",
@@ -25,14 +24,10 @@ data class EditListingUiState(
     val city: String = "",
     val pincode: String = "",
     val locality: String = "",
-
-    // Photos — mix of existing remote URLs and new local URIs
-    val existingPhotoUrls: List<String> = emptyList(),  // already on Supabase Storage
-    val newPhotoUris: List<Uri> = emptyList(),           // picked this session, not yet uploaded
+    val existingPhotoUrls: List<String> = emptyList(),
+    val newPhotoUris: List<Uri> = emptyList(),
     val isFetchingBookDetails: Boolean = false,
     val bookNotFound: Boolean = false,
-
-    // Validation
     val titleError: String? = null,
     val conditionError: String? = null,
     val priceError: String? = null,

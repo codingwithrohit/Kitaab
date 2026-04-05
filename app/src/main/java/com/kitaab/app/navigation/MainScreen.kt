@@ -50,21 +50,21 @@ fun MainScreen() {
 
     val hideBottomNav =
         currentRoute == null ||
-                currentRoute == Route.Splash.route ||
-                currentRoute == Route.Onboarding.route ||
-                currentRoute == Route.Login.route ||
-                currentRoute == Route.SignUp.route ||
-                currentRoute == Route.ProfileSetup.route ||
-                currentRoute == Route.EditProfile.route ||
-                currentRoute == Route.Post.route ||
-                currentRoute?.startsWith("listing_detail/") == true ||
-                currentRoute?.startsWith("seller_profile/") == true ||
-                currentRoute?.startsWith("chat/") == true ||
-                currentRoute?.startsWith("donation_requests/") == true ||
-                currentRoute?.startsWith("edit_listing/") == true ||
-                // Multi-post screens — all hide the bottom nav
-                currentRoute == Route.MultiPostTray.route ||
-                currentRoute == Route.MultiPostReview.route
+            currentRoute == Route.Splash.route ||
+            currentRoute == Route.Onboarding.route ||
+            currentRoute == Route.Login.route ||
+            currentRoute == Route.SignUp.route ||
+            currentRoute == Route.ProfileSetup.route ||
+            currentRoute == Route.EditProfile.route ||
+            currentRoute == Route.Post.route ||
+            currentRoute?.startsWith("listing_detail/") == true ||
+            currentRoute?.startsWith("seller_profile/") == true ||
+            currentRoute?.startsWith("chat/") == true ||
+            currentRoute?.startsWith("donation_requests/") == true ||
+            currentRoute?.startsWith("edit_listing/") == true ||
+            // Multi-post screens — all hide the bottom nav
+            currentRoute == Route.MultiPostTray.route ||
+            currentRoute == Route.MultiPostReview.route
 
     Scaffold(
         bottomBar = {
@@ -79,13 +79,17 @@ fun MainScreen() {
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
-            modifier = Modifier.padding(
-                if (hideBottomNav) PaddingValues(0.dp) else innerPadding,
-            ),
+            modifier =
+                Modifier.padding(
+                    if (hideBottomNav) PaddingValues(0.dp) else innerPadding,
+                ),
             onMultiPostComplete = { successCount, bookCount ->
                 scope.launch {
+                    val listingLabel = if (successCount == 1) "listing" else "listings"
+                    val bookLabel = if (bookCount == 1) "book" else "books"
+
                     snackbarHostState.showSnackbar(
-                        "$successCount listing${if (successCount == 1) "" else "s"} published · $bookCount book${if (bookCount == 1) "" else "s"}",
+                        "$successCount $listingLabel published · $bookCount $bookLabel",
                     )
                 }
             },
@@ -151,13 +155,14 @@ private fun KitaabBottomBar(
                         style = MaterialTheme.typography.labelSmall,
                     )
                 },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                ),
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
             )
         }
     }

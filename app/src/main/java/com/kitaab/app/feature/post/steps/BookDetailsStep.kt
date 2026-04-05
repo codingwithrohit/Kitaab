@@ -91,7 +91,6 @@ fun BookDetailsStep(
 ) {
     val focusManager = LocalFocusManager.current
 
-
     Column(
         modifier =
             Modifier
@@ -176,7 +175,7 @@ fun BookDetailsStep(
                 Icon(
                     Icons.Outlined.BusinessCenter,
                     null,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(18.dp),
                 )
             },
             keyboardOptions =
@@ -267,13 +266,13 @@ fun BookDetailsStep(
         ToggleRow(
             label = "Has solutions manual",
             checked = state.hasSolutions,
-            onToggle = onHasSolutionsToggled
+            onToggle = onHasSolutionsToggled,
         )
         Spacer(modifier = Modifier.height(12.dp))
         ToggleRow(
             label = "Has handwritten notes",
             checked = state.hasNotes,
-            onToggle = onHasNotesToggled
+            onToggle = onHasNotesToggled,
         )
         Spacer(modifier = Modifier.height(32.dp))
     }
@@ -354,7 +353,7 @@ private fun BarcodeScannerView(
                                                 .addOnSuccessListener { barcodes ->
                                                     barcodes.firstOrNull {
                                                         it.format == Barcode.FORMAT_EAN_13 ||
-                                                                it.format == Barcode.FORMAT_EAN_8
+                                                            it.format == Barcode.FORMAT_EAN_8
                                                     }?.rawValue?.let { isbn ->
                                                         if (!scanned) {
                                                             scanned = true
@@ -469,59 +468,67 @@ private fun ScannerFrame() {
         // Top-left
         Box(modifier = Modifier.align(Alignment.TopStart)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .background(cornerColor),
             )
         }
         // Top-right
         Box(modifier = Modifier.align(Alignment.TopEnd)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .align(Alignment.TopEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .align(Alignment.TopEnd)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .align(Alignment.TopEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .align(Alignment.TopEnd)
+                        .background(cornerColor),
             )
         }
         // Bottom-left
         Box(modifier = Modifier.align(Alignment.BottomStart)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .align(Alignment.BottomStart)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .align(Alignment.BottomStart)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .align(Alignment.BottomStart)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .align(Alignment.BottomStart)
+                        .background(cornerColor),
             )
         }
         // Bottom-right
         Box(modifier = Modifier.align(Alignment.BottomEnd)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .align(Alignment.BottomEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .align(Alignment.BottomEnd)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .align(Alignment.BottomEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .align(Alignment.BottomEnd)
+                        .background(cornerColor),
             )
         }
     }

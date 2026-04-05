@@ -66,23 +66,25 @@ fun AddBookSheet(
     val sheet = state.addBookSheet
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetMultipleContents(),
-    ) { uris: List<Uri> ->
-        if (uris.isNotEmpty()) viewModel.onBookPhotosSelected(uris)
-    }
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.GetMultipleContents(),
+        ) { uris: List<Uri> ->
+            if (uris.isNotEmpty()) viewModel.onBookPhotosSelected(uris)
+        }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Title bar
@@ -200,8 +202,12 @@ fun AddBookSheet(
                 Text(
                     "Condition *",
                     style = MaterialTheme.typography.labelMedium,
-                    color = if (sheet.conditionError != null) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.onSurface,
+                    color =
+                        if (sheet.conditionError != null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     BookCondition.entries.forEach { condition ->
@@ -216,7 +222,7 @@ fun AddBookSheet(
                     Text(
                         it,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             }
@@ -230,7 +236,8 @@ fun AddBookSheet(
                 Text("Has solutions", style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = sheet.hasSolutions,
-                    onCheckedChange = { viewModel.onHasSolutionsToggled() })
+                    onCheckedChange = { viewModel.onHasSolutionsToggled() },
+                )
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -240,7 +247,8 @@ fun AddBookSheet(
                 Text("Has handwritten notes", style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = sheet.hasNotes,
-                    onCheckedChange = { viewModel.onHasNotesToggled() })
+                    onCheckedChange = { viewModel.onHasNotesToggled() },
+                )
             }
 
             // ── Type override ─────────────────────────────────────────────────
@@ -328,7 +336,15 @@ fun AddBookSheet(
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !sheet.isCopyingPhotos,
             ) {
-                Text(if (sheet.isCopyingPhotos) "Saving…" else if (sheet.isEditing) "Save changes" else "Add to session")
+                Text(
+                    if (sheet.isCopyingPhotos) {
+                        "Saving…"
+                    } else if (sheet.isEditing) {
+                        "Save changes"
+                    } else {
+                        "Add to session"
+                    },
+                )
             }
 
             Spacer(Modifier.height(16.dp))
@@ -344,16 +360,21 @@ private fun PhotoThumbnail(
     onSetCover: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(
-                width = if (isCover) 2.dp else 0.5.dp,
-                color = if (isCover) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(8.dp),
-            )
-            .clickable(onClick = onSetCover),
+        modifier =
+            Modifier
+                .size(72.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(
+                    width = if (isCover) 2.dp else 0.5.dp,
+                    color =
+                        if (isCover) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.outlineVariant
+                        },
+                    shape = RoundedCornerShape(8.dp),
+                )
+                .clickable(onClick = onSetCover),
     ) {
         AsyncImage(
             model = uri,
@@ -367,21 +388,23 @@ private fun PhotoThumbnail(
                 Icons.Default.Star,
                 contentDescription = "Cover photo",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(16.dp)
-                    .align(Alignment.BottomEnd)
-                    .padding(2.dp),
+                modifier =
+                    Modifier
+                        .size(16.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(2.dp),
             )
         }
         // Remove button
         Box(
-            modifier = Modifier
-                .size(20.dp)
-                .align(Alignment.TopEnd)
-                .padding(2.dp)
-                .clip(RoundedCornerShape(50))
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
-                .clickable(onClick = onRemove),
+            modifier =
+                Modifier
+                    .size(20.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(2.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
+                    .clickable(onClick = onRemove),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
@@ -396,15 +419,16 @@ private fun PhotoThumbnail(
 @Composable
 private fun AddPhotoPlaceholder(onClick: () -> Unit) {
     Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(
-                1.dp,
-                MaterialTheme.colorScheme.outlineVariant,
-                RoundedCornerShape(8.dp),
-            )
-            .clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .size(72.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(
+                    1.dp,
+                    MaterialTheme.colorScheme.outlineVariant,
+                    RoundedCornerShape(8.dp),
+                )
+                .clickable(onClick = onClick),
         contentAlignment = Alignment.Center,
     ) {
         Icon(

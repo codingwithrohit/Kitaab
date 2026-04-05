@@ -23,11 +23,12 @@ fun NavGraphBuilder.multiPostNavGraph(
         route = Route.MultiPost.route,
     ) {
         composable(Route.MultiPostTray.route) { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                runCatching {
-                    navController.getBackStackEntry(Route.MultiPost.route)
-                }.getOrNull()
-            } ?: return@composable
+            val parentEntry =
+                remember(backStackEntry) {
+                    runCatching {
+                        navController.getBackStackEntry(Route.MultiPost.route)
+                    }.getOrNull()
+                } ?: return@composable
 
             val viewModel: MultiPostViewModel = hiltViewModel(parentEntry)
             val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -74,9 +75,10 @@ fun NavGraphBuilder.multiPostNavGraph(
         }
 
         composable(Route.MultiPostReview.route) { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Route.MultiPost.route)
-            }
+            val parentEntry =
+                remember(backStackEntry) {
+                    navController.getBackStackEntry(Route.MultiPost.route)
+                }
             val viewModel: MultiPostViewModel = hiltViewModel(parentEntry)
 
             LaunchedEffect(Unit) {

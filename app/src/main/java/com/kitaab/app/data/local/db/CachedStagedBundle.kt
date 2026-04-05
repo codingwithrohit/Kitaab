@@ -21,6 +21,6 @@ data class CachedStagedBundle(
     @PrimaryKey val id: String,
     val sessionId: String,
     val name: String,
-    val bundlePrice: String,            // raw user input; empty string = not yet set
-    val typeOverride: String?,          // null = use session default; "SELL" | "DONATE"
+    val bundlePrice: String,
+    val typeOverride: String?,
 )

@@ -120,7 +120,7 @@ fun AppNavHost(
                     when (event) {
                         is AuthEvent.SignOutSuccess,
                         is AuthEvent.DeleteAccountSuccess,
-                            -> {
+                        -> {
                             navController.navigate(Route.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
@@ -143,16 +143,17 @@ fun AppNavHost(
 
         composable(
             route = Route.ListingDetail.route,
-            arguments = listOf(
-                androidx.navigation.navArgument("listingId") {
-                    type = androidx.navigation.NavType.StringType
-                },
-                androidx.navigation.navArgument("referrerId") {
-                    type = androidx.navigation.NavType.StringType
-                    nullable = true
-                    defaultValue = null
-                },
-            ),
+            arguments =
+                listOf(
+                    androidx.navigation.navArgument("listingId") {
+                        type = androidx.navigation.NavType.StringType
+                    },
+                    androidx.navigation.navArgument("referrerId") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
         ) { backStackEntry ->
             ListingDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
@@ -179,7 +180,7 @@ fun AppNavHost(
                 },
                 onNavigateToEditListing = { listingId ->
                     navController.navigate(Route.EditListing.createRoute(listingId))
-                }
+                },
             )
         }
 
@@ -247,11 +248,12 @@ fun AppNavHost(
 
         composable(
             route = Route.EditListing.route,
-            arguments = listOf(
-                androidx.navigation.navArgument("listingId") {
-                    type = androidx.navigation.NavType.StringType
-                }
-            ),
+            arguments =
+                listOf(
+                    androidx.navigation.navArgument("listingId") {
+                        type = androidx.navigation.NavType.StringType
+                    },
+                ),
         ) {
             EditListingScreen(onNavigateBack = { navController.popBackStack() })
         }

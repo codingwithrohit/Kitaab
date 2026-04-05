@@ -82,9 +82,11 @@ fun StagingTrayScreen(
     var showDiscardDialog by remember { mutableStateOf(false) }
     val isSelecting = state.selectedBookIds.isNotEmpty()
 
-    val anySheetOpen = state.showSessionDefaultsSheet ||
+    val anySheetOpen = (
+        state.showSessionDefaultsSheet ||
             state.addBookSheet.isVisible ||
             state.createBundleSheet.isVisible
+    )
 
     BackHandler(enabled = !anySheetOpen) {
         if (isSelecting) {
@@ -154,22 +156,25 @@ fun StagingTrayScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
             )
-        }
+        },
     ) { padding ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
         ) {
             if (state.stagedBooks.isEmpty()) {
                 Column(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(horizontal = 32.dp),
+                    modifier =
+                        Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -196,9 +201,10 @@ fun StagingTrayScreen(
                                 )
                                 Button(
                                     onClick = { viewModel.openSessionDefaultsSheet() },
-                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.error,
-                                    ),
+                                    colors =
+                                        androidx.compose.material3.ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.error,
+                                        ),
                                 ) {
                                     Text("Set location")
                                 }
@@ -211,12 +217,13 @@ fun StagingTrayScreen(
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 8.dp,
-                        bottom = 88.dp,
-                    ),
+                    contentPadding =
+                        PaddingValues(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 8.dp,
+                            bottom = 88.dp,
+                        ),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     // ── Bundles ──────────────────────────────────────────────
@@ -250,8 +257,12 @@ fun StagingTrayScreen(
                             TraySectionHeader(
                                 title = "Individual books",
                                 count = state.unbundledBooks.size,
-                                hint = if (state.unbundledBooks.size >= 2)
-                                    "Long-press to select and bundle" else null,
+                                hint =
+                                    if (state.unbundledBooks.size >= 2) {
+                                        "Long-press to select and bundle"
+                                    } else {
+                                        null
+                                    },
                             )
                         }
                         items(state.unbundledBooks, key = { it.id }) { book ->
@@ -321,9 +332,10 @@ fun StagingTrayScreen(
         CreateBundleSheet(
             viewModel = viewModel,
             sessionDefaultType = state.sessionDefaults.listingType,
-            selectedBookTitles = state.stagedBooks
-                .filter { it.id in state.selectedBookIds }
-                .map { it.title },
+            selectedBookTitles =
+                state.stagedBooks
+                    .filter { it.id in state.selectedBookIds }
+                    .map { it.title },
             onDismiss = { viewModel.dismissCreateBundleSheet() },
         )
     }
@@ -333,12 +345,16 @@ fun StagingTrayScreen(
             onDismissRequest = { showDiscardDialog = false },
             title = { Text("Leave session?") },
             text = {
-                Text(
-                    if (state.totalBookCount == 0)
+                val bookCount = state.totalBookCount
+                val message =
+                    if (bookCount == 0) {
                         "You haven't added any books yet."
-                    else
-                        "Your ${state.totalBookCount} book${if (state.totalBookCount == 1) "" else "s"} will be saved. You can continue later.",
-                )
+                    } else {
+                        val pluralSuffix = if (bookCount == 1) "" else "s"
+                        "Your $bookCount book$pluralSuffix will be saved. You can continue later."
+                    }
+
+                Text(text = message)
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -377,9 +393,10 @@ private fun TraySectionHeader(
     hint: String? = null,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp, bottom = 4.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -445,15 +462,16 @@ private fun BookTrayCard(
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
-            .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
-            .combinedClickable(
-                onClick = onTap,
-                onLongClick = onLongPress,
-            ),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(bgColor)
+                .border(borderWidth, borderColor, RoundedCornerShape(12.dp))
+                .combinedClickable(
+                    onClick = onTap,
+                    onLongClick = onLongPress,
+                ),
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -466,11 +484,12 @@ private fun BookTrayCard(
             ) {
                 if (isSelectionMode) {
                     Box(
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clip(CircleShape)
-                            .background(if (isSelected) Teal500 else MaterialTheme.colorScheme.surfaceVariant)
-                            .border(1.dp, if (isSelected) Teal500 else WarmBorder, CircleShape),
+                        modifier =
+                            Modifier
+                                .size(20.dp)
+                                .clip(CircleShape)
+                                .background(if (isSelected) Teal500 else MaterialTheme.colorScheme.surfaceVariant)
+                                .border(1.dp, if (isSelected) Teal500 else WarmBorder, CircleShape),
                         contentAlignment = Alignment.Center,
                     ) {
                         if (isSelected) {
@@ -484,17 +503,19 @@ private fun BookTrayCard(
                     }
                 } else {
                     // Condition colour dot
-                    val conditionColor = when (book.condition?.name) {
-                        "New", "LikeNew" -> Teal500
-                        "Good" -> Teal700
-                        "Fair" -> Amber500
-                        else -> WarmMuted
-                    }
+                    val conditionColor =
+                        when (book.condition?.name) {
+                            "New", "LikeNew" -> Teal500
+                            "Good" -> Teal700
+                            "Fair" -> Amber500
+                            else -> WarmMuted
+                        }
                     Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(conditionColor),
+                        modifier =
+                            Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(conditionColor),
                     )
                 }
             }
@@ -518,9 +539,10 @@ private fun BookTrayCard(
                     val pillBg = if (effectiveType == ListingType.DONATE) Teal50 else Amber50
                     val pillText = if (effectiveType == ListingType.DONATE) Teal700 else Amber500
                     Box(
-                        modifier = Modifier
-                            .background(pillBg, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 5.dp, vertical = 2.dp),
+                        modifier =
+                            Modifier
+                                .background(pillBg, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 5.dp, vertical = 2.dp),
                     ) {
                         Text(
                             text = if (effectiveType == ListingType.DONATE) "Donate" else "Sell",
@@ -534,21 +556,30 @@ private fun BookTrayCard(
                         Text("overridden", fontSize = 10.sp, color = WarmMuted)
                     }
 
-                    val priceText = when {
-                        effectiveType == ListingType.SELL && book.individualPrice.isNotBlank() ->
-                            "₹${book.individualPrice}"
+                    val priceText =
+                        when {
+                            effectiveType == ListingType.SELL && book.individualPrice.isNotBlank() ->
+                                "₹${book.individualPrice}"
 
-                        effectiveType == ListingType.SELL -> "no price"
-                        else -> ""
-                    }
+                            effectiveType == ListingType.SELL -> "no price"
+                            else -> ""
+                        }
                     if (priceText.isNotBlank()) {
                         Text(
                             priceText,
                             fontSize = 11.sp,
-                            color = if (effectiveType == ListingType.SELL && book.individualPrice.isBlank())
-                                MaterialTheme.colorScheme.error else WarmMuted,
-                            fontWeight = if (effectiveType == ListingType.SELL && book.individualPrice.isBlank())
-                                FontWeight.Medium else FontWeight.Normal,
+                            color =
+                                if (effectiveType == ListingType.SELL && book.individualPrice.isBlank()) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    WarmMuted
+                                },
+                            fontWeight =
+                                if (effectiveType == ListingType.SELL && book.individualPrice.isBlank()) {
+                                    FontWeight.Medium
+                                } else {
+                                    FontWeight.Normal
+                                },
                         )
                     }
 
@@ -618,9 +649,10 @@ private fun BundleTrayCard(
     Card(
         colors = CardDefaults.cardColors(containerColor = Amber50),
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(0.5.dp, Amber500.copy(alpha = 0.4f), RoundedCornerShape(12.dp)),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(0.5.dp, Amber500.copy(alpha = 0.4f), RoundedCornerShape(12.dp)),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(
@@ -634,9 +666,10 @@ private fun BundleTrayCard(
                     ) {
                         // Bundle label
                         Box(
-                            modifier = Modifier
-                                .background(Amber500, RoundedCornerShape(4.dp))
-                                .padding(horizontal = 5.dp, vertical = 2.dp),
+                            modifier =
+                                Modifier
+                                    .background(Amber500, RoundedCornerShape(4.dp))
+                                    .padding(horizontal = 5.dp, vertical = 2.dp),
                         ) {
                             Text(
                                 "Bundle",
@@ -660,7 +693,8 @@ private fun BundleTrayCard(
                             append(" · ")
                             append(
                                 effectiveType.name.lowercase()
-                                    .replaceFirstChar { it.uppercaseChar() })
+                                    .replaceFirstChar { it.uppercaseChar() },
+                            )
                             if (effectiveType == ListingType.SELL && bundle.bundlePrice.isNotBlank()) {
                                 append(" · ₹${bundle.bundlePrice}")
                             } else if (effectiveType == ListingType.SELL) {
@@ -690,9 +724,10 @@ private fun BundleTrayCard(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
                         Box(
-                            modifier = Modifier
-                                .size(5.dp)
-                                .background(Amber500.copy(alpha = 0.6f), CircleShape),
+                            modifier =
+                                Modifier
+                                    .size(5.dp)
+                                    .background(Amber500.copy(alpha = 0.6f), CircleShape),
                         )
                         Text(
                             book.title,
@@ -726,8 +761,9 @@ private fun BottomPublishBar(
         color = MaterialTheme.colorScheme.surface,
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -784,9 +820,10 @@ private fun SelectionActionBar(
         color = MaterialTheme.colorScheme.surface,
     ) {
         Column(
-            modifier = Modifier
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (!canBundle) {
@@ -810,7 +847,6 @@ private fun SelectionActionBar(
         }
     }
 }
-
 
 @Composable
 private fun TrayEmptyState(onAddBook: () -> Unit) {
@@ -836,11 +872,11 @@ private fun TrayEmptyState(onAddBook: () -> Unit) {
     }
 }
 
-//@Composable
-//private fun TrayEmptyState(
+// @Composable
+// private fun TrayEmptyState(
 //    modifier: Modifier = Modifier,
 //    onAddBook: () -> Unit,
-//) {
+// ) {
 //    Column(
 //        modifier = modifier.padding(32.dp),
 //        horizontalAlignment = Alignment.CenterHorizontally,
@@ -862,4 +898,4 @@ private fun TrayEmptyState(onAddBook: () -> Unit) {
 //            Text("Add your first book")
 //        }
 //    }
-//}
+// }

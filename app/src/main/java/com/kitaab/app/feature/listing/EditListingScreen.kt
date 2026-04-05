@@ -70,9 +70,10 @@ fun EditListingScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetMultipleContents(),
-    ) { uris: List<Uri> -> if (uris.isNotEmpty()) viewModel.onNewPhotosSelected(uris) }
+    val photoPickerLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.GetMultipleContents(),
+        ) { uris: List<Uri> -> if (uris.isNotEmpty()) viewModel.onNewPhotosSelected(uris) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -110,12 +111,13 @@ fun EditListingScreen(
         }
 
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .imePadding()
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Spacer(Modifier.height(4.dp))
@@ -128,15 +130,21 @@ fun EditListingScreen(
 
             // ── Core fields ───────────────────────────────────────────────────
             OutlinedTextField(
-                value = state.title, onValueChange = viewModel::onTitleChanged,
-                label = { Text("Title *") }, isError = state.titleError != null,
+                value = state.title,
+                onValueChange = viewModel::onTitleChanged,
+                label = { Text("Title *") },
+                isError = state.titleError != null,
                 supportingText = state.titleError?.let { { Text(it) } },
-                modifier = Modifier.fillMaxWidth(), singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    value = state.author, onValueChange = viewModel::onAuthorChanged,
-                    label = { Text("Author") }, modifier = Modifier.weight(1f), singleLine = true,
+                    value = state.author,
+                    onValueChange = viewModel::onAuthorChanged,
+                    label = { Text("Author") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
                 )
                 OutlinedTextField(
                     value = state.publisher,
@@ -148,12 +156,18 @@ fun EditListingScreen(
             }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    value = state.subject, onValueChange = viewModel::onSubjectChanged,
-                    label = { Text("Subject") }, modifier = Modifier.weight(1f), singleLine = true,
+                    value = state.subject,
+                    onValueChange = viewModel::onSubjectChanged,
+                    label = { Text("Subject") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
                 )
                 OutlinedTextField(
-                    value = state.edition, onValueChange = viewModel::onEditionChanged,
-                    label = { Text("Edition") }, modifier = Modifier.weight(1f), singleLine = true,
+                    value = state.edition,
+                    onValueChange = viewModel::onEditionChanged,
+                    label = { Text("Edition") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
                 )
             }
 
@@ -174,9 +188,14 @@ fun EditListingScreen(
             // ── Condition ─────────────────────────────────────────────────────
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(
-                    "Condition *", style = MaterialTheme.typography.labelMedium,
-                    color = if (state.conditionError != null) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.onSurface,
+                    "Condition *",
+                    style = MaterialTheme.typography.labelMedium,
+                    color =
+                        if (state.conditionError != null) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.onSurface
+                        },
                 )
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     BookCondition.entries.forEach { condition ->
@@ -191,7 +210,7 @@ fun EditListingScreen(
                     Text(
                         it,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
                     )
                 }
             }
@@ -200,22 +219,24 @@ fun EditListingScreen(
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Has solutions", style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = state.hasSolutions,
-                    onCheckedChange = { viewModel.onHasSolutionsToggled() })
+                    onCheckedChange = { viewModel.onHasSolutionsToggled() },
+                )
             }
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text("Has handwritten notes", style = MaterialTheme.typography.bodyMedium)
                 Switch(
                     checked = state.hasNotes,
-                    onCheckedChange = { viewModel.onHasNotesToggled() })
+                    onCheckedChange = { viewModel.onHasNotesToggled() },
+                )
             }
 
             // ── Listing type ──────────────────────────────────────────────────
@@ -249,22 +270,31 @@ fun EditListingScreen(
 
             // ── Location ──────────────────────────────────────────────────────
             OutlinedTextField(
-                value = state.city, onValueChange = viewModel::onCityChanged,
-                label = { Text("City *") }, isError = state.cityError != null,
+                value = state.city,
+                onValueChange = viewModel::onCityChanged,
+                label = { Text("City *") },
+                isError = state.cityError != null,
                 supportingText = state.cityError?.let { { Text(it) } },
-                modifier = Modifier.fillMaxWidth(), singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
             )
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    value = state.pincode, onValueChange = viewModel::onPincodeChanged,
-                    label = { Text("Pincode *") }, isError = state.pincodeError != null,
+                    value = state.pincode,
+                    onValueChange = viewModel::onPincodeChanged,
+                    label = { Text("Pincode *") },
+                    isError = state.pincodeError != null,
                     supportingText = state.pincodeError?.let { { Text(it) } },
-                    modifier = Modifier.weight(1f), singleLine = true,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
                 OutlinedTextField(
-                    value = state.locality, onValueChange = viewModel::onLocalityChanged,
-                    label = { Text("Locality") }, modifier = Modifier.weight(1f), singleLine = true,
+                    value = state.locality,
+                    onValueChange = viewModel::onLocalityChanged,
+                    label = { Text("Locality") },
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
                 )
             }
 
@@ -273,7 +303,7 @@ fun EditListingScreen(
                 Row(
                     Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text("Photos", style = MaterialTheme.typography.labelMedium)
                     Text(
@@ -284,7 +314,7 @@ fun EditListingScreen(
                 }
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     // Existing remote photos
                     state.existingPhotoUrls.forEachIndexed { index, url ->
@@ -307,21 +337,22 @@ fun EditListingScreen(
                     // Add button
                     if (state.canAddMorePhotos) {
                         Box(
-                            modifier = Modifier
-                                .size(72.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .border(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.outlineVariant,
-                                    RoundedCornerShape(8.dp)
-                                )
-                                .clickable { photoPickerLauncher.launch("image/*") },
+                            modifier =
+                                Modifier
+                                    .size(72.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.outlineVariant,
+                                        RoundedCornerShape(8.dp),
+                                    )
+                                    .clickable { photoPickerLauncher.launch("image/*") },
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = "Add photo",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
@@ -332,9 +363,10 @@ fun EditListingScreen(
 
             Button(
                 onClick = { viewModel.save() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .navigationBarsPadding(),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding(),
                 enabled = !state.isSubmitting,
             ) {
                 if (state.isSubmitting) {
@@ -356,46 +388,49 @@ private fun EditPhotoThumbnail(
     onSetCover: () -> Unit,
 ) {
     Box(
-        modifier = Modifier
-            .size(72.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .border(
-                width = if (isCover) 2.dp else 0.5.dp,
-                color = if (isCover) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
-                shape = RoundedCornerShape(8.dp),
-            )
-            .clickable(onClick = onSetCover),
+        modifier =
+            Modifier
+                .size(72.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .border(
+                    width = if (isCover) 2.dp else 0.5.dp,
+                    color = if (isCover) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(8.dp),
+                )
+                .clickable(onClick = onSetCover),
     ) {
         AsyncImage(
             model = model,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize()
+            modifier = Modifier.matchParentSize(),
         )
         if (isCover) {
             Icon(
                 Icons.Default.Star,
                 contentDescription = "Cover",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .size(16.dp)
-                    .align(Alignment.BottomEnd)
-                    .padding(2.dp)
+                modifier =
+                    Modifier
+                        .size(16.dp)
+                        .align(Alignment.BottomEnd)
+                        .padding(2.dp),
             )
         }
         Box(
-            modifier = Modifier
-                .size(20.dp)
-                .align(Alignment.TopEnd)
-                .padding(2.dp)
-                .clip(RoundedCornerShape(50))
-                .clickable(onClick = onRemove),
+            modifier =
+                Modifier
+                    .size(20.dp)
+                    .align(Alignment.TopEnd)
+                    .padding(2.dp)
+                    .clip(RoundedCornerShape(50))
+                    .clickable(onClick = onRemove),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 Icons.Default.Close,
                 contentDescription = "Remove",
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(12.dp),
             )
         }
     }

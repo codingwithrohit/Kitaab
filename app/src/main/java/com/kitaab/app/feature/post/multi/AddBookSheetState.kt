@@ -6,7 +6,7 @@ import com.kitaab.app.feature.post.ListingType
 
 data class AddBookSheetState(
     val isVisible: Boolean = false,
-    val editingBookId: String? = null,               // null = adding new book
+    val editingBookId: String? = null,
     // Fields
     val title: String = "",
     val author: String = "",
@@ -19,7 +19,7 @@ data class AddBookSheetState(
     val hasNotes: Boolean = false,
     val condition: BookCondition? = null,
     val individualPrice: String = "",
-    val photoUris: List<Uri> = emptyList(),          // pending URIs before copy to internal storage
+    val photoUris: List<Uri> = emptyList(),
     val typeOverride: ListingType? = null,
     // Async states
     val isFetchingBookDetails: Boolean = false,

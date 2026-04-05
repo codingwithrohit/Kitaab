@@ -386,9 +386,10 @@ fun ListingDetailScreen(
                             }
                         }
                         Spacer(
-                            modifier = Modifier
-                                .height(32.dp)
-                                .navigationBarsPadding()
+                            modifier =
+                                Modifier
+                                    .height(32.dp)
+                                    .navigationBarsPadding(),
                         )
                     }
                 }

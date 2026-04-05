@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface StagedBookDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(book: CachedStagedBook)
 
@@ -34,7 +33,10 @@ interface StagedBookDao {
 
     // Assign / remove bundle membership
     @Query("UPDATE staged_books SET bundleId = :bundleId WHERE id IN (:bookIds)")
-    suspend fun assignBundle(bundleId: String, bookIds: List<String>)
+    suspend fun assignBundle(
+        bundleId: String,
+        bookIds: List<String>,
+    )
 
     @Query("UPDATE staged_books SET bundleId = NULL WHERE bundleId = :bundleId")
     suspend fun clearBundle(bundleId: String)

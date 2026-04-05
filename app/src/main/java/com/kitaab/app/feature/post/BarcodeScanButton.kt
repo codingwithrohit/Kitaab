@@ -70,20 +70,22 @@ fun BarcodeScanButton(
     var showScanner by remember { mutableStateOf(false) }
     var hasCameraPermission by remember { mutableStateOf(false) }
 
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        hasCameraPermission = granted
-        if (granted) showScanner = true
-    }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { granted ->
+            hasCameraPermission = granted
+            if (granted) showScanner = true
+        }
 
     if (showScanner) {
         Dialog(
             onDismissRequest = { showScanner = false },
-            properties = DialogProperties(
-                usePlatformDefaultWidth = false,
-                decorFitsSystemWindows = false,
-            ),
+            properties =
+                DialogProperties(
+                    usePlatformDefaultWidth = false,
+                    decorFitsSystemWindows = false,
+                ),
         ) {
             BarcodeScannerView(
                 onBarcodeDetected = { isbn ->
@@ -97,8 +99,11 @@ fun BarcodeScanButton(
 
     OutlinedButton(
         onClick = {
-            if (hasCameraPermission) showScanner = true
-            else permissionLauncher.launch(Manifest.permission.CAMERA)
+            if (hasCameraPermission) {
+                showScanner = true
+            } else {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
         },
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -115,14 +120,14 @@ fun BarcodeScanButton(
             text = "Scan barcode",
             color = Teal500,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
         )
         if (isFetchingBookDetails) {
             Spacer(modifier = Modifier.size(8.dp))
             CircularProgressIndicator(
                 modifier = Modifier.size(14.dp),
                 color = Teal500,
-                strokeWidth = 2.dp
+                strokeWidth = 2.dp,
             )
         }
     }
@@ -138,55 +143,62 @@ fun BarcodeScannerView(
     val lifecycleOwner = LocalLifecycleOwner.current
     var scanned by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black)) {
+    Box(
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black),
+    ) {
         AndroidView(
             factory = { ctx ->
-                val previewView = PreviewView(ctx).apply {
-                    scaleType = PreviewView.ScaleType.FILL_CENTER
-                }
+                val previewView =
+                    PreviewView(ctx).apply {
+                        scaleType = PreviewView.ScaleType.FILL_CENTER
+                    }
                 val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
                 cameraProviderFuture.addListener({
                     val cameraProvider = cameraProviderFuture.get()
-                    val preview = Preview.Builder().build().also {
-                        it.surfaceProvider = previewView.surfaceProvider
-                    }
+                    val preview =
+                        Preview.Builder().build().also {
+                            it.surfaceProvider = previewView.surfaceProvider
+                        }
                     val executor = Executors.newSingleThreadExecutor()
                     val barcodeScanner = BarcodeScanning.getClient()
-                    val imageAnalysis = ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .build()
-                        .also { analysis ->
-                            analysis.setAnalyzer(executor) { imageProxy ->
-                                if (!scanned) {
-                                    val mediaImage = imageProxy.image
-                                    if (mediaImage != null) {
-                                        val image = InputImage.fromMediaImage(
-                                            mediaImage,
-                                            imageProxy.imageInfo.rotationDegrees,
-                                        )
-                                        barcodeScanner.process(image)
-                                            .addOnSuccessListener { barcodes ->
-                                                barcodes.firstOrNull {
-                                                    it.format == Barcode.FORMAT_EAN_13 ||
+                    val imageAnalysis =
+                        ImageAnalysis.Builder()
+                            .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                            .build()
+                            .also { analysis ->
+                                analysis.setAnalyzer(executor) { imageProxy ->
+                                    if (!scanned) {
+                                        val mediaImage = imageProxy.image
+                                        if (mediaImage != null) {
+                                            val image =
+                                                InputImage.fromMediaImage(
+                                                    mediaImage,
+                                                    imageProxy.imageInfo.rotationDegrees,
+                                                )
+                                            barcodeScanner.process(image)
+                                                .addOnSuccessListener { barcodes ->
+                                                    barcodes.firstOrNull {
+                                                        it.format == Barcode.FORMAT_EAN_13 ||
                                                             it.format == Barcode.FORMAT_EAN_8
-                                                }?.rawValue?.let { isbn ->
-                                                    if (!scanned) {
-                                                        scanned = true
-                                                        onBarcodeDetected(isbn)
+                                                    }?.rawValue?.let { isbn ->
+                                                        if (!scanned) {
+                                                            scanned = true
+                                                            onBarcodeDetected(isbn)
+                                                        }
                                                     }
                                                 }
-                                            }
-                                            .addOnCompleteListener { imageProxy.close() }
+                                                .addOnCompleteListener { imageProxy.close() }
+                                        } else {
+                                            imageProxy.close()
+                                        }
                                     } else {
                                         imageProxy.close()
                                     }
-                                } else {
-                                    imageProxy.close()
                                 }
                             }
-                        }
                     runCatching {
                         cameraProvider.unbindAll()
                         cameraProvider.bindToLifecycle(
@@ -203,42 +215,44 @@ fun BarcodeScannerView(
         )
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.2f)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.Black.copy(alpha = 0.7f),
-                            Color.Transparent
-                        )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.2f)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color.Black.copy(alpha = 0.7f),
+                                Color.Transparent,
+                            ),
+                        ),
                     )
-                )
-                .align(Alignment.TopCenter)
-                .statusBarsPadding(),
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding(),
         )
 
         Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .statusBarsPadding()
-                .padding(16.dp)
-                .size(44.dp)
-                .background(Color.Black.copy(alpha = 0.55f), CircleShape)
-                .clickable { onDismiss() },
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(16.dp)
+                    .size(44.dp)
+                    .background(Color.Black.copy(alpha = 0.55f), CircleShape)
+                    .clickable { onDismiss() },
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 Icons.Outlined.Close,
                 contentDescription = "Close scanner",
                 tint = Color.White,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(22.dp),
             )
         }
 
         Column(
             modifier = Modifier.align(Alignment.Center),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             ScannerFrame()
             Spacer(modifier = Modifier.height(24.dp))
@@ -247,25 +261,27 @@ fun BarcodeScannerView(
                 color = Color.White,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Medium,
-                modifier = Modifier
-                    .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
+                modifier =
+                    Modifier
+                        .background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 20.dp, vertical = 8.dp),
             )
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.15f)
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.Transparent,
-                            Color.Black.copy(alpha = 0.6f)
-                        )
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.15f)
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.6f),
+                            ),
+                        ),
                     )
-                )
-                .align(Alignment.BottomCenter),
+                    .align(Alignment.BottomCenter),
         )
     }
 }
@@ -279,53 +295,65 @@ fun ScannerFrame() {
 
     Box(modifier = Modifier.size(frameSize)) {
         Box(modifier = Modifier.align(Alignment.TopStart)) {
-            Box(modifier = Modifier
-                .size(cornerLength, cornerThickness)
-                .background(cornerColor))
-            Box(modifier = Modifier
-                .size(cornerThickness, cornerLength)
-                .background(cornerColor))
+            Box(
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .background(cornerColor),
+            )
+            Box(
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .background(cornerColor),
+            )
         }
         Box(modifier = Modifier.align(Alignment.TopEnd)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .align(Alignment.TopEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .align(Alignment.TopEnd)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .align(Alignment.TopEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .align(Alignment.TopEnd)
+                        .background(cornerColor),
             )
         }
         Box(modifier = Modifier.align(Alignment.BottomStart)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .align(Alignment.BottomStart)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .align(Alignment.BottomStart)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .align(Alignment.BottomStart)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .align(Alignment.BottomStart)
+                        .background(cornerColor),
             )
         }
         Box(modifier = Modifier.align(Alignment.BottomEnd)) {
             Box(
-                modifier = Modifier
-                    .size(cornerLength, cornerThickness)
-                    .align(Alignment.BottomEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerLength, cornerThickness)
+                        .align(Alignment.BottomEnd)
+                        .background(cornerColor),
             )
             Box(
-                modifier = Modifier
-                    .size(cornerThickness, cornerLength)
-                    .align(Alignment.BottomEnd)
-                    .background(cornerColor)
+                modifier =
+                    Modifier
+                        .size(cornerThickness, cornerLength)
+                        .align(Alignment.BottomEnd)
+                        .background(cornerColor),
             )
         }
     }

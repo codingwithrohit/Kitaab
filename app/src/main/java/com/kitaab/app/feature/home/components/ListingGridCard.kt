@@ -39,23 +39,26 @@ fun ListingGridCard(
     modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() },
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+            ),
         border = BorderStroke(0.5.dp, WarmBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column {
             // ── Photo / placeholder area ──────────────────────────────
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(2f / 3f)
-                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(2f / 3f)
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
             ) {
                 if (listing.isBundle) {
                     BundleSpineStack(
@@ -72,9 +75,10 @@ fun ListingGridCard(
                 // Type badge — top-left overlay on photo
                 ListingTypeBadge(
                     listing = listing,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp),
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp),
                 )
             }
 
@@ -116,15 +120,17 @@ fun ListingGridCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // Price — dominant
-                    val priceText = when {
-                        listing.type == "DONATE" -> "FREE"
-                        listing.price != null -> "₹${listing.price.toInt()}"
-                        else -> ""
-                    }
-                    val priceColor = when {
-                        listing.isBundle -> MaterialTheme.colorScheme.tertiary
-                        else -> Teal500
-                    }
+                    val priceText =
+                        when {
+                            listing.type == "DONATE" -> "FREE"
+                            listing.price != null -> "₹${listing.price.toInt()}"
+                            else -> ""
+                        }
+                    val priceColor =
+                        when {
+                            listing.isBundle -> MaterialTheme.colorScheme.tertiary
+                            else -> Teal500
+                        }
                     Text(
                         text = priceText,
                         fontSize = 15.sp,
@@ -142,10 +148,11 @@ fun ListingGridCard(
                     }
                 }
 
-                val locationParts = listOfNotNull(
-                    listing.locality?.takeIf { it.isNotBlank() },
-                    listing.city?.takeIf { it.isNotBlank() },
-                ).joinToString(", ")
+                val locationParts =
+                    listOfNotNull(
+                        listing.locality?.takeIf { it.isNotBlank() },
+                        listing.city?.takeIf { it.isNotBlank() },
+                    ).joinToString(", ")
 
                 if (locationParts.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -187,10 +194,11 @@ private fun BundleSpineStack(
                 val offsetY = (index * 6).dp
                 BookCoverImage(
                     url = url,
-                    modifier = Modifier
-                        .size(width = 80.dp, height = 110.dp)
-                        .offset(x = offsetX - 24.dp, y = offsetY - 16.dp)
-                        .clip(RoundedCornerShape(4.dp)),
+                    modifier =
+                        Modifier
+                            .size(width = 80.dp, height = 110.dp)
+                            .offset(x = offsetX - 24.dp, y = offsetY - 16.dp)
+                            .clip(RoundedCornerShape(4.dp)),
                 )
             }
         }
@@ -208,12 +216,13 @@ private fun BundlePlaceholderSpines() {
         val heights = listOf(80.dp, 92.dp, 104.dp)
         alphas.forEachIndexed { i, alpha ->
             Box(
-                modifier = Modifier
-                    .size(width = widths[i], height = heights[i])
-                    .clip(RoundedCornerShape(3.dp))
-                    .background(
-                        MaterialTheme.colorScheme.secondary.copy(alpha = alpha),
-                    ),
+                modifier =
+                    Modifier
+                        .size(width = widths[i], height = heights[i])
+                        .clip(RoundedCornerShape(3.dp))
+                        .background(
+                            MaterialTheme.colorScheme.secondary.copy(alpha = alpha),
+                        ),
             )
         }
     }
@@ -227,33 +236,38 @@ fun ListingTypeBadge(
     listing: Listing,
     modifier: Modifier = Modifier,
 ) {
-    val (label, bgColor, textColor) = when {
-        listing.isBundle -> Triple(
-            "BUNDLE",
-            MaterialTheme.colorScheme.tertiary,
-            MaterialTheme.colorScheme.onTertiary,
-        )
+    val (label, bgColor, textColor) =
+        when {
+            listing.isBundle ->
+                Triple(
+                    "BUNDLE",
+                    MaterialTheme.colorScheme.tertiary,
+                    MaterialTheme.colorScheme.onTertiary,
+                )
 
-        listing.type == "DONATE" -> Triple(
-            "DONATE",
-            MaterialTheme.colorScheme.secondary,
-            MaterialTheme.colorScheme.onSecondary,
-        )
+            listing.type == "DONATE" ->
+                Triple(
+                    "DONATE",
+                    MaterialTheme.colorScheme.secondary,
+                    MaterialTheme.colorScheme.onSecondary,
+                )
 
-        else -> Triple(
-            "SELL",
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.onPrimary,
-        )
-    }
+            else ->
+                Triple(
+                    "SELL",
+                    MaterialTheme.colorScheme.primary,
+                    MaterialTheme.colorScheme.onPrimary,
+                )
+        }
 
     Box(
-        modifier = modifier
-            .background(
-                color = bgColor,
-                shape = RoundedCornerShape(4.dp),
-            )
-            .padding(horizontal = 6.dp, vertical = 3.dp),
+        modifier =
+            modifier
+                .background(
+                    color = bgColor,
+                    shape = RoundedCornerShape(4.dp),
+                )
+                .padding(horizontal = 6.dp, vertical = 3.dp),
     ) {
         Text(
             text = label,
