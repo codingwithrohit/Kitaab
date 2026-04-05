@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
@@ -65,12 +66,36 @@ class MultiPostViewModel @Inject constructor(
         viewModelScope.launch {
             val cutoff = System.currentTimeMillis() - 7 * 24 * 60 * 60 * 1000L
             sessionDao.deleteOlderThan(cutoff)
+
+            val allSessions = sessionDao.getAllSessions()
+            allSessions.forEach { session ->
+                val bookCount = bookDao.countForSession(session.id)
+                if (bookCount == 0) {
+                    sessionDao.delete(session.id)
+                }
+            }
             val existing = sessionDao.getLatest()
             if (existing != null) {
-                _uiState.update { it.copy(showResumeBanner = true, sessionId = existing.id) }
+                // Load saved session defaults back into UiState — fixes "No location" on resume
+                _uiState.update {
+                    it.copy(
+                        sessionId = existing.id,
+                        showResumeBanner = true,
+                        isInitializing = false,
+                        sessionDefaults = it.sessionDefaults.copy(
+                            listingType = runCatching {
+                                ListingType.valueOf(existing.defaultType)
+                            }.getOrDefault(ListingType.SELL),
+                            city = existing.defaultCity,
+                            pincode = existing.defaultPincode,
+                            locality = existing.defaultLocality,
+                        ),
+                    )
+                }
                 observeSession(existing.id)
             } else {
                 prefillDefaults()
+                _uiState.update { it.copy(isInitializing = false) }
             }
         }
     }
@@ -92,25 +117,11 @@ class MultiPostViewModel @Inject constructor(
         }
     }
 
-    private fun observeSession(sessionId: String) {
-        viewModelScope.launch {
-            combine(
-                bookDao.observeForSession(sessionId),
-                bundleDao.observeForSession(sessionId),
-            ) { books: List<CachedStagedBook>, bundles: List<CachedStagedBundle> ->
-                books.map { it.toDomain() } to bundles.map { it.toDomain() }
-            }.catch { }
-                .collect { (books, bundles) ->
-                    _uiState.update { it.copy(stagedBooks = books, stagedBundles = bundles) }
-                }
-        }
-    }
 
     // ── Resume banner ─────────────────────────────────────────────────────────
 
     fun onResumeBannerAccepted() {
         _uiState.update { it.copy(showResumeBanner = false) }
-        viewModelScope.launch { _events.send(MultiPostEvent.NavigateToTray) }
     }
 
     fun onResumeBannerDismissed() {
@@ -226,29 +237,83 @@ class MultiPostViewModel @Inject constructor(
             _uiState.update { it.copy(pincodeError = "Enter a valid 6-digit pincode") }
             valid = false
         }
-        if (!valid) return
+        if (!valid) {
+            return
+        }
 
         viewModelScope.launch {
-            val sessionId = UUID.randomUUID().toString()
-            sessionDao.upsert(
-                CachedPostingSession(
-                    id = sessionId,
-                    defaultType = defaults.listingType.name,
-                    defaultCity = defaults.city.trim(),
-                    defaultPincode = defaults.pincode.trim(),
-                    defaultLocality = defaults.locality.trim(),
-                    createdAt = System.currentTimeMillis(),
-                ),
-            )
-            _uiState.update { it.copy(sessionId = sessionId) }
-            observeSession(sessionId)
-            _events.send(MultiPostEvent.NavigateToTray)
+            val existingSessionId = _uiState.value.sessionId
+            val isNewSession = existingSessionId == null
+            val sessionId = existingSessionId ?: UUID.randomUUID().toString()
+
+            if (isNewSession) {
+
+                sessionDao.upsert(
+                    CachedPostingSession(
+                        id = sessionId,
+                        defaultType = defaults.listingType.name,
+                        defaultCity = defaults.city.trim(),
+                        defaultPincode = defaults.pincode.trim(),
+                        defaultLocality = defaults.locality.trim(),
+                        createdAt = System.currentTimeMillis(),
+                    ),
+                )
+            } else {
+
+                sessionDao.updateDefaults(
+                    sessionId = sessionId,
+                    type = defaults.listingType.name,
+                    city = defaults.city.trim(),
+                    pincode = defaults.pincode.trim(),
+                    locality = defaults.locality.trim(),
+                )
+            }
+
+            _uiState.update {
+                it.copy(
+                    sessionId = sessionId,
+                    showSessionDefaultsSheet = false,
+                    sessionDefaultsRequiredBanner = false,
+                )
+            }
+
+            if (isNewSession) {
+                observeSession(sessionId)
+                _uiState.update { it.copy(addBookSheet = AddBookSheetState(isVisible = true)) }
+            }
         }
     }
 
-    // ── Add book sheet ────────────────────────────────────────────────────────
+    @OptIn(kotlinx.coroutines.FlowPreview::class)
+    private fun observeSession(sessionId: String) {
+        viewModelScope.launch {
+            combine(
+                bookDao.observeForSession(sessionId),
+                bundleDao.observeForSession(sessionId),
+            ) { books: List<CachedStagedBook>, bundles: List<CachedStagedBundle> ->
+                books.map { it.toDomain() } to bundles.map { it.toDomain() }
+            }
+                .debounce(200L)
+                .catch { }
+                .collect { (books, bundles) ->
+                    _uiState.update { it.copy(stagedBooks = books, stagedBundles = bundles) }
+                }
+        }
+    }
 
+    fun saveAndExitSession() {
+        viewModelScope.launch {
+            _events.send(MultiPostEvent.SessionAbandoned)
+        }
+    }
+
+
+    // ── Add book sheet ────────────────────────────────────────────────────────
     fun openAddBookSheet() {
+        if (_uiState.value.sessionId == null) {
+            openSessionDefaultsSheet()
+            return
+        }
         _uiState.update { it.copy(addBookSheet = AddBookSheetState(isVisible = true)) }
     }
 
@@ -282,6 +347,59 @@ class MultiPostViewModel @Inject constructor(
 
     fun dismissAddBookSheet() {
         _uiState.update { it.copy(addBookSheet = AddBookSheetState()) }
+    }
+
+    fun openSessionDefaultsSheet() {
+        viewModelScope.launch {
+            val sessionId = _uiState.value.sessionId
+            if (sessionId != null) {
+                val session = sessionDao.getLatest()
+                if (session != null) {
+                    _uiState.update {
+                        it.copy(
+                            showSessionDefaultsSheet = true,
+                            sessionDefaultsRequiredBanner = false,
+                            sessionDefaults = it.sessionDefaults.copy(
+                                listingType = runCatching {
+                                    ListingType.valueOf(session.defaultType)
+                                }.getOrDefault(ListingType.SELL),
+                                city = session.defaultCity,
+                                pincode = session.defaultPincode,
+                                locality = session.defaultLocality,
+                            ),
+                        )
+                    }
+                    return@launch
+                }
+            }
+            _uiState.update {
+                it.copy(
+                    showSessionDefaultsSheet = true,
+                    sessionDefaultsRequiredBanner = false,
+                )
+            }
+        }
+    }
+
+    fun onSessionDefaultsSheetDismissed() {
+        val sessionId = _uiState.value.sessionId
+        if (sessionId != null) {
+            // Has session — editing defaults, just close cleanly
+            _uiState.update { it.copy(showSessionDefaultsSheet = false) }
+            return
+        }
+        // No session — close sheet fully, show banner on tray instead
+        // Never reopen the sheet while it is still animating out
+        _uiState.update {
+            it.copy(
+                showSessionDefaultsSheet = false,
+                sessionDefaultsRequiredBanner = true,
+            )
+        }
+    }
+
+    fun dismissSessionDefaultsSheet() {
+        _uiState.update { it.copy(showSessionDefaultsSheet = false) }
     }
 
     fun onBookTitleChanged(v: String) = updateSheet { it.copy(title = v, titleError = null) }

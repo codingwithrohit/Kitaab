@@ -14,11 +14,17 @@ data class MultiPostUiState(
     val pincodeError: String? = null,
     val isFetchingLocation: Boolean = false,
 
+    // controls the defaults sheet shown over the tray
+    val showSessionDefaultsSheet: Boolean = false,
+    val sessionDefaultsRequiredBanner: Boolean = false, // shown on tray after first dismissal
+
+    val isInitializing: Boolean = true, // true until init coroutine completes
+
     // Books and bundles (live from Room)
     val stagedBooks: List<StagedBook> = emptyList(),
     val stagedBundles: List<StagedBundle> = emptyList(),
 
-    // Organise screen selection state
+    // Tray selection state (for inline bundle creation)
     val selectedBookIds: Set<String> = emptySet(),
 
     // Sheet states
@@ -28,28 +34,23 @@ data class MultiPostUiState(
     // Publish
     val isPublishing: Boolean = false,
     val publishError: String? = null,
-    // Books whose listings failed to publish — shown on error screen for retry
     val failedListingTitles: List<String> = emptyList(),
 
-    // Resume banner — shown on Post tap if an incomplete session exists
+    // Resume banner
     val showResumeBanner: Boolean = false,
 ) {
-    // Convenience groupings used by OrganiseScreen and ReviewPublishScreen
-
     val unbundledBooks: List<StagedBook>
         get() = stagedBooks.filter { it.bundleId == null }
 
     fun booksForBundle(bundleId: String): List<StagedBook> =
         stagedBooks.filter { it.bundleId == bundleId }
 
-    // Total listing count = individual books + bundles
     val totalListingCount: Int
         get() = unbundledBooks.size + stagedBundles.size
 
     val totalBookCount: Int
         get() = stagedBooks.size
 
-    // Review screen readiness — passes session default so DONATE books don't require price
     val allListingsReady: Boolean
         get() {
             val default = sessionDefaults.listingType
@@ -60,8 +61,6 @@ data class MultiPostUiState(
             return stagedBooks.isNotEmpty() && individualOk && bundlesOk
         }
 
-    // Organise screen: whether the selected books can form a bundle
-    // A bundle needs at least 2 books and all selected books must be from the same session
     val canCreateBundleFromSelection: Boolean
         get() = selectedBookIds.size >= 2
 }

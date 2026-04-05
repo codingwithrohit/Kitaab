@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface PostingSessionDao {
 
+    @Query("SELECT * FROM posting_sessions")
+    suspend fun getAllSessions(): List<CachedPostingSession>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(session: CachedPostingSession)
 
@@ -24,6 +27,24 @@ interface PostingSessionDao {
     // Called on app launch to clean up abandoned sessions older than 7 days
     @Query("DELETE FROM posting_sessions WHERE createdAt < :cutoff")
     suspend fun deleteOlderThan(cutoff: Long)
+
+    @Query(
+        """
+    UPDATE posting_sessions 
+    SET defaultType = :type, 
+        defaultCity = :city, 
+        defaultPincode = :pincode, 
+        defaultLocality = :locality 
+    WHERE id = :sessionId
+"""
+    )
+    suspend fun updateDefaults(
+        sessionId: String,
+        type: String,
+        city: String,
+        pincode: String,
+        locality: String,
+    )
 
     @Query("DELETE FROM posting_sessions")
     suspend fun deleteAll()

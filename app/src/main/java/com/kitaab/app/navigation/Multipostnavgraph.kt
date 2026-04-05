@@ -11,45 +11,32 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.kitaab.app.feature.post.multi.MultiPostEvent
 import com.kitaab.app.feature.post.multi.MultiPostViewModel
-import com.kitaab.app.feature.post.multi.OrganiseScreen
 import com.kitaab.app.feature.post.multi.ReviewPublishScreen
-import com.kitaab.app.feature.post.multi.SessionDefaultsScreen
 import com.kitaab.app.feature.post.multi.StagingTrayScreen
 
-/**
- * Nested navigation graph for the multi-book posting session.
- *
- * [MultiPostViewModel] is scoped to this graph — it survives navigation between
- * SessionDefaults → Tray → Organise → Review and is cleared only when the user
- * exits the graph entirely (publish success, discard, or back past SessionDefaults).
- *
- * Call this from AppNavHost inside the root NavHost block.
- */
 fun NavGraphBuilder.multiPostNavGraph(
     navController: NavHostController,
     onSessionComplete: (successCount: Int, bookCount: Int) -> Unit,
 ) {
     navigation(
-        startDestination = Route.MultiPostSessionDefaults.route,
+        startDestination = Route.MultiPostTray.route,
         route = Route.MultiPost.route,
     ) {
-        composable(Route.MultiPostSessionDefaults.route) { backStackEntry ->
-            // hiltViewModel with the graph's back-stack entry scopes the VM to the graph
+        composable(Route.MultiPostTray.route) { backStackEntry ->
             val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Route.MultiPost.route)
-            }
+                runCatching {
+                    navController.getBackStackEntry(Route.MultiPost.route)
+                }.getOrNull()
+            } ?: return@composable
+
             val viewModel: MultiPostViewModel = hiltViewModel(parentEntry)
             val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-            // Consume events
             LaunchedEffect(Unit) {
                 viewModel.events.collect { event ->
                     when (event) {
-                        is MultiPostEvent.NavigateToTray ->
-                            navController.navigate(Route.MultiPostTray.route) {
-                                // Prevent going back to defaults once tray is open
-                                popUpTo(Route.MultiPostSessionDefaults.route) { inclusive = true }
-                            }
+                        is MultiPostEvent.NavigateToReview ->
+                            navController.navigate(Route.MultiPostReview.route)
 
                         is MultiPostEvent.SessionAbandoned ->
                             navController.popBackStack(Route.MultiPost.route, inclusive = true)
@@ -59,7 +46,14 @@ fun NavGraphBuilder.multiPostNavGraph(
                 }
             }
 
-            // Show resume banner if an incomplete session exists
+            LaunchedEffect(state.isInitializing) {
+                if (state.isInitializing) return@LaunchedEffect
+                if (state.showResumeBanner) return@LaunchedEffect
+                if (state.sessionId == null) {
+                    viewModel.openSessionDefaultsSheet()
+                }
+            }
+
             if (state.showResumeBanner) {
                 ResumeBannerDialog(
                     bookCount = state.totalBookCount,
@@ -68,67 +62,13 @@ fun NavGraphBuilder.multiPostNavGraph(
                 )
             }
 
-            SessionDefaultsScreen(
-                viewModel = viewModel,
-                onBack = {
-                    navController.popBackStack(Route.MultiPost.route, inclusive = true)
-                },
-            )
-        }
-
-        composable(Route.MultiPostTray.route) { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Route.MultiPost.route)
-            }
-            val viewModel: MultiPostViewModel = hiltViewModel(parentEntry)
-
-            LaunchedEffect(Unit) {
-                viewModel.events.collect { event ->
-                    when (event) {
-                        is MultiPostEvent.NavigateToOrganise ->
-                            navController.navigate(Route.MultiPostOrganise.route)
-
-                        is MultiPostEvent.SessionAbandoned ->
-                            navController.popBackStack(Route.MultiPost.route, inclusive = true)
-
-                        else -> Unit
-                    }
-                }
-            }
-
             StagingTrayScreen(
                 viewModel = viewModel,
-                onNavigateToOrganise = {
-                    navController.navigate(Route.MultiPostOrganise.route)
+                onNavigateToReview = {
+                    navController.navigate(Route.MultiPostReview.route)
                 },
                 onDiscardSession = {
                     navController.popBackStack(Route.MultiPost.route, inclusive = true)
-                },
-            )
-        }
-
-        composable(Route.MultiPostOrganise.route) { backStackEntry ->
-            val parentEntry = remember(backStackEntry) {
-                navController.getBackStackEntry(Route.MultiPost.route)
-            }
-            val viewModel: MultiPostViewModel = hiltViewModel(parentEntry)
-
-            LaunchedEffect(Unit) {
-                viewModel.events.collect { event ->
-                    when (event) {
-                        is MultiPostEvent.NavigateToReview ->
-                            navController.navigate(Route.MultiPostReview.route)
-
-                        else -> Unit
-                    }
-                }
-            }
-
-            OrganiseScreen(
-                viewModel = viewModel,
-                onBack = { navController.popBackStack() },
-                onNavigateToReview = {
-                    navController.navigate(Route.MultiPostReview.route)
                 },
             )
         }
@@ -147,10 +87,7 @@ fun NavGraphBuilder.multiPostNavGraph(
                             onSessionComplete(event.successCount, event.totalBookCount)
                         }
 
-                        is MultiPostEvent.PublishPartialFailure -> {
-                            // Stay on review screen — UI shows retry button
-                        }
-
+                        is MultiPostEvent.PublishPartialFailure -> Unit
                         else -> Unit
                     }
                 }
@@ -163,8 +100,6 @@ fun NavGraphBuilder.multiPostNavGraph(
         }
     }
 }
-
-// ── Resume banner dialog ──────────────────────────────────────────────────────
 
 @androidx.compose.runtime.Composable
 private fun ResumeBannerDialog(

@@ -45,16 +45,8 @@ sealed class Route(val route: String) {
     }
 
     // ── Multi-book posting — nested nav graph ─────────────────────────────────
-    // These four routes live inside a nested "multi_post_graph" NavGraph so that
-    // MultiPostViewModel can be scoped to the graph and survive across all four screens.
-
-    data object MultiPost : Route("multi_post_graph")
-
-    data object MultiPostSessionDefaults : Route("multi_post/session_defaults")
-
-    data object MultiPostTray : Route("multi_post/tray")
-
-    data object MultiPostOrganise : Route("multi_post/organise")
-
-    data object MultiPostReview : Route("multi_post/review")
+    
+    object MultiPost : Route("multi_post")
+    object MultiPostTray : Route("multi_post/tray")
+    object MultiPostReview : Route("multi_post/review")
 }

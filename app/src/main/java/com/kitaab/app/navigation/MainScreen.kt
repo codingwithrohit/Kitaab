@@ -63,9 +63,7 @@ fun MainScreen() {
                 currentRoute?.startsWith("donation_requests/") == true ||
                 currentRoute?.startsWith("edit_listing/") == true ||
                 // Multi-post screens — all hide the bottom nav
-                currentRoute == Route.MultiPostSessionDefaults.route ||
                 currentRoute == Route.MultiPostTray.route ||
-                currentRoute == Route.MultiPostOrganise.route ||
                 currentRoute == Route.MultiPostReview.route
 
     Scaffold(
