@@ -25,6 +25,7 @@ class InboxViewModel
 
         init {
             loadConversations(showFullLoader = true)
+            subscribeToConversationUpdates()
         }
 
         fun refresh() {
@@ -33,6 +34,16 @@ class InboxViewModel
 
         fun clearError() {
             _uiState.update { it.copy(error = null) }
+        }
+
+        private fun subscribeToConversationUpdates() {
+            viewModelScope.launch {
+                val userId = supabase.auth.currentUserOrNull()?.id ?: return@launch
+                conversationRepository.subscribeToConversations(userId)
+                    .collect {
+                        loadConversations(showFullLoader = false)
+                    }
+            }
         }
 
         private fun loadConversations(showFullLoader: Boolean) {

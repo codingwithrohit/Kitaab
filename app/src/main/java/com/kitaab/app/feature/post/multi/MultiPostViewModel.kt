@@ -24,7 +24,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.Android
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.channels.Channel
@@ -472,7 +472,7 @@ class MultiPostViewModel
             viewModelScope.launch {
                 updateSheet { it.copy(isFetchingBookDetails = true, bookNotFound = false) }
                 runCatching {
-                    val client = HttpClient(Android)
+                    val client = HttpClient(OkHttp)
                     val body =
                         client.get(
                             "https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn",
@@ -899,7 +899,8 @@ class MultiPostViewModel
                     runCatching {
                         val bytes = File(path).readBytes()
                         val storagePath = "$userId/$bookId/photo_$index.jpg"
-                        supabase.storage.from("book-photos").upload(storagePath, bytes) { upsert = true }
+                        supabase.storage.from("book-photos")
+                            .upload(storagePath, bytes) { upsert = true }
                         urls.add(supabase.storage.from("book-photos").publicUrl(storagePath))
                     }
                 }

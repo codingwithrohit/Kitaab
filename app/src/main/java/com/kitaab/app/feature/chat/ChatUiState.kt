@@ -19,6 +19,8 @@ data class ChatUiState(
     val listingId: String = "",
     val otherUserId: String = "",
     val listingType: String = "SELL",
+    val isUploadingPackedPhoto: Boolean = false,
+    val packedPhotoUploadError: String? = null,
 )
 
 sealed interface ChatEvent {

@@ -71,7 +71,10 @@ class ConversationRepositoryImpl
                                     eq("seller_id", userId)
                                 }
                             }
-                            order("last_message_at", io.github.jan.supabase.postgrest.query.Order.DESCENDING)
+                            order(
+                                "last_message_at",
+                                io.github.jan.supabase.postgrest.query.Order.DESCENDING,
+                            )
                         }
                         .decodeList<Conversation>()
 
@@ -200,6 +203,41 @@ class ConversationRepositoryImpl
                 awaitClose {
                     job.cancel()
                     kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                        channel.unsubscribe()
+                    }
+                }
+            }
+        }
+
+        override fun subscribeToConversations(userId: String): Flow<Unit> {
+            val channelName = "conversations:$userId"
+            val channel = supabase.realtime.channel(channelName)
+
+            val flow =
+                channel
+                    .postgresChangeFlow<PostgresAction.Update>(schema = "public") {
+                        table = "conversations"
+                    }
+                    .mapNotNull { Unit }
+
+            return kotlinx.coroutines.flow.callbackFlow {
+                val job =
+                    kotlinx.coroutines.CoroutineScope(
+                        kotlinx.coroutines.Dispatchers.IO,
+                    ).launch {
+                        flow.collect { send(it) }
+                    }
+
+                val token = supabase.auth.currentSessionOrNull()?.accessToken
+                channel.subscribe(blockUntilSubscribed = false)
+                if (token != null) {
+                    supabase.realtime.setAuth(token)
+                }
+                awaitClose {
+                    job.cancel()
+                    kotlinx.coroutines.CoroutineScope(
+                        kotlinx.coroutines.Dispatchers.IO,
+                    ).launch {
                         channel.unsubscribe()
                     }
                 }

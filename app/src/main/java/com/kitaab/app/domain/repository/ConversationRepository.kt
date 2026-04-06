@@ -26,4 +26,6 @@ interface ConversationRepository {
     ): Result<Unit>
 
     fun subscribeToMessages(conversationId: String): Flow<Message>
+
+    fun subscribeToConversations(userId: String): Flow<Unit>
 }

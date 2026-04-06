@@ -1,6 +1,9 @@
 package com.kitaab.app.feature.chat
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +27,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -52,13 +56,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.kitaab.app.domain.model.Message
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
@@ -77,6 +84,12 @@ fun ChatScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val packedPhotoLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.GetContent(),
+        ) { uri ->
+            uri?.let { viewModel.uploadPackedPhoto(it) }
+        }
     val handoffSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LaunchedEffect(Unit) {
@@ -87,6 +100,7 @@ fun ChatScreen(
                         listState.animateScrollToItem(state.messages.lastIndex)
                     }
                 }
+
                 is ChatEvent.TransactionComplete -> {
                     snackbarHostState.showSnackbar("🎉 Transaction complete! Don't forget to leave a review.")
                 }
@@ -98,6 +112,13 @@ fun ChatScreen(
         state.error?.let {
             snackbarHostState.showSnackbar(it)
             viewModel.clearError()
+        }
+    }
+
+    LaunchedEffect(state.packedPhotoUploadError) {
+        state.packedPhotoUploadError?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearPackedPhotoError()
         }
     }
 
@@ -141,6 +162,7 @@ fun ChatScreen(
                 state = state,
                 onMarkComplete = { viewModel.onMarkCompleteClick() },
                 onDispute = { viewModel.raiseDispute() },
+                onPickPackedPhoto = { packedPhotoLauncher.launch("image/*") },
             )
 
             when {
@@ -228,13 +250,12 @@ private fun TransactionBanner(
     state: ChatUiState,
     onMarkComplete: () -> Unit,
     onDispute: () -> Unit,
+    onPickPackedPhoto: () -> Unit,
 ) {
     val transaction = state.transaction
 
-    // No banner if transaction is fully complete and not disputed
     if (transaction?.completedAt != null && !transaction.disputed) return
 
-    // No banner if transaction is disputed
     if (transaction?.disputed == true) {
         Column(
             modifier =
@@ -259,7 +280,6 @@ private fun TransactionBanner(
         return
     }
 
-    // Seller: no transaction yet — show initiate button
     if (transaction == null && state.isSeller) {
         Column(
             modifier =
@@ -297,7 +317,6 @@ private fun TransactionBanner(
         return
     }
 
-    // Buyer: no transaction yet — wait for seller
     if (transaction == null && !state.isSeller) {
         Column(
             modifier =
@@ -318,7 +337,6 @@ private fun TransactionBanner(
 
     if (transaction == null) return
 
-    // Transaction exists — show handoff details + confirm/dispute
     val currentUserConfirmed =
         if (state.isSeller) {
             transaction.confirmedBySeller
@@ -333,7 +351,6 @@ private fun TransactionBanner(
                 .background(Teal50)
                 .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
-        // Handoff method + code
         Row(verticalAlignment = Alignment.CenterVertically) {
             val methodLabel =
                 when (transaction.handoffMethod) {
@@ -360,9 +377,99 @@ private fun TransactionBanner(
             )
         }
 
+        // Packed photo — seller upload + buyer view
+        if (state.isSeller && !transaction.confirmedBySeller) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                // Thumbnail if already uploaded
+                if (!transaction.packedPhotoUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = transaction.packedPhotoUrl,
+                        contentDescription = "Packed book photo",
+                        contentScale = ContentScale.Crop,
+                        modifier =
+                            Modifier
+                                .size(52.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .border(
+                                    1.dp,
+                                    Teal500.copy(alpha = 0.4f),
+                                    RoundedCornerShape(6.dp),
+                                ),
+                    )
+                }
+
+                // Upload / replace button
+                OutlinedButton(
+                    onClick = onPickPackedPhoto,
+                    enabled = !state.isUploadingPackedPhoto,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.height(36.dp),
+                ) {
+                    if (state.isUploadingPackedPhoto) {
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(14.dp),
+                            color = Teal500,
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Uploading…", fontSize = 12.sp)
+                    } else {
+                        Icon(
+                            Icons.Default.CameraAlt,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = Teal500,
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            if (transaction.packedPhotoUrl.isNullOrBlank()) {
+                                "Add packed photo"
+                            } else {
+                                "Replace photo"
+                            },
+                            fontSize = 12.sp,
+                            color = Teal500,
+                        )
+                    }
+                }
+            }
+        }
+
+        // Buyer sees packed photo if seller uploaded it
+        if (!state.isSeller && !transaction.packedPhotoUrl.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                AsyncImage(
+                    model = transaction.packedPhotoUrl,
+                    contentDescription = "Packed book photo",
+                    contentScale = ContentScale.Crop,
+                    modifier =
+                        Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .border(
+                                1.dp,
+                                Teal500.copy(alpha = 0.4f),
+                                RoundedCornerShape(6.dp),
+                            ),
+                )
+                Text(
+                    "Seller packed photo",
+                    fontSize = 12.sp,
+                    color = Teal900,
+                )
+            }
+        }
+
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Confirmation status
         Text(
             text =
                 buildString {
@@ -439,7 +546,11 @@ private fun HandoffMethodSheet(onMethodSelected: (String) -> Unit) {
 
         listOf(
             Triple("MEETUP", "📍 Meet in person", "Meet at a public place"),
-            Triple("PORTER", "🚚 Porter / Courier", "A 6-digit code will be generated for pickup verification"),
+            Triple(
+                "PORTER",
+                "🚚 Porter / Courier",
+                "A 6-digit code will be generated for pickup verification",
+            ),
             Triple("POST", "📦 Post / Courier", "Ship the book, buyer pays shipping"),
         ).forEach { (method, title, subtitle) ->
             TextButton(
