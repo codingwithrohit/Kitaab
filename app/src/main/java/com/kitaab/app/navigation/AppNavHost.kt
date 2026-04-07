@@ -12,6 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.kitaab.app.feature.auth.AuthEvent
 import com.kitaab.app.feature.auth.AuthViewModel
 import com.kitaab.app.feature.auth.LoginScreen
@@ -29,6 +30,7 @@ import com.kitaab.app.feature.post.PostScreen
 import com.kitaab.app.feature.profile.EditProfileScreen
 import com.kitaab.app.feature.profile.ProfileScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
+import com.kitaab.app.feature.profile.SellerProfileScreen
 
 @Composable
 fun AppNavHost(
@@ -184,8 +186,21 @@ fun AppNavHost(
             )
         }
 
-        composable(Route.SellerProfile.route) {
-            PlaceholderScreen("Seller Profile")
+        composable(
+            route = Route.SellerProfile.route,
+            arguments =
+                listOf(
+                    navArgument("userId") {
+                        type = androidx.navigation.NavType.StringType
+                    },
+                ),
+        ) {
+            SellerProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+            )
         }
 
         composable(Route.Explore.route) {
