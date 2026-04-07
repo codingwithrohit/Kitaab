@@ -1,11 +1,14 @@
 package com.kitaab.app.feature.chat
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kitaab.app.domain.repository.ConversationRepository
 import com.kitaab.app.domain.repository.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
@@ -26,6 +29,7 @@ class ChatViewModel
         private val transactionRepository: TransactionRepository,
         private val supabase: SupabaseClient,
         savedStateHandle: SavedStateHandle,
+        @ApplicationContext private val context: Context,
     ) : ViewModel() {
         private val conversationId: String = checkNotNull(savedStateHandle["conversationId"])
 
@@ -147,7 +151,12 @@ class ChatViewModel
                     type = state.listingType,
                     handoffMethod = method,
                 ).onSuccess { transaction ->
-                    _uiState.update { it.copy(transaction = transaction, isCreatingTransaction = false) }
+                    _uiState.update {
+                        it.copy(
+                            transaction = transaction,
+                            isCreatingTransaction = false,
+                        )
+                    }
                 }.onFailure { throwable ->
                     _uiState.update {
                         it.copy(
@@ -211,6 +220,53 @@ class ChatViewModel
                         }
                     }
             }
+        }
+
+        fun uploadPackedPhoto(uri: Uri) {
+            val transaction = _uiState.value.transaction ?: return
+            viewModelScope.launch {
+                _uiState.update {
+                    it.copy(isUploadingPackedPhoto = true, packedPhotoUploadError = null)
+                }
+                runCatching {
+                    context.contentResolver.openInputStream(uri)?.use { stream ->
+                        stream.readBytes()
+                    } ?: throw Exception("Could not read photo")
+                }.fold(
+                    onSuccess = { bytes ->
+                        transactionRepository.uploadPackedPhoto(
+                            transactionId = transaction.id,
+                            photoBytes = bytes,
+                        ).onSuccess { url ->
+                            _uiState.update {
+                                it.copy(
+                                    isUploadingPackedPhoto = false,
+                                    transaction = it.transaction?.copy(packedPhotoUrl = url),
+                                )
+                            }
+                        }.onFailure { throwable ->
+                            _uiState.update {
+                                it.copy(
+                                    isUploadingPackedPhoto = false,
+                                    packedPhotoUploadError = throwable.message ?: "Upload failed",
+                                )
+                            }
+                        }
+                    },
+                    onFailure = { throwable ->
+                        _uiState.update {
+                            it.copy(
+                                isUploadingPackedPhoto = false,
+                                packedPhotoUploadError = throwable.message ?: "Could not read photo",
+                            )
+                        }
+                    },
+                )
+            }
+        }
+
+        fun clearPackedPhotoError() {
+            _uiState.update { it.copy(packedPhotoUploadError = null) }
         }
 
         fun clearError() {

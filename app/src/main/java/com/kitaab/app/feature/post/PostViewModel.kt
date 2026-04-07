@@ -13,6 +13,8 @@ import io.github.jan.supabase.exceptions.HttpRequestException
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.channels.Channel
@@ -213,7 +215,7 @@ class PostViewModel
             viewModelScope.launch {
                 _uiState.update { it.copy(isFetchingBookDetails = true, bookNotFound = false) }
                 runCatching {
-                    val client = io.ktor.client.HttpClient(io.ktor.client.engine.android.Android)
+                    val client = HttpClient(OkHttp)
                     val response =
                         client.get(
                             "https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn",
@@ -345,14 +347,17 @@ class PostViewModel
                                         provider: String?,
                                         status: Int,
                                         extras: android.os.Bundle?,
-                                    ) {}
+                                    ) {
+                                    }
                                 }
                             val provider =
                                 when {
                                     locationManager.isProviderEnabled(android.location.LocationManager.GPS_PROVIDER) ->
                                         android.location.LocationManager.GPS_PROVIDER
+
                                     locationManager.isProviderEnabled(android.location.LocationManager.NETWORK_PROVIDER) ->
                                         android.location.LocationManager.NETWORK_PROVIDER
+
                                     else -> {
                                         cont.resume(null)
                                         return@suspendCancellableCoroutine
@@ -369,7 +374,8 @@ class PostViewModel
 
                     if (location != null) {
                         val geocoder = Geocoder(context, Locale.getDefault())
-                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        val addresses =
+                            geocoder.getFromLocation(location.latitude, location.longitude, 1)
                         val address = addresses?.firstOrNull()
                         _uiState.update {
                             it.copy(

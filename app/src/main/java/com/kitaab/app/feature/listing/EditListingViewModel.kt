@@ -16,7 +16,7 @@ import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.Android
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import kotlinx.coroutines.channels.Channel
@@ -143,7 +143,7 @@ class EditListingViewModel
             viewModelScope.launch {
                 _uiState.update { it.copy(isFetchingBookDetails = true) }
                 runCatching {
-                    val client = HttpClient(Android)
+                    val client = HttpClient(OkHttp)
                     val body =
                         client.get("https://www.googleapis.com/books/v1/volumes?q=isbn:$isbn")
                             .bodyAsText()
