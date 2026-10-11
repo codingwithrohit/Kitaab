@@ -1,5 +1,7 @@
 package com.kitaab.app.feature.home.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -14,16 +16,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.ui.theme.ShelfPlank
 import com.kitaab.app.ui.theme.ShelfShadow
 import com.kitaab.app.ui.theme.ShelfWood
+import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 @Composable
@@ -34,29 +39,44 @@ fun ShelfRow(
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                .background(ShelfWood),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+                    .background(ShelfWood),
         ) {
             Row(
-                modifier = Modifier
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier =
+                    Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.Bottom,
             ) {
                 listings.forEachIndexed { index, listing ->
-                    // Vary heights slightly for a real bookshelf feel
-                    val spineHeight = remember(listing.id) {
-                        val seed = listing.id.hashCode()
-                        val rng = Random(seed)
-                        (50 + rng.nextInt(30)).dp
+                    val spineHeight =
+                        remember(listing.id) {
+                            val seed = listing.id.hashCode()
+                            val rng = Random(seed)
+                            (50 + rng.nextInt(30)).dp
+                        }
+                    val spineWidth =
+                        remember(listing.id) {
+                            val seed = listing.id.hashCode() + 1
+                            val rng = Random(seed)
+                            (18 + rng.nextInt(12)).dp
+                        }
+
+                    val alpha = remember(listing.id) { Animatable(0f) }
+                    val translationY = remember(listing.id) { Animatable(24f) }
+
+                    LaunchedEffect(listing.id) {
+                        delay(index * 80L)
+                        alpha.animateTo(1f, animationSpec = tween(durationMillis = 200))
                     }
-                    val spineWidth = remember(listing.id) {
-                        val seed = listing.id.hashCode() + 1
-                        val rng = Random(seed)
-                        (18 + rng.nextInt(12)).dp
+                    LaunchedEffect(listing.id) {
+                        delay(index * 80L)
+                        translationY.animateTo(0f, animationSpec = tween(durationMillis = 200))
                     }
 
                     BookSpine(
@@ -65,6 +85,11 @@ fun ShelfRow(
                         width = spineWidth,
                         height = spineHeight,
                         onClick = { onListingClick(listing.id) },
+                        modifier =
+                            Modifier.graphicsLayer {
+                                this.alpha = alpha.value
+                                this.translationY = translationY.value
+                            },
                     )
                 }
 
@@ -76,16 +101,18 @@ fun ShelfRow(
 
         // Wooden plank at the bottom of the shelf
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(10.dp)
-                .background(ShelfPlank),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(10.dp)
+                    .background(ShelfPlank),
         )
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(2.dp)
-                .background(ShelfShadow),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(2.dp)
+                    .background(ShelfShadow),
         )
     }
 }

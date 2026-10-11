@@ -48,13 +48,14 @@ import com.kitaab.app.feature.post.steps.PhotosStep
 import com.kitaab.app.feature.post.steps.PriceLocationStep
 import com.kitaab.app.ui.theme.Teal500
 
-private val stepTitles = mapOf(
-    PostStep.CHOOSE_TYPE to "Post a book",
-    PostStep.BOOK_DETAILS to "Book details",
-    PostStep.CONDITION to "Condition",
-    PostStep.PHOTOS to "Photos",
-    PostStep.PRICE_LOCATION to "Price & location",
-)
+private val stepTitles =
+    mapOf(
+        PostStep.CHOOSE_TYPE to "Post a book",
+        PostStep.BOOK_DETAILS to "Book details",
+        PostStep.CONDITION to "Condition",
+        PostStep.PHOTOS to "Photos",
+        PostStep.PRICE_LOCATION to "Price & location",
+    )
 
 private val stepNumbers = PostStep.entries.mapIndexed { index, step -> step to index }.toMap()
 private val totalSteps = PostStep.entries.size
@@ -109,8 +110,11 @@ fun PostScreen(
                     navigationIcon = {
                         IconButton(
                             onClick = {
-                                if (viewModel.isOnFirstStep) onNavigateBack()
-                                else viewModel.goToPreviousStep()
+                                if (viewModel.isOnFirstStep) {
+                                    onNavigateBack()
+                                } else {
+                                    viewModel.goToPreviousStep()
+                                }
                             },
                         ) {
                             Icon(
@@ -119,13 +123,15 @@ fun PostScreen(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background,
-                    ),
+                    colors =
+                        TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.background,
+                        ),
                 )
                 // Step progress bar — hidden on first step (choose type)
                 if (state.currentStep != PostStep.CHOOSE_TYPE) {
-                    val progress = ((stepNumbers[state.currentStep] ?: 0).toFloat()) /
+                    val progress =
+                        ((stepNumbers[state.currentStep] ?: 0).toFloat()) /
                             (totalSteps - 1).toFloat()
                     LinearProgressIndicator(
                         progress = { progress },
@@ -142,10 +148,11 @@ fun PostScreen(
             if (state.currentStep != PostStep.CHOOSE_TYPE) {
                 val isLastStep = state.currentStep == PostStep.PRICE_LOCATION
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .navigationBarsPadding()
-                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .navigationBarsPadding()
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
                 ) {
                     Button(
                         onClick = {
@@ -164,9 +171,10 @@ fun PostScreen(
                         enabled = !state.isSubmitting,
                         colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                         shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
                     ) {
                         if (state.isSubmitting) {
                             CircularProgressIndicator(
@@ -196,46 +204,52 @@ fun PostScreen(
                     slideInHorizontally { -it } togetherWith slideOutHorizontally { it }
                 }
             },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
             label = "post_step",
         ) { step ->
             when (step) {
-                PostStep.CHOOSE_TYPE -> ChooseTypeStep(
-                    selectedType = state.listingType,
-                    onTypeSelected = viewModel::onListingTypeSelected,
-                )
-                PostStep.BOOK_DETAILS -> BookDetailsStep(
-                    state = state,
-                    onTitleChanged = viewModel::onTitleChanged,
-                    onAuthorChanged = viewModel::onAuthorChanged,
-                    onPublisherChanged = viewModel::onPublisherChanged,
-                    onEditionChanged = viewModel::onEditionChanged,
-                    onSubjectChanged = viewModel::onSubjectChanged,
-                    onIsbnScanned = viewModel::onIsbnScanned,
-                    onExamTagToggled = viewModel::onExamTagToggled,
-                    onHasSolutionsToggled = viewModel::onHasSolutionsToggled,
-                    onHasNotesToggled = viewModel::onHasNotesToggled,
-                )
-                PostStep.CONDITION -> ConditionStep(
-                    selectedCondition = state.condition,
-                    conditionError = state.conditionError,
-                    onConditionSelected = viewModel::onConditionSelected,
-                )
-                PostStep.PHOTOS -> PhotosStep(
-                    photoUris = state.photoUris,
-                    onPhotosSelected = viewModel::onPhotosSelected,
-                    onPhotoRemoved = viewModel::onPhotoRemoved,
-                )
-                PostStep.PRICE_LOCATION -> PriceLocationStep(
-                    state = state,
-                    onPriceChanged = viewModel::onPriceChanged,
-                    onCityChanged = viewModel::onCityChanged,
-                    onPincodeChanged = viewModel::onPincodeChanged,
-                    onLocalityChanged = viewModel::onLocalityChanged,
-                    onFetchLocation = viewModel::fetchCurrentLocation,
-                )
+                PostStep.CHOOSE_TYPE ->
+                    ChooseTypeStep(
+                        selectedType = state.listingType,
+                        onTypeSelected = viewModel::onListingTypeSelected,
+                    )
+                PostStep.BOOK_DETAILS ->
+                    BookDetailsStep(
+                        state = state,
+                        onTitleChanged = viewModel::onTitleChanged,
+                        onAuthorChanged = viewModel::onAuthorChanged,
+                        onPublisherChanged = viewModel::onPublisherChanged,
+                        onEditionChanged = viewModel::onEditionChanged,
+                        onSubjectChanged = viewModel::onSubjectChanged,
+                        onIsbnScanned = viewModel::onIsbnScanned,
+                        onExamTagToggled = viewModel::onExamTagToggled,
+                        onHasSolutionsToggled = viewModel::onHasSolutionsToggled,
+                        onHasNotesToggled = viewModel::onHasNotesToggled,
+                    )
+                PostStep.CONDITION ->
+                    ConditionStep(
+                        selectedCondition = state.condition,
+                        conditionError = state.conditionError,
+                        onConditionSelected = viewModel::onConditionSelected,
+                    )
+                PostStep.PHOTOS ->
+                    PhotosStep(
+                        photoUris = state.photoUris,
+                        onPhotosSelected = viewModel::onPhotosSelected,
+                        onPhotoRemoved = viewModel::onPhotoRemoved,
+                    )
+                PostStep.PRICE_LOCATION ->
+                    PriceLocationStep(
+                        state = state,
+                        onPriceChanged = viewModel::onPriceChanged,
+                        onCityChanged = viewModel::onCityChanged,
+                        onPincodeChanged = viewModel::onPincodeChanged,
+                        onLocalityChanged = viewModel::onLocalityChanged,
+                        onFetchLocation = viewModel::fetchCurrentLocation,
+                    )
             }
         }
     }

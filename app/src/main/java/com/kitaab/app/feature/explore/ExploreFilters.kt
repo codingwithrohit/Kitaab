@@ -7,6 +7,7 @@ data class ExploreFilters(
     val minPrice: String = "",
     val maxPrice: String = "",
 ) {
-    val isActive: Boolean get() = type != null || condition != null ||
+    val isActive: Boolean get() =
+        type != null || condition != null ||
             examTag != null || minPrice.isNotBlank() || maxPrice.isNotBlank()
 }

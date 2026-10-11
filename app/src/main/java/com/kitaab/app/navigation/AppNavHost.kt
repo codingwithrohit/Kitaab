@@ -2,19 +2,17 @@ package com.kitaab.app.navigation
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.kitaab.app.feature.auth.AuthEvent
 import com.kitaab.app.feature.auth.AuthViewModel
 import com.kitaab.app.feature.auth.LoginScreen
@@ -22,18 +20,23 @@ import com.kitaab.app.feature.auth.OnboardingScreen
 import com.kitaab.app.feature.auth.SignUpScreen
 import com.kitaab.app.feature.auth.SplashScreen
 import com.kitaab.app.feature.chat.ChatScreen
+import com.kitaab.app.feature.donation.DonationRequestsScreen
 import com.kitaab.app.feature.explore.ExploreScreen
 import com.kitaab.app.feature.home.HomeScreen
 import com.kitaab.app.feature.inbox.InboxScreen
+import com.kitaab.app.feature.listing.EditListingScreen
 import com.kitaab.app.feature.listing.ListingDetailScreen
 import com.kitaab.app.feature.post.PostScreen
+import com.kitaab.app.feature.profile.EditProfileScreen
+import com.kitaab.app.feature.profile.ProfileScreen
 import com.kitaab.app.feature.profile.ProfileSetupScreen
-import com.kitaab.app.ui.theme.Teal500
+import com.kitaab.app.feature.profile.SellerProfileScreen
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    onMultiPostComplete: (successCount: Int, bookCount: Int) -> Unit = { _, _ -> },
 ) {
     NavHost(
         navController = navController,
@@ -90,8 +93,6 @@ fun AppNavHost(
 
         composable(Route.SignUp.route) {
             SignUpScreen(
-                // After signup, always go to ProfileSetup — new users never
-                // have profile_complete = true yet
                 onSignUpSuccess = {
                     navController.navigate(Route.ProfileSetup.route) {
                         popUpTo(0) { inclusive = true }
@@ -121,11 +122,12 @@ fun AppNavHost(
                     when (event) {
                         is AuthEvent.SignOutSuccess,
                         is AuthEvent.DeleteAccountSuccess,
-                            -> {
+                        -> {
                             navController.navigate(Route.Login.route) {
                                 popUpTo(0) { inclusive = true }
                             }
                         }
+
                         else -> Unit
                     }
                 }
@@ -141,27 +143,64 @@ fun AppNavHost(
             )
         }
 
-        composable(Route.ListingDetail.route) {
+        composable(
+            route = Route.ListingDetail.route,
+            arguments =
+                listOf(
+                    androidx.navigation.navArgument("listingId") {
+                        type = androidx.navigation.NavType.StringType
+                    },
+                    androidx.navigation.navArgument("referrerId") {
+                        type = androidx.navigation.NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    },
+                ),
+        ) { backStackEntry ->
             ListingDetailScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToChat = { conversationId ->
                     navController.navigate(Route.Chat.createRoute(conversationId))
                 },
-                onNavigateToDonationRequest = { listingId ->
-                    // Phase 3 — donation request bottom sheet
-                    // For now navigate back
-                    navController.popBackStack()
+                onNavigateToDonationRequest = { _ ->
+                    // Handled inside ListingDetailScreen as a bottom sheet
+                },
+                onNavigateToDonationRequests = { listingId ->
+                    navController.navigate(Route.DonationRequests.createRoute(listingId))
                 },
                 onSellerClick = { userId ->
                     navController.navigate(Route.SellerProfile.createRoute(userId))
                 },
                 onSimilarListingClick = { listingId ->
-                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                    val currentListingId = backStackEntry.arguments?.getString("listingId")
+                    navController.navigate(
+                        Route.ListingDetail.createRoute(listingId, currentListingId),
+                    ) {
+                        popUpTo(Route.ListingDetail.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToEditListing = { listingId ->
+                    navController.navigate(Route.EditListing.createRoute(listingId))
                 },
             )
         }
-        composable(Route.SellerProfile.route) {
-            PlaceholderScreen("Seller Profile")
+
+        composable(
+            route = Route.SellerProfile.route,
+            arguments =
+                listOf(
+                    navArgument("userId") {
+                        type = androidx.navigation.NavType.StringType
+                    },
+                ),
+        ) {
+            SellerProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+            )
         }
 
         composable(Route.Explore.route) {
@@ -172,6 +211,7 @@ fun AppNavHost(
                 },
             )
         }
+
         composable(Route.Post.route) {
             PostScreen(
                 onPostSuccess = {
@@ -184,6 +224,7 @@ fun AppNavHost(
                 },
             )
         }
+
         composable(Route.Inbox.route) {
             InboxScreen(
                 onNavigateToChat = { conversationId ->
@@ -197,10 +238,56 @@ fun AppNavHost(
                 onNavigateBack = { navController.popBackStack() },
             )
         }
-        composable(Route.Profile.route) { PlaceholderScreen("Profile") }
+
+        composable(Route.Profile.route) {
+            ProfileScreen(
+                onNavigateToLogin = {
+                    navController.navigate(Route.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
+                onNavigateToEditProfile = {
+                    navController.navigate(Route.EditProfile.route)
+                },
+                onListingClick = { listingId ->
+                    navController.navigate(Route.ListingDetail.createRoute(listingId))
+                },
+            )
+        }
+
+        composable(Route.EditProfile.route) {
+            EditProfileScreen(
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        composable(
+            route = Route.EditListing.route,
+            arguments =
+                listOf(
+                    androidx.navigation.navArgument("listingId") {
+                        type = androidx.navigation.NavType.StringType
+                    },
+                ),
+        ) {
+            EditListingScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(Route.DonationRequests.route) { backStackEntry ->
+            val listingId = backStackEntry.arguments?.getString("listingId") ?: return@composable
+            DonationRequestsScreen(
+                listingId = listingId,
+                onNavigateBack = { navController.popBackStack() },
+            )
+        }
+
+        // ── Multi-book posting nested graph ───────────────────────────────────
+        multiPostNavGraph(
+            navController = navController,
+            onSessionComplete = onMultiPostComplete,
+        )
     }
 }
-
 
 @Composable
 private fun PlaceholderScreen(name: String) {

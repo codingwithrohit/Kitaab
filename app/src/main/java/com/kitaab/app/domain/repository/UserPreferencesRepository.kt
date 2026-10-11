@@ -9,5 +9,10 @@ interface UserPreferencesRepository {
     val locality: Flow<String>
 
     suspend fun setProfileComplete(complete: Boolean)
-    suspend fun setLocation(city: String, pincode: String, locality: String = "")
+
+    suspend fun setLocation(
+        city: String,
+        pincode: String,
+        locality: String = "",
+    )
 }

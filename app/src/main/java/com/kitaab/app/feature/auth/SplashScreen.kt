@@ -54,9 +54,10 @@ fun SplashScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Teal700),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Teal700),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -64,29 +65,32 @@ fun SplashScreen(
             verticalArrangement = Arrangement.Center,
         ) {
             BookStackIcon(
-                modifier = Modifier
-                    .scale(scale.value)
-                    .alpha(alpha.value),
+                modifier =
+                    Modifier
+                        .scale(scale.value)
+                        .alpha(alpha.value),
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "Kitaab",
-                style = TextStyle(
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Teal50,
-                    letterSpacing = (-0.5).sp,
-                ),
+                style =
+                    TextStyle(
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Teal50,
+                        letterSpacing = (-0.5).sp,
+                    ),
                 modifier = Modifier.alpha(alpha.value),
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = "buy · sell · donate books",
-                style = TextStyle(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    color = Teal500,
-                ),
+                style =
+                    TextStyle(
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = Teal500,
+                    ),
                 modifier = Modifier.alpha(alpha.value),
             )
         }

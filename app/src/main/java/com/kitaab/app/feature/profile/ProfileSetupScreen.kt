@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -53,8 +51,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.feature.auth.kitaabTextFieldColors
-import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal50
+import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal900
 import com.kitaab.app.ui.theme.WarmMuted
 
@@ -89,12 +87,13 @@ fun ProfileSetupScreen(
         contentWindowInsets = WindowInsets.ime,
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .statusBarsPadding()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp),
         ) {
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -127,13 +126,15 @@ fun ProfileSetupScreen(
                         modifier = Modifier.size(18.dp),
                     )
                 },
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -156,13 +157,15 @@ fun ProfileSetupScreen(
                         modifier = Modifier.size(18.dp),
                     )
                 },
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Next,
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Down) },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -185,13 +188,15 @@ fun ProfileSetupScreen(
                         modifier = Modifier.size(18.dp),
                     )
                 },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() },
-                ),
+                keyboardOptions =
+                    KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done,
+                    ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = { focusManager.clearFocus() },
+                    ),
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = kitaabTextFieldColors(),
@@ -231,17 +236,19 @@ fun ProfileSetupScreen(
                                 fontWeight = if (selected) FontWeight.Medium else FontWeight.Normal,
                             )
                         },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = Teal50,
-                            selectedLabelColor = Teal900,
-                            selectedLeadingIconColor = Teal500,
-                        ),
-                        border = FilterChipDefaults.filterChipBorder(
-                            enabled = true,
-                            selected = selected,
-                            selectedBorderColor = Teal500,
-                            selectedBorderWidth = 1.5.dp,
-                        ),
+                        colors =
+                            FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = Teal50,
+                                selectedLabelColor = Teal900,
+                                selectedLeadingIconColor = Teal500,
+                            ),
+                        border =
+                            FilterChipDefaults.filterChipBorder(
+                                enabled = true,
+                                selected = selected,
+                                selectedBorderColor = Teal500,
+                                selectedBorderWidth = 1.5.dp,
+                            ),
                         shape = RoundedCornerShape(8.dp),
                     )
                 }
@@ -255,9 +262,10 @@ fun ProfileSetupScreen(
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
             ) {
                 if (state.isLoading) {
                     CircularProgressIndicator(

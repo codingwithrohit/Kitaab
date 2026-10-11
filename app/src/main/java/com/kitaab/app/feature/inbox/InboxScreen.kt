@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -76,9 +75,10 @@ fun InboxScreen(
                         fontSize = 22.sp,
                     )
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                ),
+                colors =
+                    TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background,
+                    ),
                 windowInsets = WindowInsets(0.dp),
             )
         },
@@ -86,9 +86,10 @@ fun InboxScreen(
         PullToRefreshBox(
             isRefreshing = state.isRefreshing,
             onRefresh = { viewModel.refresh() },
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             when {
                 state.isLoading -> {
@@ -128,18 +129,20 @@ private fun ConversationRow(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clickable { onClick() }
+                .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Avatar — book cover or letter fallback
         Box(
-            modifier = Modifier
-                .size(56.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
+            modifier =
+                Modifier
+                    .size(56.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center,
         ) {
             if (!item.listingCoverUrl.isNullOrBlank()) {
@@ -196,10 +199,18 @@ private fun ConversationRow(
                     Text(
                         text = item.conversation.lastMessage ?: item.listingTitle,
                         fontSize = 14.sp,
-                        color = if (item.unreadCount > 0) MaterialTheme.colorScheme.onBackground
-                        else WarmMuted,
-                        fontWeight = if (item.unreadCount > 0) FontWeight.Medium
-                        else FontWeight.Normal,
+                        color =
+                            if (item.unreadCount > 0) {
+                                MaterialTheme.colorScheme.onBackground
+                            } else {
+                                WarmMuted
+                            },
+                        fontWeight =
+                            if (item.unreadCount > 0) {
+                                FontWeight.Medium
+                            } else {
+                                FontWeight.Normal
+                            },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -216,9 +227,10 @@ private fun ConversationRow(
                     Spacer(modifier = Modifier.width(8.dp))
                     Box(
                         contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(22.dp)
-                            .background(Teal500, CircleShape),
+                        modifier =
+                            Modifier
+                                .size(22.dp)
+                                .background(Teal500, CircleShape),
                     ) {
                         Text(
                             text = if (item.unreadCount > 9) "9+" else item.unreadCount.toString(),
@@ -265,8 +277,9 @@ private fun formatTimestamp(isoTimestamp: String): String {
     return try {
         val sdf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault())
         sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        val date = sdf.parse(isoTimestamp.substringBefore(".").substringBefore("+"))
-            ?: return ""
+        val date =
+            sdf.parse(isoTimestamp.substringBefore(".").substringBefore("+"))
+                ?: return ""
         val now = java.util.Date()
         val diffSeconds = (now.time - date.time) / 1000
         when {

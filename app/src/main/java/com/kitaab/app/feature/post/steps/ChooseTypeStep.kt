@@ -26,8 +26,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kitaab.app.feature.post.ListingType
-import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal50
+import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
 
@@ -37,9 +37,10 @@ fun ChooseTypeStep(
     onTypeSelected: (ListingType) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp),
     ) {
         Spacer(modifier = Modifier.height(32.dp))
         Text(
@@ -89,10 +90,11 @@ private fun ListingTypeCard(
     val containerColor = if (isSelected) Teal50 else MaterialTheme.colorScheme.surface
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
-            .clickable { onClick() },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
+                .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),

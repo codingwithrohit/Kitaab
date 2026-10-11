@@ -17,16 +17,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 // Palette of distinct book spine colors matching Kitaab's brand
-private val spineColors = listOf(
-    Color(0xFF1D9E75), // Teal500
-    Color(0xFF534AB7), // Purple
-    Color(0xFFD85A30), // Coral
-    Color(0xFFBA7517), // Amber
-    Color(0xFF085041), // Dark teal
-    Color(0xFF3B8BD4), // Blue
-    Color(0xFF993556), // Pink
-    Color(0xFF639922), // Green
-)
+private val spineColors =
+    listOf(
+        // Teal500
+        Color(0xFF1D9E75),
+        // Purple
+        Color(0xFF534AB7),
+        // Coral
+        Color(0xFFD85A30),
+        // Amber
+        Color(0xFFBA7517),
+        // Dark teal
+        Color(0xFF085041),
+        // Blue
+        Color(0xFF3B8BD4),
+        // Pink
+        Color(0xFF993556),
+        // Green
+        Color(0xFF639922),
+    )
 
 fun spineColorForIndex(index: Int): Color = spineColors[index % spineColors.size]
 
@@ -40,10 +49,11 @@ fun BookSpine(
     modifier: Modifier = Modifier,
 ) {
     Canvas(
-        modifier = modifier
-            .width(width)
-            .height(height)
-            .clickable { onClick() },
+        modifier =
+            modifier
+                .width(width)
+                .height(height)
+                .clickable { onClick() },
     ) {
         drawBookSpine(
             color = color,
@@ -78,12 +88,13 @@ private fun DrawScope.drawBookSpine(
 
     // Draw vertical title text if spine is wide enough
     if (spineWidth >= 20.dp.toPx() && title.isNotBlank()) {
-        val paint = android.graphics.Paint().apply {
-            this.color = Color.White.copy(alpha = 0.9f).toArgb()
-            textSize = 9.dp.toPx()
-            isAntiAlias = true
-            textAlign = android.graphics.Paint.Align.CENTER
-        }
+        val paint =
+            android.graphics.Paint().apply {
+                this.color = Color.White.copy(alpha = 0.9f).toArgb()
+                textSize = 9.dp.toPx()
+                isAntiAlias = true
+                textAlign = android.graphics.Paint.Align.CENTER
+            }
 
         drawContext.canvas.nativeCanvas.save()
         drawContext.canvas.nativeCanvas.rotate(
@@ -93,8 +104,12 @@ private fun DrawScope.drawBookSpine(
         )
 
         val maxChars = (spineHeight / paint.textSize * 1.8f).toInt()
-        val displayTitle = if (title.length > maxChars) title.take(maxChars - 1) + "…" else title
-
+        val displayTitle =
+            if (title.length > maxChars) {
+                title.take(maxChars - 1) + "…"
+            } else {
+                title
+            }
         drawContext.canvas.nativeCanvas.drawText(
             displayTitle,
             spineWidth / 2f,

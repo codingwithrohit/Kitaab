@@ -11,10 +11,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataStoreModule {
-
     @Binds
     @Singleton
-    abstract fun bindUserPreferencesRepository(
-        impl: UserPreferencesRepositoryImpl,
-    ): UserPreferencesRepository
+    abstract fun bindUserPreferencesRepository(impl: UserPreferencesRepositoryImpl): UserPreferencesRepository
 }

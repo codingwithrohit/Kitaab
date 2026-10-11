@@ -12,6 +12,8 @@ sealed class Route(val route: String) {
 
     data object ProfileSetup : Route("profile_setup")
 
+    data object EditProfile : Route("edit_profile")
+
     // Main tabs
     data object Home : Route("home")
 
@@ -24,8 +26,19 @@ sealed class Route(val route: String) {
     data object Profile : Route("profile")
 
     // Detail screens
-    data object ListingDetail : Route("listing_detail/{listingId}") {
-        fun createRoute(listingId: String) = "listing_detail/$listingId"
+    data object ListingDetail : Route("listing_detail/{listingId}?referrer={referrerId}") {
+        fun createRoute(
+            listingId: String,
+            referrerId: String? = null,
+        ) = if (referrerId != null) {
+            "listing_detail/$listingId?referrer=$referrerId"
+        } else {
+            "listing_detail/$listingId"
+        }
+    }
+
+    data object EditListing : Route("edit_listing/{listingId}") {
+        fun createRoute(listingId: String) = "edit_listing/$listingId"
     }
 
     data object SellerProfile : Route("seller_profile/{userId}") {
@@ -35,4 +48,16 @@ sealed class Route(val route: String) {
     data object Chat : Route("chat/{conversationId}") {
         fun createRoute(conversationId: String) = "chat/$conversationId"
     }
+
+    data object DonationRequests : Route("donation_requests/{listingId}") {
+        fun createRoute(listingId: String) = "donation_requests/$listingId"
+    }
+
+    // ── Multi-book posting — nested nav graph ─────────────────────────────────
+
+    object MultiPost : Route("multi_post")
+
+    object MultiPostTray : Route("multi_post/tray")
+
+    object MultiPostReview : Route("multi_post/review")
 }

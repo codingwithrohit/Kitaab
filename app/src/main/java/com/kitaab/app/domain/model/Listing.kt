@@ -27,5 +27,6 @@ data class Listing(
     val pincode: String? = null,
     val locality: String? = null,
     @SerialName("is_bundle") val isBundle: Boolean = false,
+    @SerialName("book_count") val bookCount: Int = 1,
     @SerialName("created_at") val createdAt: String? = null,
 )
