@@ -198,27 +198,6 @@ fun HomeScreen(
                     }
                 }
 
-                item(key = "listings") {
-                    if (state.viewMode == HomeViewMode.LIST) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                        ) {
-                            state.sortedListings.forEach { listing ->
-                                ListingCard(
-                                    listing = listing,
-                                    onClick = { onListingClick(listing.id) },
-                                    modifier = Modifier.padding(horizontal = 16.dp),
-                                )
-                            }
-                        }
-                    } else {
-                        ListingsGrid(
-                            listings = state.sortedListings,
-                            onListingClick = onListingClick,
-                        )
-                    }
-                }
                 if (state.viewMode == HomeViewMode.LIST) {
                     items(
                         items = state.sortedListings,
