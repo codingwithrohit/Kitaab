@@ -43,13 +43,13 @@ fun ListingGridCard(
             modifier
                 .fillMaxWidth()
                 .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface,
             ),
-        border = BorderStroke(0.5.dp, WarmBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(1.dp, WarmBorder),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column {
             // ── Photo / placeholder area ──────────────────────────────

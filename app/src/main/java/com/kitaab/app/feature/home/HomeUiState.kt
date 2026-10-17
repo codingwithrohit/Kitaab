@@ -9,8 +9,7 @@ enum class HomeSortOption(val label: String) {
     RECENT("Recent"),
     OLDEST("Oldest"),
     PRICE_LOW_HIGH("Price: Low to High"),
-    PRICE_HIGH_LOW("Price: High to Low"),
-    NEARBY("Nearby"),
+    PRICE_HIGH_LOW("Price: High to Low")
 }
 
 data class HomeUiState(
@@ -38,6 +37,6 @@ data class HomeUiState(
                 listings.sortedWith(
                     compareByDescending(nullsFirst()) { it.price },
                 )
-            HomeSortOption.NEARBY -> listings
+
         }
 }

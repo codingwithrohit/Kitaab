@@ -44,8 +44,10 @@ import coil.compose.AsyncImage
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
+import com.kitaab.app.ui.theme.Teal900
 import com.kitaab.app.ui.theme.WarmBorder
 import com.kitaab.app.ui.theme.WarmMuted
+
 
 @Composable
 fun ListingCard(
@@ -53,68 +55,58 @@ fun ListingCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var rotationY by remember { mutableFloatStateOf(0f) }
-    val screenWidthPx =
-        with(LocalDensity.current) {
-            LocalConfiguration.current.screenWidthDp.dp.toPx()
-        }
-    val density = LocalDensity.current.density
+    val isFree = listing.type == "DONATE"
+    val priceText = when {
+        isFree -> "FREE"
+        listing.price != null -> "₹${listing.price.toInt()}"
+        else -> "FOR SALE"
+    }
 
     Card(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .onGloballyPositioned { coords ->
-                    val cardCenterX = coords.boundsInRoot().center.x
-                    val offset = (cardCenterX - screenWidthPx / 2f) / (screenWidthPx / 2f)
-                    rotationY = (offset * 8f).coerceIn(-8f, 8f)
-                }
-                .graphicsLayer {
-                    this.rotationY = rotationY
-                    cameraDistance = 12f * density
-                }
-                .clickable { onClick() },
-        shape = RoundedCornerShape(14.dp),
-        colors =
-            CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-            ),
-        border = BorderStroke(0.5.dp, WarmBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface,
+        ),
+        border = BorderStroke(1.dp, WarmBorder),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp,
+        ),
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            // Photo with type badge overlaid
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
-                modifier =
-                    Modifier
-                        .size(width = 64.dp, height = 86.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                modifier = Modifier
+                    .size(width = 78.dp, height = 106.dp)
+                    .clip(RoundedCornerShape(10.dp)),
             )
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
                 if (listing.isBundle) {
                     BundleBadge(bookCount = listing.bookCount)
-                    Spacer(modifier = Modifier.height(4.dp))
                 }
 
                 Text(
                     text = listing.title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    lineHeight = 18.sp,
+                    lineHeight = 20.sp,
                 )
 
                 if (!listing.isBundle && !listing.author.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = listing.author,
                         fontSize = 12.sp,
@@ -124,54 +116,64 @@ fun ListingCard(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
-
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    val priceText =
-                        when {
-                            listing.type == "DONATE" -> "FREE"
-                            listing.price != null -> "₹${listing.price.toInt()}"
-                            else -> ""
-                        }
-                    Text(
-                        text = priceText,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Teal500,
-                    )
-
-                    if (!listing.isBundle) {
+                    Surface(
+                        shape = RoundedCornerShape(7.dp),
+                        color = if (isFree) {
+                            Teal50
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant
+                        },
+                    ) {
                         Text(
-                            text = "· ${listing.condition}",
+                            text = priceText,
+                            modifier = Modifier.padding(
+                                horizontal = 9.dp,
+                                vertical = 5.dp,
+                            ),
                             fontSize = 12.sp,
-                            color = WarmMuted,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isFree) {
+                                Teal900
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                         )
                     }
 
-                    InlineTypePill(listing = listing)
+                    if (!listing.isBundle) {
+                        Text(
+                            text = listing.condition,
+                            fontSize = 11.sp,
+                            color = WarmMuted,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
 
-                val locationParts =
-                    listOfNotNull(
-                        listing.locality?.takeIf { it.isNotBlank() },
-                        listing.city?.takeIf { it.isNotBlank() },
-                    ).joinToString(", ")
+                val location = listOfNotNull(
+                    listing.locality?.takeIf { it.isNotBlank() },
+                    listing.city?.takeIf { it.isNotBlank() },
+                ).joinToString(", ")
 
-                if (locationParts.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                if (location.isNotBlank()) {
                     Text(
-                        text = "📍 $locationParts",
+                        text = "📍 $location",
                         fontSize = 11.sp,
                         color = WarmMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun BundleBadge(bookCount: Int) {

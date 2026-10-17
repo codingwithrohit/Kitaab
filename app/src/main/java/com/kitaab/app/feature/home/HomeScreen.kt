@@ -58,7 +58,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kitaab.app.domain.model.Listing
 import com.kitaab.app.feature.home.components.ListingCard
 import com.kitaab.app.feature.home.components.ListingGridCard
-import com.kitaab.app.feature.home.components.ShelfRow
 import com.kitaab.app.ui.theme.Teal50
 import com.kitaab.app.ui.theme.Teal500
 import com.kitaab.app.ui.theme.Teal900
@@ -80,17 +79,24 @@ fun HomeScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val pullRefreshState = rememberPullToRefreshState()
 
+
     LaunchedEffect(listState) {
         snapshotFlow {
-            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+            val lastVisible =
+                listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
             val total = listState.layoutInfo.totalItemsCount
-            lastVisible >= total - 3
-        }.collect { nearEnd ->
-            if (nearEnd && !state.isLoadingMore && state.hasMorePages) {
+            val nearEnd = lastVisible >= total - 3
+
+            nearEnd to (state.isLoadingMore to state.hasMorePages)
+        }.collect { (nearEnd, paginationState) ->
+            val (isLoadingMore, hasMorePages) = paginationState
+
+            if (nearEnd && !isLoadingMore && hasMorePages) {
                 viewModel.loadNextPage()
             }
         }
     }
+
 
     LaunchedEffect(state.error) {
         state.error?.let {
@@ -131,23 +137,6 @@ fun HomeScreen(
                     )
                 }
 
-                item(key = "shelf_section") {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text(
-                            text = "On the shelf",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ShelfRow(
-                            listings = state.listings.take(15),
-                            onListingClick = onListingClick,
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
 
                 item(key = "recent_header") {
                     Text(
@@ -157,7 +146,6 @@ fun HomeScreen(
                                 HomeSortOption.OLDEST -> "Oldest listings"
                                 HomeSortOption.PRICE_LOW_HIGH -> "Listings: cheap first"
                                 HomeSortOption.PRICE_HIGH_LOW -> "Listings: expensive first"
-                                HomeSortOption.NEARBY -> "Nearby listings"
                             },
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -229,6 +217,47 @@ fun HomeScreen(
                             listings = state.sortedListings,
                             onListingClick = onListingClick,
                         )
+                    }
+                }
+                if (state.viewMode == HomeViewMode.LIST) {
+                    items(
+                        items = state.sortedListings,
+                        key = { listing -> listing.id },
+                    ) { listing ->
+                        ListingCard(
+                            listing = listing,
+                            onClick = { onListingClick(listing.id) },
+                            modifier = Modifier.padding(
+                                horizontal = 16.dp,
+                                vertical = 5.dp,
+                            ),
+                        )
+                    }
+                } else {
+                    items(
+                        items = state.sortedListings.chunked(2),
+                        key = { row -> row.joinToString("-") { it.id } },
+                    ) { rowItems ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            rowItems.forEach { listing ->
+                                ListingGridCard(
+                                    listing = listing,
+                                    onClick = {
+                                        onListingClick(listing.id)
+                                    },
+                                    modifier = Modifier.weight(1f),
+                                )
+                            }
+
+                            if (rowItems.size == 1) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
                     }
                 }
 
