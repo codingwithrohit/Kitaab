@@ -43,13 +43,13 @@ fun ListingGridCard(
             modifier
                 .fillMaxWidth()
                 .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors =
             CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface,
             ),
         border = BorderStroke(1.dp, WarmBorder),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column {
             // ── Photo / placeholder area ──────────────────────────────
@@ -58,7 +58,7 @@ fun ListingGridCard(
                     Modifier
                         .fillMaxWidth()
                         .aspectRatio(2f / 3f)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
             ) {
                 if (listing.isBundle) {
                     BundleSpineStack(
@@ -83,11 +83,11 @@ fun ListingGridCard(
             }
 
             // ── Text content ──────────────────────────────────────────
-            Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 11.dp, vertical = 10.dp)) {
                 Text(
                     text = listing.title,
                     fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -133,8 +133,8 @@ fun ListingGridCard(
                         }
                     Text(
                         text = priceText,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
                         color = priceColor,
                     )
 
@@ -265,9 +265,9 @@ fun ListingTypeBadge(
             modifier
                 .background(
                     color = bgColor,
-                    shape = RoundedCornerShape(4.dp),
+                    shape = RoundedCornerShape(7.dp),
                 )
-                .padding(horizontal = 6.dp, vertical = 3.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp),
     ) {
         Text(
             text = label,
