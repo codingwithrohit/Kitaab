@@ -66,27 +66,27 @@ fun ListingCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface,
         ),
         border = BorderStroke(1.dp, WarmBorder),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp,
+            defaultElevation = 2.dp,
         ),
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(13.dp),
             verticalAlignment = Alignment.Top,
         ) {
             BookCoverImage(
                 url = listing.photoUrls.firstOrNull(),
                 modifier = Modifier
-                    .size(width = 78.dp, height = 106.dp)
+                    .size(width = 84.dp, height = 112.dp)
                     .clip(RoundedCornerShape(10.dp)),
             )
 
-            Spacer(modifier = Modifier.width(14.dp))
+            Spacer(modifier = Modifier.width(13.dp))
 
             Column(
                 modifier = Modifier.weight(1f),
@@ -99,7 +99,7 @@ fun ListingCard(
                 Text(
                     text = listing.title,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -121,7 +121,7 @@ fun ListingCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Surface(
-                        shape = RoundedCornerShape(7.dp),
+                        shape = RoundedCornerShape(9.dp),
                         color = if (isFree) {
                             Teal50
                         } else {
@@ -131,8 +131,8 @@ fun ListingCard(
                         Text(
                             text = priceText,
                             modifier = Modifier.padding(
-                                horizontal = 9.dp,
-                                vertical = 5.dp,
+                                horizontal = 10.dp,
+                                vertical = 6.dp,
                             ),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
