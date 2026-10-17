@@ -12,6 +12,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +38,7 @@ class ListingDetailViewModel
         val events = _events.receiveAsFlow()
 
         private var chatJob: kotlinx.coroutines.Job? = null
+        private var loadGeneration = 0
 
         private val referrerId: String? = savedStateHandle["referrerId"]
 
@@ -44,13 +46,24 @@ class ListingDetailViewModel
             load()
         }
 
+        /**
+         * Load the listing first so optional seller/recommendation requests cannot delay
+         * the main content. A generation token prevents an older retry from overwriting
+         * a newer result.
+         */
         fun load() {
+            val generation = ++loadGeneration
+
             viewModelScope.launch {
-                _uiState.update { it.copy(isLoading = true, error = null) }
+                _uiState.update {
+                    it.copy(
+                        isLoading = it.listing == null,
+                        error = null,
+                    )
+                }
 
-                runCatching {
+                try {
                     val currentUserId = supabase.auth.currentSessionOrNull()?.user?.id
-
                     val listing =
                         supabase.postgrest["listings"]
                             .select { filter { eq("id", listingId) } }
@@ -58,50 +71,88 @@ class ListingDetailViewModel
                             .firstOrNull()
                             ?: error("Listing not found")
 
-                    val seller =
-                        runCatching {
-                            supabase.postgrest["users"]
-                                .select { filter { eq("id", listing.sellerId) } }
-                                .decodeList<UserProfile>()
-                                .firstOrNull()
-                        }.getOrNull()
-
-                    val excludeIds =
-                        listOfNotNull(listingId, referrerId)
-                            .joinToString(",") { "\"$it\"" }
-
-                    val similarListings =
-                        runCatching {
-                            supabase.postgrest["listings"]
-                                .select {
-                                    filter {
-                                        eq("status", "ACTIVE")
-                                        if (listing.city != null) eq("city", listing.city)
-                                        filterNot("id", FilterOperator.IN, "($excludeIds)")
-                                    }
-                                    order("created_at", order = Order.DESCENDING)
-                                    limit(6)
-                                }
-                                .decodeList<Listing>()
-                        }.getOrDefault(emptyList())
+                    if (generation != loadGeneration) return@launch
 
                     _uiState.update {
                         it.copy(
                             listing = listing,
-                            seller = seller,
-                            similarListings = similarListings,
                             isLoading = false,
                             isOwnListing = currentUserId == listing.sellerId,
+                            seller = null,
+                            similarListings = emptyList(),
                         )
                     }
-                }.onFailure { cause ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = cause.message ?: "Failed to load listing",
-                        )
+
+                    // These requests are independent and run after the listing is visible.
+                    launch { loadSeller(listing.sellerId, generation) }
+                    launch { loadSimilarListings(listing, generation) }
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (cause: Exception) {
+                    if (generation == loadGeneration) {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = cause.message ?: "Failed to load listing",
+                            )
+                        }
                     }
                 }
+            }
+        }
+
+        private suspend fun loadSeller(
+            sellerId: String,
+            generation: Int,
+        ) {
+            try {
+                val seller =
+                    supabase.postgrest["users"]
+                        .select { filter { eq("id", sellerId) } }
+                        .decodeList<UserProfile>()
+                        .firstOrNull()
+
+                if (generation == loadGeneration) {
+                    _uiState.update { it.copy(seller = seller) }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Seller details are optional; keep the listing usable if this request fails.
+            }
+        }
+
+        private suspend fun loadSimilarListings(
+            listing: Listing,
+            generation: Int,
+        ) {
+            // Without a city, "nearby" recommendations would be misleading.
+            val city = listing.city?.takeIf { it.isNotBlank() } ?: return
+            val excludeIds =
+                listOfNotNull(listing.id, referrerId)
+                    .joinToString(",") { "\"$it\"" }
+
+            try {
+                val similarListings =
+                    supabase.postgrest["listings"]
+                        .select {
+                            filter {
+                                eq("status", "ACTIVE")
+                                eq("city", city)
+                                filterNot("id", FilterOperator.IN, "($excludeIds)")
+                            }
+                            order("created_at", order = Order.DESCENDING)
+                            limit(6)
+                        }
+                        .decodeList<Listing>()
+
+                if (generation == loadGeneration) {
+                    _uiState.update { it.copy(similarListings = similarListings) }
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Recommendations are non-critical; the main listing remains available.
             }
         }
 
