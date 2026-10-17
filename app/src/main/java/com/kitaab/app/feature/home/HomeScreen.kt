@@ -496,7 +496,7 @@ private fun ExamTagChips(
     LazyRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(vertical = 12.dp),
+        modifier = Modifier.padding(vertical = 6.dp),
     ) {
         items(examTags) { tag ->
             val selected = tag == selectedTag
