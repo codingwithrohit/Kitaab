@@ -146,6 +146,7 @@ fun ListingDetailScreen(
             if (state.listing != null && !state.isOwnListing) {
                 ActionBar(
                     listing = state.listing!!,
+                    isChatLoading = state.isChatLoading,
                     onMessageSeller = { viewModel.onMessageSellerClick() },
                     onRequestDonation = { viewModel.onRequestDonationClick() },
                 )
@@ -193,7 +194,7 @@ fun ListingDetailScreen(
                             .verticalScroll(rememberScrollState()),
                 ) {
                     // ── Photo carousel ────────────────────────────────────────
-                    PhotoCarousel(photoUrls = listing.photoUrls)
+                    PhotoCarousel(photoUrls = listing.photoUrls, listingTitle = listing.title)
 
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -209,10 +210,10 @@ fun ListingDetailScreen(
                         // ── Title + author ────────────────────────────────────
                         Text(
                             text = listing.title,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onBackground,
-                            lineHeight = 26.sp,
+                            lineHeight = 30.sp,
                         )
 
                         if (!listing.author.isNullOrBlank()) {
@@ -294,16 +295,24 @@ fun ListingDetailScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(20.dp))
-                        HorizontalDivider(color = WarmBorder)
-                        Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
                         // ── Seller row ────────────────────────────────────────
                         state.seller?.let { seller ->
-                            SellerRow(
-                                seller = seller,
-                                onClick = { onSellerClick(seller.id) },
-                            )
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(14.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, WarmBorder),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                            ) {
+                                Column(modifier = Modifier.padding(14.dp)) {
+                                    SellerRow(
+                                        seller = seller,
+                                        onClick = { onSellerClick(seller.id) },
+                                    )
+                                }
+                            }
                         }
 
                         // ── Own listing notice ────────────────────────────────
@@ -357,8 +366,7 @@ fun ListingDetailScreen(
 
                         // ── Similar listings ──────────────────────────────────
                         if (state.similarListings.isNotEmpty()) {
-                            HorizontalDivider(color = WarmBorder)
-                            Spacer(modifier = Modifier.height(20.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "More nearby",
                                 fontSize = 16.sp,
@@ -397,22 +405,27 @@ fun ListingDetailScreen(
         }
     }
     if (showDonationSheet) {
-        DonationRequestBottomSheet(
-            listingId = viewModel.uiState.collectAsState().value.listing?.id ?: "",
-            sheetState = donationSheetState,
-            onDismiss = { showDonationSheet = false },
-            onSuccess = {
-                showDonationSheet = false
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar("Request submitted! The seller will review it.")
-                }
-            },
-        )
+        state.listing?.let { listing ->
+            DonationRequestBottomSheet(
+                listingId = listing.id,
+                sheetState = donationSheetState,
+                onDismiss = { showDonationSheet = false },
+                onSuccess = {
+                    showDonationSheet = false
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("Request submitted! The seller will review it.")
+                    }
+                },
+            )
+        } ?: run { showDonationSheet = false }
     }
 }
 
 @Composable
-private fun PhotoCarousel(photoUrls: List<String>) {
+private fun PhotoCarousel(
+    photoUrls: List<String>,
+    listingTitle: String,
+) {
     if (photoUrls.isEmpty()) {
         // Full-width default cover
         Box(
@@ -445,7 +458,7 @@ private fun PhotoCarousel(photoUrls: List<String>) {
         ) { page ->
             AsyncImage(
                 model = photoUrls[page],
-                contentDescription = null,
+                contentDescription = "Photo ${page + 1} of ${photoUrls.size} for $listingTitle",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
             )
@@ -611,6 +624,7 @@ private fun SellerRow(
 @Composable
 private fun ActionBar(
     listing: Listing,
+    isChatLoading: Boolean,
     onMessageSeller: () -> Unit,
     onRequestDonation: () -> Unit,
 ) {
@@ -644,6 +658,7 @@ private fun ActionBar(
         } else {
             Button(
                 onClick = onMessageSeller,
+                enabled = !isChatLoading,
                 colors = ButtonDefaults.buttonColors(containerColor = Teal500),
                 shape = RoundedCornerShape(12.dp),
                 modifier =
@@ -651,8 +666,16 @@ private fun ActionBar(
                         .fillMaxWidth()
                         .height(52.dp),
             ) {
+                if (isChatLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp,
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                }
                 Text(
-                    text = "Message Seller",
+                    text = if (isChatLoading) "Opening chat…" else "Message Seller",
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
                 )
