@@ -139,20 +139,30 @@ fun HomeScreen(
 
 
                 item(key = "recent_header") {
-                    Text(
-                        text =
-                            when (state.sortOption) {
-                                HomeSortOption.RECENT -> "Recent listings"
-                                HomeSortOption.OLDEST -> "Oldest listings"
-                                HomeSortOption.PRICE_LOW_HIGH -> "Listings: cheap first"
-                                HomeSortOption.PRICE_HIGH_LOW -> "Listings: expensive first"
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 10.dp),
+                    ) {
+                        Text(
+                            text = when (state.sortOption) {
+                                HomeSortOption.RECENT -> "Fresh finds"
+                                HomeSortOption.OLDEST -> "Recently listed"
+                                HomeSortOption.PRICE_LOW_HIGH -> "Good reads, low prices"
+                                HomeSortOption.PRICE_HIGH_LOW -> "Premium picks"
                             },
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+                            fontSize = 21.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            lineHeight = 26.sp,
+                        )
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Books worth turning the page for",
+                            fontSize = 13.sp,
+                            color = WarmMuted,
+                        )
+                    }
                 }
 
                 if (state.isLoadingListings && state.listings.isEmpty()) {
@@ -362,24 +372,24 @@ private fun HomeTopBar(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Find your next book",
+            text = "A little discovery goes a long way.",
             fontSize = 14.sp,
             color = WarmMuted,
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(18.dp))
 
         Surface(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(16.dp))
                     .clickable { onSearchClick() },
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
             border = BorderStroke(1.dp, WarmBorder),
         ) {
             Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 13.dp),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 15.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
