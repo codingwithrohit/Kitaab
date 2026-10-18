@@ -450,7 +450,8 @@ private fun PhotoCarousel(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .aspectRatio(4f / 3f),
+                .aspectRatio(5f / 4f)
+                .background(MaterialTheme.colorScheme.surface),
     ) {
         HorizontalPager(
             state = pagerState,
@@ -459,8 +460,11 @@ private fun PhotoCarousel(
             AsyncImage(
                 model = photoUrls[page],
                 contentDescription = "Photo ${page + 1} of ${photoUrls.size} for $listingTitle",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit,
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(MaterialTheme.colorScheme.surface),
             )
         }
 
