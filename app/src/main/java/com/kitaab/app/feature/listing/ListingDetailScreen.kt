@@ -197,7 +197,7 @@ fun ListingDetailScreen(
                     PhotoCarousel(photoUrls = listing.photoUrls, listingTitle = listing.title)
 
                     Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         // ── Type + condition badges ────────────────────────────
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -205,7 +205,7 @@ fun ListingDetailScreen(
                             ConditionChip(condition = listing.condition)
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         // ── Title + author ────────────────────────────────────
                         Text(
@@ -232,7 +232,7 @@ fun ListingDetailScreen(
                                     listing.publisher,
                                     listing.edition?.let { "Edition: $it" },
                                 ).joinToString(" · ")
-                            Text(text = pubInfo, fontSize = 13.sp, color = WarmMuted)
+                            Text(text = pubInfo, fontSize = 13.sp, color = WarmMuted, lineHeight = 18.sp)
                         }
 
                         // ── Exam tags ─────────────────────────────────────────
@@ -295,7 +295,7 @@ fun ListingDetailScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
                         // ── Seller row ────────────────────────────────────────
                         state.seller?.let { seller ->
@@ -362,7 +362,7 @@ fun ListingDetailScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(18.dp))
 
                         // ── Similar listings ──────────────────────────────────
                         if (state.similarListings.isNotEmpty()) {
@@ -432,7 +432,7 @@ private fun PhotoCarousel(
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .aspectRatio(4f / 3f)
+                    .aspectRatio(5f / 4f)
                     .background(Teal50),
             contentAlignment = Alignment.Center,
         ) {
